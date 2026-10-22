@@ -139,22 +139,57 @@ export function ProgramSchedule_build(
   };
 }
 
-function sessionInfo(program: IProgram, sessionIndex: number): { week: string; day: string; exercise: string } {
-  let days = 0;
+function sessionInfo(
+  program: IProgram,
+  sessionIndex: number
+): { week: string; day: string; exercise: string; exerciseCount: number } {
+  let dayIndex = 0;
   for (const week of program.planner?.weeks || []) {
     for (const day of week.days) {
-      if (days === sessionIndex) {
-        const exerciseLine = day.exerciseText
+      if (dayIndex === sessionIndex) {
+        const exerciseLines = day.exerciseText
           .split("\n")
           .map((line) => line.trim())
-          .find((line) => line && !line.startsWith("///"));
-        const exercise = exerciseLine?.split(" / ")[0]?.trim() || "운동";
-        return { week: week.name, day: day.name, exercise };
+          .filter((line) => line && !line.startsWith("///"));
+        const exercise = exerciseLines[0]?.split(" / ")[0]?.trim() || "운동";
+        return { week: week.name, day: day.name, exercise, exerciseCount: exerciseLines.length };
       }
-      days += 1;
+      dayIndex += 1;
     }
   }
-  return { week: "운동", day: String(sessionIndex + 1) + "일차", exercise: "운동" };
+
+  const describeProgramDay = (
+    dayId: string,
+    weekName: string,
+    fallbackDayName: string
+  ): { week: string; day: string; exercise: string; exerciseCount: number } => {
+    const day = program.days.find((candidate) => candidate.id === dayId);
+    const exercises = (day?.exercises || [])
+      .map((exerciseRef) => program.exercises.find((exercise) => exercise.id === exerciseRef.id))
+      .filter((exercise) => exercise != null);
+    return {
+      week: weekName,
+      day: day?.name || fallbackDayName,
+      exercise: exercises[0]?.name || "운동",
+      exerciseCount: exercises.length,
+    };
+  };
+
+  dayIndex = 0;
+  for (const week of program.weeks) {
+    for (const dayRef of week.days) {
+      if (dayIndex === sessionIndex) {
+        return describeProgramDay(dayRef.id, week.name, String(sessionIndex + 1) + "일차");
+      }
+      dayIndex += 1;
+    }
+  }
+
+  const day = program.days[sessionIndex];
+  if (day) {
+    return describeProgramDay(day.id, "운동", day.name);
+  }
+  return { week: "운동", day: String(sessionIndex + 1) + "일차", exercise: "운동", exerciseCount: 1 };
 }
 
 function timestampAtLocalDateAndTime(date: string, time: string): number | undefined {
@@ -178,7 +213,6 @@ export function ProgramSchedule_buildReminderRequests(
     return [];
   }
   const totalSessions = ProgramSchedule_sessionCount(program);
-  const plannerDays = program.planner?.weeks.flatMap((week) => week.days) || [];
   const reminders: IWorkoutScheduleReminder[] = [];
   for (let sessionIndex = schedule.completedSessions; sessionIndex < totalSessions; sessionIndex += 1) {
     if (reminders.length >= 60) {
@@ -194,11 +228,10 @@ export function ProgramSchedule_buildReminderRequests(
     }
     const info = sessionInfo(program, sessionIndex);
     const title = info.week + " · " + info.day;
-    const day = plannerDays[sessionIndex];
-    const exerciseCount =
-      day?.exerciseText.split("\n").filter((line) => line.trim() && !line.trim().startsWith("///")).length ?? 1;
     const body =
-      info.exercise + (exerciseCount > 1 ? " 외 " + (exerciseCount - 1) + "종목" : "") + " 시작할 시간입니다!";
+      info.exercise +
+      (info.exerciseCount > 1 ? " 외 " + (info.exerciseCount - 1) + "종목" : "") +
+      " 시작할 시간입니다!";
     reminders.push({ id: reminders.length, timestamp, title, body });
   }
   return reminders;

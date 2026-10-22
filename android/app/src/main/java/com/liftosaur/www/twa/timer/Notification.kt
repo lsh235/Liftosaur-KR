@@ -17,6 +17,8 @@ import android.provider.Settings
 import androidx.core.app.NotificationManagerCompat
 import com.facebook.react.modules.core.PermissionAwareActivity
 import com.facebook.react.modules.core.PermissionListener
+import org.json.JSONArray
+import kotlin.math.ceil
 import java.util.concurrent.TimeUnit
 
 class Notification(private val context: Context, private val activity: Activity? = null) {
@@ -49,7 +51,64 @@ class Notification(private val context: Context, private val activity: Activity?
         const val CHANNEL_ID_WORKOUT: String = "liftosaur_workout_reminders"
         private const val NOTIF_PERM_REQUEST_CODE: Int = 41001
         private const val PROMPTS_PREFS: String = "LftTimerPermissionPrompts"
+        private const val WORKOUT_REMINDERS_PREFS: String = "LftTimerWorkoutReminders"
+        private const val WORKOUT_REMINDERS_KEY: String = "pending"
         var startedIntents: MutableMap<Int, PendingIntent> = mutableMapOf()
+
+        fun storeWorkoutReminders(context: Context, payload: String): Boolean {
+            return context.applicationContext
+                .getSharedPreferences(WORKOUT_REMINDERS_PREFS, Context.MODE_PRIVATE)
+                .edit()
+                .putString(WORKOUT_REMINDERS_KEY, payload)
+                .commit()
+        }
+
+        fun restoreWorkoutReminders(context: Context) {
+            val payload = context.applicationContext
+                .getSharedPreferences(WORKOUT_REMINDERS_PREFS, Context.MODE_PRIVATE)
+                .getString(WORKOUT_REMINDERS_KEY, null) ?: return
+            val reminders = try {
+                JSONArray(payload)
+            } catch (e: Exception) {
+                android.util.Log.e("LftTimer", "Stored workout reminders are invalid", e)
+                return
+            }
+            val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmManager.canScheduleExactAlarms()) {
+                android.util.Log.i("LftTimer", "Workout reminders not restored: exact alarm access is unavailable")
+                return
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                !NotificationManagerCompat.from(context).areNotificationsEnabled()
+            ) {
+                android.util.Log.i("LftTimer", "Workout reminders not restored: notifications are disabled")
+                return
+            }
+
+            val notification = Notification(context)
+            for (index in 0 until WORKOUT_REMINDER_ID_LIMIT) {
+                notification.cancel(WORKOUT_REMINDER_ID_START + index)
+            }
+            val now = System.currentTimeMillis()
+            for (index in 0 until reminders.length()) {
+                val reminder = reminders.optJSONObject(index) ?: continue
+                val scheduleId = reminder.optInt("id", index)
+                val timestamp = reminder.optLong("timestamp", 0L)
+                if (scheduleId !in 0 until WORKOUT_REMINDER_ID_LIMIT || timestamp <= now) continue
+                val delaySeconds = ceil((timestamp - now) / 1000.0).toLong()
+                notification.send(
+                    WORKOUT_REMINDER_ID_START + scheduleId,
+                    delaySeconds,
+                    false,
+                    false,
+                    "Liftosaur",
+                    reminder.optString("title", "오늘의 운동"),
+                    reminder.optString("body", "오늘의 루틴을 시작할 시간입니다."),
+                    0.0f,
+                    true
+                )
+            }
+        }
     }
 
     fun cancel(id: Int) {

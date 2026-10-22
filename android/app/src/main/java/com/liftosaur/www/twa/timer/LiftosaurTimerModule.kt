@@ -173,6 +173,9 @@ class LiftosaurTimerModule(reactContext: ReactApplicationContext) :
         try {
             val reminders = JSONArray(payload)
             val notification = Notification(reactApplicationContext, currentActivity)
+            if (!Notification.storeWorkoutReminders(reactApplicationContext, payload)) {
+                throw IllegalStateException("Failed to persist workout reminders")
+            }
             for (index in 0 until Notification.WORKOUT_REMINDER_ID_LIMIT) {
                 notification.cancel(Notification.WORKOUT_REMINDER_ID_START + index)
             }

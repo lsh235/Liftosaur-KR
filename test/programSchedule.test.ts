@@ -8,7 +8,7 @@ import {
   ProgramSchedule_isValid,
   ProgramSchedule_skipSession,
 } from "../src/models/programSchedule";
-import { Program_create } from "../src/models/program";
+import { Program_create, Program_createExercise } from "../src/models/program";
 
 describe("ProgramSchedule", () => {
   it("maps weekdays and keeps weekend rest days out of the session calendar", () => {
@@ -103,5 +103,37 @@ describe("ProgramSchedule", () => {
     const reminders = ProgramSchedule_buildReminderRequests(program, now);
     expect(reminders).to.have.length(1);
     expect(reminders[0].timestamp).to.equal(new Date(2026, 9, 21, 19, 0, 0).getTime());
+  });
+
+  it("builds useful reminder details for non-planner programs", () => {
+    const bench = { ...Program_createExercise("kg"), id: "bench", name: "바벨 벤치프레스" };
+    const row = { ...Program_createExercise("kg"), id: "row", name: "바벨 로우" };
+    const legacyProgram = {
+      ...Program_create("레거시 일정", "legacy-reminders"),
+      exercises: [bench, row],
+      days: [
+        { id: "upper", name: "월요일: 상체 파워", exercises: [{ id: "bench" }, { id: "row" }] },
+        { id: "lower", name: "수요일: 하체 파워", exercises: [{ id: "bench" }] },
+      ],
+      weeks: [
+        {
+          id: "week-1",
+          name: "1주 차",
+          days: [{ id: "upper" }, { id: "lower" }],
+        },
+      ],
+      schedule: ProgramSchedule_build("2026-10-19", [1, 3], 0, 0, "19:00"),
+    };
+    const now = new Date(2026, 9, 18, 12, 0, 0).getTime();
+
+    const reminders = ProgramSchedule_buildReminderRequests(legacyProgram, now);
+
+    expect(reminders[0]).to.eql({
+      id: 0,
+      timestamp: new Date(2026, 9, 19, 19, 0, 0).getTime(),
+      title: "1주 차 · 월요일: 상체 파워",
+      body: "바벨 벤치프레스 외 1종목 시작할 시간입니다!",
+    });
+    expect(reminders[1].title).to.equal("1주 차 · 수요일: 하체 파워");
   });
 });
