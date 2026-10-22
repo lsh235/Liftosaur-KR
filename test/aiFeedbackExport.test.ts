@@ -1,8 +1,10 @@
 import { expect } from "chai";
 import { IHistoryRecord, ISet } from "../src/types";
 import { Settings_build } from "../src/models/settings";
+import { Program_create } from "../src/models/program";
 import { Weight_build } from "../src/models/weight";
 import { AiFeedbackExport_buildMarkdown } from "../src/utils/aiFeedbackExport";
+import { ProgramSchedule_build } from "../src/models/programSchedule";
 
 function set(id: string, weight: number, reps: number, label?: string): ISet {
   return {
@@ -49,16 +51,33 @@ describe("AI feedback Markdown export", () => {
   it("summarizes progression and exports detailed target-versus-actual logs with the user's note", () => {
     const firstTimestamp = new Date("2026-01-05T10:00:00Z").getTime();
     const finalTimestamp = new Date("2026-02-09T10:00:00Z").getTime();
+    const scheduledProgram = {
+      ...Program_create("PHAT 테스트", "phat-program"),
+      schedule: ProgramSchedule_build("2026-01-05", [1, 2, 3, 4, 5], 2, 1),
+      planner: {
+        vtype: "planner" as const,
+        name: "PHAT 테스트",
+        weeks: Array.from({ length: 6 }, (_unusedWeek, weekIndex) => ({
+          name: `${weekIndex + 1}주차`,
+          days: Array.from({ length: 5 }, (_unusedDay, dayIndex) => ({
+            name: `${dayIndex + 1}일차`,
+            exerciseText: "Bench Press",
+          })),
+        })),
+      },
+    };
     const markdown = AiFeedbackExport_buildMarkdown(
       [record(1, firstTimestamp, 80), record(6, finalTimestamp, 90)],
       Settings_build("kg"),
       "다음 루틴은 어깨 측면 볼륨을 늘려줘.",
       new Date("2026-02-10T10:00:00Z").getTime(),
-      "6주 PHAT 수행 총평"
+      "6주 PHAT 수행 총평",
+      [scheduledProgram]
     );
 
     expect(markdown).to.include("# 6주 PHAT 수행 총평");
     expect(markdown).to.include("완료 세션 수: 2");
+    expect(markdown).to.include("일정 밀림 횟수: 1회");
     expect(markdown).to.include("다음 루틴은 어깨 측면 볼륨을 늘려줘.");
     expect(markdown).to.include("1주차");
     expect(markdown).to.include("6주차");

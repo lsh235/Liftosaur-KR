@@ -20,6 +20,14 @@ import {
   Program_exportProgramToFile,
   Program_exportProgramToLink,
 } from "../models/program";
+import {
+  ProgramSchedule_build,
+  ProgramSchedule_getNextDate,
+  ProgramSchedule_isValid,
+  ProgramSchedule_sessionCount,
+  ProgramSchedule_skipSession,
+  ProgramSchedule_today,
+} from "../models/programSchedule";
 import { getGoogleAccessToken } from "../utils/googleAccessToken";
 import { SignIn_google, SignIn_apple, SignOut_google } from "../utils/signIn";
 import { Platform } from "react-native";
@@ -54,6 +62,7 @@ import {
   ICustomExercise,
   IImportSession,
   IProgramState,
+  IProgramSchedule,
 } from "../types";
 import { IPlannerProgramExercise } from "../pages/planner/models/types";
 import { IByExercise } from "../pages/planner/plannerEvaluator";
@@ -1310,6 +1319,52 @@ export function Thunk_pushToEditProgram(): IThunk {
   };
 }
 
+export function Thunk_setProgramSchedule(programId: string, startDate: string, weekdays: number[]): IThunk {
+  return async (dispatch, getState) => {
+    const program = Program_getProgram(getState(), programId);
+    if (!program) {
+      return;
+    }
+    const totalSessions = ProgramSchedule_sessionCount(program);
+    const existingIsComplete = (program.schedule?.completedSessions ?? 0) >= totalSessions;
+    const schedule = ProgramSchedule_build(
+      startDate,
+      weekdays,
+      existingIsComplete ? 0 : (program.schedule?.completedSessions ?? 0),
+      existingIsComplete ? 0 : (program.schedule?.shiftCount ?? 0)
+    );
+    if (!ProgramSchedule_isValid(schedule) || totalSessions === 0) {
+      Dialog_alert("시작일과 운동 요일을 확인하세요. 운동일은 하나 이상 선택해야 합니다.");
+      return;
+    }
+    updateState(
+      dispatch,
+      [lb<IState>().p("storage").p("programs").findBy("id", programId).p("schedule").record(schedule)],
+      "Set workout schedule"
+    );
+  };
+}
+
+export function Thunk_skipProgramSchedule(programId: string): IThunk {
+  return async (dispatch, getState) => {
+    const program = Program_getProgram(getState(), programId);
+    if (!program?.schedule) {
+      return;
+    }
+    const totalSessions = ProgramSchedule_sessionCount(program);
+    const nextDate = ProgramSchedule_getNextDate(program.schedule, totalSessions);
+    if (!nextDate || nextDate > ProgramSchedule_today()) {
+      return;
+    }
+    const schedule: IProgramSchedule = ProgramSchedule_skipSession(program.schedule, totalSessions);
+    updateState(
+      dispatch,
+      [lb<IState>().p("storage").p("programs").findBy("id", programId).p("schedule").record(schedule)],
+      "Skip and shift workout schedule"
+    );
+  };
+}
+
 export function Thunk_startProgramDay(programId?: string): IThunk {
   return async (dispatch, getState) => {
     const state = getState();
@@ -1770,7 +1825,8 @@ export function Thunk_exportAiFeedbackMarkdown(title: string, userNote: string):
       state.storage.settings,
       userNote,
       Date.now(),
-      title
+      title,
+      state.storage.programs
     );
     Exporter_toFile(`liftosaur_ai_feedback_${DateUtils_formatYYYYMMDD(Date.now())}.md`, markdown);
   };

@@ -84,6 +84,7 @@ import {
   History_findLastEntryForExerciseType,
 } from "./history";
 import { WorkoutOutcome_add } from "./workoutOutcome";
+import { ProgramSchedule_completeSession } from "./programSchedule";
 import { CollectionUtils_compact, CollectionUtils_findIndexReverse } from "../utils/collection";
 import { ILiftoscriptEvaluatorUpdate } from "../liftoscriptEvaluator";
 import { Equipment_getUnitForExerciseType } from "./equipment";
@@ -2722,7 +2723,12 @@ export function Progress_finishWorkout(
     Progress_isCurrent(progress) && program != null
       ? Program_runAllFinishDayScripts(program, progress, storage.stats, settings)
       : { program, exerciseData };
-  const newPrograms = newProgram != null ? lf(storage.programs).i(programIndex).set(newProgram) : storage.programs;
+  const scheduledProgram =
+    Progress_isCurrent(progress) && newProgram?.schedule
+      ? { ...newProgram, schedule: ProgramSchedule_completeSession(newProgram.schedule) }
+      : newProgram;
+  const newPrograms =
+    scheduledProgram != null ? lf(storage.programs).i(programIndex).set(scheduledProgram) : storage.programs;
   const newSettingsExerciseData = deepmerge(storage.settings.exerciseData, newExerciseData);
   return {
     ...storage,

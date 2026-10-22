@@ -1,7 +1,8 @@
 import { Exercise_fullName, Exercise_get, Exercise_synergistMuscles, Exercise_targetMuscles } from "../models/exercise";
-import { IHistoryEntry, IHistoryRecord, ISet, ISettings, IWeight } from "../types";
+import { IHistoryEntry, IHistoryRecord, IProgram, ISet, ISettings, IWeight } from "../types";
 import { DateUtils_formatYYYYMMDD } from "./date";
 import { Weight_convertTo } from "../models/weight";
+import { ProgramSchedule_getDueSessionCount, ProgramSchedule_sessionCount } from "../models/programSchedule";
 
 interface ILoggedSet {
   set: ISet;
@@ -173,7 +174,8 @@ export function AiFeedbackExport_buildMarkdown(
   settings: ISettings,
   userNote: string,
   generatedAt: number = Date.now(),
-  reportTitle: string = "AI 운동 피드백 데이터"
+  reportTitle: string = "AI 운동 피드백 데이터",
+  allPrograms: IProgram[] = []
 ): string {
   const history = allHistory
     .filter((record) => record.vtype === "history_record")
@@ -181,6 +183,32 @@ export function AiFeedbackExport_buildMarkdown(
     .sort((a, b) => a.startTime - b.startTime);
   const first = history[0];
   const last = history[history.length - 1];
+  const programIds = new Set(history.map((record) => record.programId));
+  const scheduledPrograms = allPrograms.filter((program) => programIds.has(program.id) && program.schedule != null);
+  const dueSessions = scheduledPrograms.reduce(
+    (total, program) =>
+      total +
+      ProgramSchedule_getDueSessionCount(
+        program.schedule!,
+        ProgramSchedule_sessionCount(program),
+        DateUtils_formatYYYYMMDD(generatedAt)
+      ),
+    0
+  );
+  const completedScheduledSessions = scheduledPrograms.reduce(
+    (total, program) => total + Math.min(program.schedule!.completedSessions, ProgramSchedule_sessionCount(program)),
+    0
+  );
+  const attendance =
+    dueSessions > 0
+      ? Math.round((Math.min(completedScheduledSessions, dueSessions) / dueSessions) * 100) + "%"
+      : scheduledPrograms.length > 0
+        ? "예정 세션 없음"
+        : "일정 설정 없음";
+  const shiftedSessions =
+    scheduledPrograms.length > 0
+      ? scheduledPrograms.reduce((total, program) => total + program.schedule!.shiftCount, 0)
+      : undefined;
   const lines = [
     "# " + (reportTitle.trim() || "AI 운동 피드백 데이터").replace(/\n/g, " "),
     "",
@@ -190,8 +218,8 @@ export function AiFeedbackExport_buildMarkdown(
         ? DateUtils_formatYYYYMMDD(first.startTime) + " ~ " + DateUtils_formatYYYYMMDD(last.startTime)
         : "운동 기록 없음"),
     "완료 세션 수: " + history.length,
-    "출석률: 예정 운동일 달력 데이터가 없어 계산하지 않음",
-    "일정 밀림 횟수: 현재 기록 형식에서 추적하지 않음",
+    "출석률: " + attendance,
+    "일정 밀림 횟수: " + (shiftedSessions == null ? "일정 설정 없음" : shiftedSessions + "회"),
     "",
     "## 사용자 메모",
     "",
@@ -207,6 +235,30 @@ export function AiFeedbackExport_buildMarkdown(
   for (const records of programGroups.values()) {
     const programName = records[0].programName || "이름 없는 프로그램";
     lines.push("## 프로그램: " + programName, "");
+    const scheduledProgram = allPrograms.find((program) => program.id === records[0].programId);
+    if (scheduledProgram?.schedule) {
+      const programDueSessions = ProgramSchedule_getDueSessionCount(
+        scheduledProgram.schedule,
+        ProgramSchedule_sessionCount(scheduledProgram),
+        DateUtils_formatYYYYMMDD(generatedAt)
+      );
+      const programCompleted = Math.min(scheduledProgram.schedule.completedSessions, programDueSessions);
+      const programAttendance =
+        programDueSessions > 0 ? Math.round((programCompleted / programDueSessions) * 100) + "%" : "예정 세션 없음";
+      lines.push(
+        "일정: " +
+          scheduledProgram.schedule.startDate +
+          " 시작 · 완료 " +
+          scheduledProgram.schedule.completedSessions +
+          "/" +
+          ProgramSchedule_sessionCount(scheduledProgram) +
+          "회 · 미루기 " +
+          scheduledProgram.schedule.shiftCount +
+          "회 · 출석률 " +
+          programAttendance,
+        ""
+      );
+    }
     lines.push("### 주요 운동 진행 요약", "");
     lines.push(
       "| 운동 | 첫 기록 | 첫 e1RM | 마지막 기록 | 마지막 e1RM | 변화율 |",

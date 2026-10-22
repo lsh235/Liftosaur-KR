@@ -1190,6 +1190,23 @@ const _VPlannerProgramMatches: IEquals<v.InferOutput<typeof _VPlannerProgram>, I
 void _VPlannerProgramMatches;
 export const VPlannerProgram: v.GenericSchema<IPlannerProgram> = _VPlannerProgram;
 
+export interface IProgramSchedule {
+  startDate: string;
+  /** ISO weekday numbers: Monday = 1, Sunday = 7. */
+  weekdays: number[];
+  completedSessions: number;
+  shiftCount: number;
+}
+const _VProgramSchedule = v.object({
+  startDate: v.string(),
+  weekdays: v.array(v.number()),
+  completedSessions: v.number(),
+  shiftCount: v.number(),
+});
+const _VProgramScheduleMatches: IEquals<v.InferOutput<typeof _VProgramSchedule>, IProgramSchedule> = true;
+void _VProgramScheduleMatches;
+export const VProgramSchedule: v.GenericSchema<IProgramSchedule> = _VProgramSchedule;
+
 export interface IProgram {
   vtype: "program";
   exercises: IProgramExercise[];
@@ -1209,6 +1226,7 @@ export interface IProgram {
   updatedAt?: number;
   authorid?: string | null;
   source?: string | null;
+  schedule?: IProgramSchedule;
 }
 const _VProgram = v.object({
   vtype: v.literal("program"),
@@ -1229,6 +1247,7 @@ const _VProgram = v.object({
   updatedAt: v.optional(v.number()),
   authorid: v.optional(v.union([v.string(), v.null()])),
   source: v.optional(v.union([v.string(), v.null()])),
+  schedule: v.optional(VProgramSchedule),
 });
 const _VProgramMatches: IEquals<v.InferOutput<typeof _VProgram>, IProgram> = true;
 void _VProgramMatches;
@@ -2152,7 +2171,7 @@ export const CONTROLLED_TYPES = ["program", "gym", "progress", "history_entry"] 
 export type IControlledType = (typeof CONTROLLED_TYPES)[number];
 
 export const CONTROLLED_FIELDS: Record<IControlledType, readonly string[]> = {
-  program: ["name", "nextDay", "planner"] as const,
+  program: ["name", "nextDay", "planner", "schedule"] as const,
   gym: ["name", "equipment"] as const,
   progress: [
     "entries",

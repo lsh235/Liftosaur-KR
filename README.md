@@ -1,8 +1,8 @@
 # 🏋 Liftosaur: Open-source powerful weight lifting tracker PWA for coders.
 
-* Link: https://www.liftosaur.com
-* **[Features roadmap](https://github.com/astashov/liftosaur/discussions)**
-* **[Bugs](https://github.com/astashov/liftosaur/issues)**
+- Link: https://www.liftosaur.com
+- **[Features roadmap](https://github.com/astashov/liftosaur/discussions)**
+- **[Bugs](https://github.com/astashov/liftosaur/issues)**
 
 <img src="https://raw.github.com/astashov/liftosaur/master/screenshot2.png" alt="Liftosaur Screenshot" width="360" />
 
@@ -66,7 +66,9 @@ program_name,duration_weeks,days_per_week,weight_unit,day_index,day_name,exercis
 
 앱에는 **6주 PHAT 평일 5일 샘플 루틴**도 포함되어 있습니다. 설정에서 샘플을 추가하면 6주 × 5일의 운동일과 주차별 세트가 생성됩니다. 샘플의 목표 중량은 비어 있으므로 운동 전에 본인에게 맞는 중량을 입력하세요.
 
-**AI 피드백용 Markdown 내보내기**에서는 프로그램 총평, 통증 메모, 다음 루틴 요청을 입력할 수 있습니다. 파일에는 기록 기간과 완료 세션 수, 다관절 운동의 첫·마지막 기록 e1RM 비교, 세션별 목표와 실제 수행 및 볼륨이 담깁니다. 현재 기록 모델은 예정 날짜나 일정 미루기 횟수를 저장하지 않아 출석률과 일정 밀림은 계산하지 않는다고 파일에 표시합니다.
+**AI 피드백용 Markdown 내보내기**에서는 프로그램 총평, 통증 메모, 다음 루틴 요청을 입력할 수 있습니다. 파일에는 기록 기간과 완료 세션 수, 다관절 운동의 첫·마지막 기록 e1RM 비교, 세션별 목표와 실제 수행 및 볼륨이 담깁니다. 일정을 설정한 프로그램은 출석률과 일정 미루기 횟수도 포함합니다.
+
+프로그램 일정은 시작일과 운동 요일을 지정해 계산합니다. 운동일을 미루면 현재 세션과 이후 미완료 세션이 다음 지정 운동일로 이동하고 주말 등 선택하지 않은 날은 건너뜁니다. 지정 시간 알림은 아직 제공하지 않습니다.
 
 # Implementation details
 
@@ -94,13 +96,16 @@ I deploy everything via AWS CDK, the setup is described in [this blog post](lift
 
 If you want to run liftosaur locally firstly ensure that you have Node 18 and npm installed
 
-Then comment out the 
+Then comment out the
+
 ```
 devServer:{ }
 ```
+
 block from the `webpack.config.js` file
 
 Run
+
 ```
 $ npm install
 $ npm start
