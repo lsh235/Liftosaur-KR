@@ -305,15 +305,19 @@ function buildExerciseText(exercise: IAIExercise, week: number, unit: IUnit): st
       const rest = exercise.rest_seconds > 0 ? " " + exercise.rest_seconds + "s" : "";
       return "1x" + set.target_reps + " (" + set.type + ") " + weight + rest;
     });
-  const warmupGroups = new Map<string, { count: number; reps: number; weight: number }>();
+  const warmupGroups = new Map<string, { count: number; reps: number; weight?: number }>();
   for (const set of warmups) {
-    const key = set.target_reps + ":" + set.target_weight;
-    const group = warmupGroups.get(key) || { count: 0, reps: set.target_reps, weight: set.target_weight };
+    const targetWeight = set.target_weight > 0 ? set.target_weight : undefined;
+    const key = set.target_reps + ":" + (targetWeight ?? "");
+    const group = warmupGroups.get(key) || { count: 0, reps: set.target_reps, weight: targetWeight };
     group.count += 1;
     warmupGroups.set(key, group);
   }
   const warmupText = [...warmupGroups.values()]
-    .map((set) => set.count + "x" + set.reps + " " + Number(set.weight.toFixed(3)) + unit)
+    .map((set) => {
+      const weight = set.weight == null ? "" : " " + Number(set.weight.toFixed(3)) + unit;
+      return set.count + "x" + set.reps + weight;
+    })
     .join(", ");
   const workSection = workSets.length > 0 ? " / " + workSets.join(", ") : "";
   const warmupSection = warmupText ? " / warmup: " + warmupText : "";

@@ -6,6 +6,9 @@ import {
   AiWorkoutProgram_tryImport,
 } from "../src/utils/aiWorkoutProgram";
 import { PlannerProgram_evaluate } from "../src/pages/planner/models/plannerProgram";
+import { PlannerProgramExercise_programWarmups } from "../src/pages/planner/models/plannerProgramExercise";
+import { Exercise_getWarmupSets } from "../src/models/exercise";
+import { Weight_build } from "../src/models/weight";
 import { Settings_build } from "../src/models/settings";
 import { ImportExporter_getExportedProgram } from "../src/lib/importexporter";
 
@@ -119,6 +122,40 @@ describe("AI workout program import", () => {
     expect(result?.success).to.equal(true);
     if (result?.success) {
       expect(result.data.program.name).to.equal('CSV "루틴"');
+    }
+  });
+
+  it("treats zero-weight imported warmups as unspecified instead of zero load", () => {
+    const input = JSON.parse(jsonProgram());
+    input.workouts[0].exercises[0].weekly_progression[0].sets[2].target_weight = 0;
+    const settings = Settings_build("kg");
+    const result = AiWorkoutProgram_tryImport(JSON.stringify(input), settings);
+
+    expect(result?.success).to.equal(true);
+    if (!result?.success) {
+      return;
+    }
+    const planner = result.data.program.planner!;
+    const exerciseText = planner.weeks[0].days[0].exerciseText;
+    expect(exerciseText).to.include("warmup: 1x8");
+    expect(exerciseText).not.to.include("warmup: 1x8 0kg");
+
+    const evaluated = PlannerProgram_evaluate(planner, settings).evaluatedWeeks[0][0];
+    expect(evaluated.success).to.equal(true);
+    if (evaluated.success) {
+      const exercise = evaluated.data[0];
+      const programWarmups = PlannerProgramExercise_programWarmups(exercise, settings);
+      expect(programWarmups?.[0].value).to.be.a("number").greaterThan(0).lessThan(1);
+      expect(exercise.exerciseType).to.exist;
+      if (exercise.exerciseType) {
+        const warmupSets = Exercise_getWarmupSets(
+          exercise.exerciseType,
+          Weight_build(90, "kg"),
+          settings,
+          programWarmups
+        );
+        expect(warmupSets[0].weight?.value).to.be.greaterThan(0).and.lessThan(90);
+      }
     }
   });
 
