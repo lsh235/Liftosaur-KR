@@ -91,6 +91,37 @@ describe("AI workout program import", () => {
     }
   });
 
+  it("rejects CSV quote syntax that would silently alter a field", () => {
+    const header =
+      "program_name,duration_weeks,days_per_week,weight_unit,day_index,day_name,exercise_order,exercise_name,target_muscle,rest_seconds,week,set_no,set_type,target_weight,target_reps";
+    const invalidRows = [
+      '"CSV 루틴"x,1,1,kg,1,월요일,1,Bench Press,Chest,180,1,1,TOP,90,4',
+      'CSV "루틴,1,1,kg,1,월요일,1,Bench Press,Chest,180,1,1,TOP,90,4',
+    ];
+
+    for (const invalidRow of invalidRows) {
+      const result = AiWorkoutProgram_tryImport([header, invalidRow].join("\n"), Settings_build("kg"));
+      expect(result?.success).to.equal(false);
+      if (result && !result.success) {
+        expect(result.error.join("\n")).to.include("따옴표");
+      }
+    }
+  });
+
+  it("accepts escaped double quotes inside quoted CSV fields", () => {
+    const csv = [
+      "program_name,duration_weeks,days_per_week,weight_unit,day_index,day_name,exercise_order,exercise_name,target_muscle,rest_seconds,week,set_no,set_type,target_weight,target_reps",
+      '"CSV ""루틴""",1,1,kg,1,월요일,1,Bench Press,Chest,180,1,1,TOP,90,4',
+    ].join("\n");
+
+    const result = AiWorkoutProgram_tryImport(csv, Settings_build("kg"));
+
+    expect(result?.success).to.equal(true);
+    if (result?.success) {
+      expect(result.data.program.name).to.equal('CSV "루틴"');
+    }
+  });
+
   it("routes the AI routine through the app's existing import validation", async () => {
     const result = await ImportExporter_getExportedProgram(
       globalThis.fetch as unknown as Window["fetch"],

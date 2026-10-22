@@ -372,27 +372,45 @@ function parseCsvRows(contents: string): { rows?: string[][]; error?: string } {
   let row: string[] = [];
   let cell = "";
   let quoted = false;
+  let afterQuote = false;
   const text = contents.replace(/^\uFEFF/, "");
   for (let i = 0; i < text.length; i += 1) {
     const char = text[i];
-    if (char === '"') {
-      if (quoted && text[i + 1] === '"') {
+    if (quoted) {
+      if (char === '"' && text[i + 1] === '"') {
         cell += '"';
         i += 1;
-      } else if (quoted) {
+      } else if (char === '"') {
         quoted = false;
-      } else if (cell.length === 0) {
-        quoted = true;
+        afterQuote = true;
       } else {
         cell += char;
       }
-    } else if (char === "," && !quoted) {
+    } else if (afterQuote && char === ",") {
       row.push(cell);
       cell = "";
-    } else if ((char === "\n" || char === "\r") && !quoted) {
+      afterQuote = false;
+    } else if (afterQuote && (char === "\n" || char === "\r")) {
+      row.push(cell);
+      if (row.some((item) => item.trim() !== "")) {
+        rows.push(row);
+      }
+      row = [];
+      cell = "";
+      afterQuote = false;
       if (char === "\r" && text[i + 1] === "\n") {
         i += 1;
       }
+    } else if (afterQuote) {
+      return { error: "CSV 파일의 닫는 따옴표 뒤에는 쉼표나 줄바꿈만 올 수 있습니다." };
+    } else if (char === '"' && cell.length === 0) {
+      quoted = true;
+    } else if (char === '"') {
+      return { error: "CSV 파일에서 따옴표로 묶이지 않은 필드 안에는 따옴표를 쓸 수 없습니다." };
+    } else if (char === ",") {
+      row.push(cell);
+      cell = "";
+    } else if (char === "\n" || char === "\r") {
       row.push(cell);
       if (row.some((item) => item.trim() !== "")) {
         rows.push(row);
