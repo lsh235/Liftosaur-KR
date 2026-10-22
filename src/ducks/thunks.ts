@@ -64,6 +64,7 @@ import { History_exportAsCSV, History_pauseWorkoutState } from "../models/histor
 import type { IHealthWorkoutPayload } from "../utils/healthAdapter";
 import { ImportSession_apply, ImportSession_findEditedRecordIds, ImportSession_undo } from "../models/importSession";
 import { ImportFileError } from "../utils/importTypes";
+import { AiFeedbackExport_buildMarkdown } from "../utils/aiFeedbackExport";
 import { StringUtils_pluralize } from "../utils/string";
 import { CSV_toString } from "../utils/csv";
 import { Exporter_toFile } from "../utils/exporter";
@@ -577,7 +578,10 @@ async function switchToSyncAccount(
     hasLocalCopy: localStorageResult?.success === true && localStorageResult.data.tempUserId === mismatch.userId,
   });
   if (plan === "load-local" && localCopy != null) {
-    const newState = await getInitialState(env.service.client, { localStorage: localCopy, deviceId: getState().deviceId });
+    const newState = await getInitialState(env.service.client, {
+      localStorage: localCopy,
+      deviceId: getState().deviceId,
+    });
     newState.user = { id: mismatch.userId, email: mismatch.email };
     dispatch({ type: "ReplaceState", state: newState });
     dispatch(Thunk_fetchInitial());
@@ -1757,6 +1761,21 @@ export function Thunk_exportHistoryToCSV(): IThunk {
   };
 }
 
+export function Thunk_exportAiFeedbackMarkdown(title: string, userNote: string): IThunk {
+  return async (dispatch, getState) => {
+    dispatch(Thunk_postevent("export-ai-feedback-markdown"));
+    const state = getState();
+    const markdown = AiFeedbackExport_buildMarkdown(
+      state.storage.history,
+      state.storage.settings,
+      userNote,
+      Date.now(),
+      title
+    );
+    Exporter_toFile(`liftosaur_ai_feedback_${DateUtils_formatYYYYMMDD(Date.now())}.md`, markdown);
+  };
+}
+
 export function Thunk_exportProgramsToText(): IThunk {
   return async (dispatch, getState, env) => {
     dispatch(Thunk_postevent("export-programs-to-text"));
@@ -1979,20 +1998,22 @@ export function Thunk_importProgram(importLinkData: IImportLinkData): IThunk {
         program.authorid = userid;
       }
       const newProgram: IProgram = { ...ObjectUtils_clone(program), clonedAt: Date.now() };
-      if (!(await Dialog_confirm(`Do you want to import program ${newProgram.name}?`))) {
+      if (!(await Dialog_confirm("프로그램 '" + newProgram.name + "'을(를) 가져오시겠습니까?"))) {
         return;
       }
       const hasExistingProgram = getState().storage.programs.some((p) => p.id === newProgram.id);
       if (
         hasExistingProgram &&
-        !(await Dialog_confirm("Program with the same id already exists, do you want to overwrite it?"))
+        !(await Dialog_confirm("같은 ID의 프로그램이 이미 있습니다. 기존 프로그램을 덮어쓸까요?"))
       ) {
         return;
       }
       if (newProgram.planner && PlannerProgram_hasNonSelectedWeightUnit(newProgram.planner, state.storage.settings)) {
         const fromUnit = Weight_oppositeUnit(state.storage.settings.units);
         const toUnit = state.storage.settings.units;
-        if (await Dialog_confirm(`The program has weights in ${fromUnit}, do you want to convert them to ${toUnit}?`)) {
+        if (
+          await Dialog_confirm("이 프로그램의 중량은 " + fromUnit + " 단위입니다. " + toUnit + " 단위로 변환할까요?")
+        ) {
           newProgram.planner = PlannerProgram_switchToUnit(newProgram.planner, state.storage.settings);
         }
       }
@@ -2019,7 +2040,7 @@ export function Thunk_importProgram(importLinkData: IImportLinkData): IThunk {
         ],
         "Importing Program"
       );
-      Dialog_alert("Successfully imported");
+      Dialog_alert("프로그램을 성공적으로 가져왔습니다.");
       const { navigateTo } = await getNavigationService();
       navigateTo("main", undefined, { tab: "home" });
     } else {

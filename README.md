@@ -54,6 +54,20 @@ if (state.failures > 2) {
 - Web Editor to create programs
 - Shareable programs - you can build a program, generate a link, and import on another phone.
 
+# 한국어: AI 운동 루틴 가져오기와 내보내기
+
+설정의 **가져오기 / 내보내기**에서 외부 AI가 작성한 주차별 운동 루틴을 JSON 또는 CSV로 가져올 수 있습니다. 앱은 외부 AI API를 호출하지 않습니다. **AI에게 새 루틴 요청하는 프롬프트 복사**로 규격을 복사해 ChatGPT, Claude 등에서 루틴을 만들고, 결과 파일을 앱에서 선택하세요. `target_weight`가 `0`인 세트는 개인 중량이 없는 것으로 처리되어 운동 중 직접 입력할 수 있습니다.
+
+JSON은 `program_name`, `duration_weeks`, `days_per_week`, `workouts`를 포함해야 합니다. 각 운동은 `weekly_progression`에 전체 주차를 포함하고 세트 유형은 `WARMUP`, `TOP`, `BACKOFF`, `STRAIGHT`, `DROP` 중 하나를 사용합니다. CSV는 한 줄에 한 세트를 기록하며 아래 헤더를 사용합니다.
+
+```csv
+program_name,duration_weeks,days_per_week,weight_unit,day_index,day_name,exercise_order,exercise_name,target_muscle,rest_seconds,week,set_no,set_type,target_weight,target_reps
+```
+
+앱에는 **6주 PHAT 평일 5일 샘플 루틴**도 포함되어 있습니다. 설정에서 샘플을 추가하면 6주 × 5일의 운동일과 주차별 세트가 생성됩니다. 샘플의 목표 중량은 비어 있으므로 운동 전에 본인에게 맞는 중량을 입력하세요.
+
+**AI 피드백용 Markdown 내보내기**에서는 프로그램 총평, 통증 메모, 다음 루틴 요청을 입력할 수 있습니다. 파일에는 기록 기간과 완료 세션 수, 다관절 운동의 첫·마지막 기록 e1RM 비교, 세션별 목표와 실제 수행 및 볼륨이 담깁니다. 현재 기록 모델은 예정 날짜나 일정 미루기 횟수를 저장하지 않아 출석률과 일정 밀림은 계산하지 않는다고 파일에 표시합니다.
+
 # Implementation details
 
 It's a regular Preact/TypeScript app. State manager is custom, similar to Redux + Thunks, but using [lens-shmens](https://github.com/astashov/lens-shmens#why) to avoid Redux-like boilerplate. It's a PWA, so there's a simple service worker, that caches the network calls. The setup is similar to what's described in [this blog post](https://www.liftosaur.com/blog/posts/offline-mode-in-liftosaur/).

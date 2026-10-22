@@ -28,9 +28,9 @@ export function ModalImportFromOtherAppsContent(props: IModalImportFromOtherApps
 
   return (
     <View>
-      <GroupHeader size="large" name="Import history from other apps" />
-      <MenuItemWrapper name="Upload CSV file from Hevy" onClick={onUploadHevy}>
-        <Text className="py-3">Upload CSV file from Hevy</Text>
+      <GroupHeader size="large" name="다른 앱의 운동 기록 가져오기" />
+      <MenuItemWrapper name="Hevy CSV 파일 가져오기" onClick={onUploadHevy}>
+        <Text className="py-3">Hevy CSV 파일 선택</Text>
       </MenuItemWrapper>
     </View>
   );

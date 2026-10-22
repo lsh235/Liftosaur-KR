@@ -5,6 +5,9 @@ import { IDispatch } from "../ducks/types";
 import { MenuItemWrapper } from "./menuItem";
 import { Thunk_importProgram } from "../ducks/thunks";
 import { FileImport_pickFile, FileImport_confirm } from "../utils/fileImport";
+import { AiWorkoutProgram_buildPhatSeedJson, AiWorkoutProgram_buildPromptTemplate } from "../utils/aiWorkoutProgram";
+import { ClipboardUtils_copy } from "../utils/clipboard";
+import { Dialog_alert } from "../utils/dialog";
 
 interface IImporterProgramProps {
   dispatch: IDispatch;
@@ -12,23 +15,49 @@ interface IImporterProgramProps {
 
 export function ImporterProgram(props: IImporterProgramProps): JSX.Element {
   const onPress = useCallback(async () => {
-    const contents = await FileImport_pickFile("json");
+    const contents = await FileImport_pickFile("any");
     if (contents == null) {
       return;
     }
+    props.dispatch(Thunk_importProgram({ decoded: contents }));
+  }, [props.dispatch]);
+
+  const onCopyPrompt = useCallback(async () => {
+    await ClipboardUtils_copy(AiWorkoutProgram_buildPromptTemplate());
+    Dialog_alert("AI 루틴 생성 프롬프트를 클립보드에 복사했습니다.");
+  }, []);
+
+  const onImportPhatSample = useCallback(async () => {
     const ok = await FileImport_confirm(
-      "Importing new program will overwrite an existing one if a program with the same id exists, or create a new one otherwise."
+      "6주 PHAT 평일 5일 샘플을 추가합니다. 개인 중량은 포함되어 있지 않으니 운동을 시작하기 전에 본인에게 맞는 중량을 입력하세요."
     );
     if (ok) {
-      props.dispatch(Thunk_importProgram({ decoded: contents }));
+      props.dispatch(Thunk_importProgram({ decoded: AiWorkoutProgram_buildPhatSeedJson() }));
     }
   }, [props.dispatch]);
 
   return (
-    <MenuItemWrapper name="Import program from JSON file" onClick={onPress}>
-      <View className="py-3">
-        <Text className="text-base text-text-primary">Import program from JSON file</Text>
-      </View>
-    </MenuItemWrapper>
+    <>
+      <MenuItemWrapper name="AI 운동 루틴 JSON 또는 CSV 가져오기" onClick={onPress}>
+        <View className="py-3">
+          <Text className="text-base text-text-primary">AI 운동 루틴 JSON/CSV 가져오기</Text>
+          <Text className="pt-1 text-sm text-text-secondary">외부 AI가 만든 주차별 운동 계획을 불러옵니다.</Text>
+        </View>
+      </MenuItemWrapper>
+      <MenuItemWrapper name="6주 PHAT 샘플 루틴 추가" onClick={onImportPhatSample}>
+        <View className="py-3">
+          <Text className="text-base text-text-primary">6주 PHAT 평일 5일 샘플 루틴 추가</Text>
+          <Text className="pt-1 text-sm text-text-secondary">
+            개인 중량은 비워 두고 세트·반복·휴식을 미리 구성합니다.
+          </Text>
+        </View>
+      </MenuItemWrapper>
+      <MenuItemWrapper name="AI 새 루틴 프롬프트 복사" onClick={onCopyPrompt}>
+        <View className="py-3">
+          <Text className="text-base text-text-primary">AI에게 새 루틴 요청하는 프롬프트 복사</Text>
+          <Text className="pt-1 text-sm text-text-secondary">JSON 규격과 CSV 헤더가 포함된 한국어 요청문</Text>
+        </View>
+      </MenuItemWrapper>
+    </>
   );
 }

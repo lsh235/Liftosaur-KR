@@ -8,6 +8,7 @@ import {
   Thunk_exportStorage,
   Thunk_exportHistoryToCSV,
   Thunk_exportProgramsToText,
+  Thunk_exportAiFeedbackMarkdown,
 } from "../ducks/thunks";
 import { MenuItemEditable } from "./menuItemEditable";
 import { lb } from "lens-shmens";
@@ -38,6 +39,7 @@ import { LinkButton } from "./linkButton";
 import { Features_isEnabled } from "../utils/features";
 import { Slider } from "./primitives/slider";
 import { usePerfRenderCount } from "../utils/usePerfRenderCount";
+import { useModal } from "../navigation/ModalStateContext";
 
 interface IProps {
   dispatch: IDispatch;
@@ -58,6 +60,9 @@ function openExternal(url: string): void {
 function ScreenSettingsInner(props: IProps): JSX.Element {
   usePerfRenderCount("ScreenSettings");
   const [isCopied, setIsCopied] = useState<boolean>(false);
+  const openAiFeedbackExport = useModal("editDetailsModal", (details) => {
+    props.dispatch(Thunk_exportAiFeedbackMarkdown(details.name, details.description || ""));
+  });
   const osFontScale = useOsFontScale();
   // This screen reads settings via `untrack`, so it doesn't re-render when `theme` changes.
   // Track the choice locally so the select shows the tap instead of snapping back.
@@ -469,40 +474,58 @@ function ScreenSettingsInner(props: IProps): JSX.Element {
           />
         </>
       )}
-      <GroupHeader name="Import / Export" topPadding={true} />
-      <MenuItemWrapper name="Export data to JSON file" onClick={() => props.dispatch(Thunk_exportStorage())}>
+      <GroupHeader name="가져오기 / 내보내기" topPadding={true} />
+      <MenuItemWrapper name="운동 데이터 JSON 백업" onClick={() => props.dispatch(Thunk_exportStorage())}>
         <View className="py-3">
-          <Text className="text-base text-text-primary">Export data to JSON file</Text>
+          <Text className="text-base text-text-primary">운동 데이터 JSON으로 백업</Text>
         </View>
       </MenuItemWrapper>
-      <MenuItemWrapper name="Export history to CSV file" onClick={() => props.dispatch(Thunk_exportHistoryToCSV())}>
+      <MenuItemWrapper name="운동 기록 CSV 내보내기" onClick={() => props.dispatch(Thunk_exportHistoryToCSV())}>
         <View className="py-3">
-          <Text className="text-base text-text-primary">Export history to CSV file</Text>
+          <Text className="text-base text-text-primary">운동 기록을 CSV로 내보내기</Text>
         </View>
       </MenuItemWrapper>
       <MenuItemWrapper
-        name="Export all programs to text file"
+        name="AI 피드백용 운동 기록 Markdown 내보내기"
+        onClick={() =>
+          openAiFeedbackExport({
+            title: "AI 피드백용 Markdown 내보내기",
+            nameLabel: "보고서 제목",
+            namePlaceholder: "예: 6주 PHAT 수행 기록",
+            descriptionPlaceholder: "프로그램 총평, 통증이나 불편 부위, 다음 루틴에 반영할 요청을 적어 주세요.",
+            submitLabel: "Markdown 내보내기",
+            dataCyPrefix: "ai-feedback-export",
+            name: "AI 운동 수행 기록",
+          })
+        }
+      >
+        <View className="py-3">
+          <Text className="text-base text-text-primary">AI 피드백용 Markdown 내보내기</Text>
+          <Text className="pt-1 text-sm text-text-secondary">
+            운동 기록과 총평 메모를 LLM 분석용 파일로 저장합니다.
+          </Text>
+        </View>
+      </MenuItemWrapper>
+      <MenuItemWrapper
+        name="전체 프로그램 텍스트 내보내기"
         onClick={() => props.dispatch(Thunk_exportProgramsToText())}
       >
         <View className="py-3">
-          <Text className="text-base text-text-primary">Export all programs to text file</Text>
+          <Text className="text-base text-text-primary">전체 프로그램을 텍스트로 내보내기</Text>
         </View>
       </MenuItemWrapper>
       <ImporterLiftosaurCsv dispatch={props.dispatch} />
       <ImporterStorage dispatch={props.dispatch} />
       <ImporterProgram dispatch={props.dispatch} />
-      <MenuItemWrapper
-        name="Import history from other apps"
-        onClick={() => navigateToModal("importFromOtherAppsModal")}
-      >
+      <MenuItemWrapper name="다른 앱의 운동 기록 가져오기" onClick={() => navigateToModal("importFromOtherAppsModal")}>
         <View className="py-3">
-          <Text className="text-base text-text-primary">Import history from other apps</Text>
+          <Text className="text-base text-text-primary">다른 앱의 운동 기록 가져오기</Text>
         </View>
       </MenuItemWrapper>
       {(props.importSessions ?? []).length > 0 && (
         <MenuItem
           shouldShowRightArrow={true}
-          name="Recent imports"
+          name="최근 가져온 기록"
           onClick={() => props.dispatch(Thunk_pushScreen("recentImports"))}
         />
       )}

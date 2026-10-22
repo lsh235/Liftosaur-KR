@@ -24,12 +24,12 @@ export function ImporterLiftosaurCsv(props: IImporterLiftosaurCsvProps): JSX.Ele
   }, [props.dispatch]);
 
   return (
-    <MenuItemWrapper name="Import CSV">
+    <MenuItemWrapper name="Liftosaur 운동 기록 CSV 가져오기">
       <View className="py-1">
         <View className="flex-row">
           <View className="flex-1">
             <Pressable className="py-2" onPress={onPress}>
-              <Text className="text-base text-text-primary">Import history from CSV file</Text>
+              <Text className="text-base text-text-primary">Liftosaur 기록 CSV 가져오기</Text>
             </Pressable>
           </View>
           <View className="items-center justify-center ml-2">
@@ -45,7 +45,7 @@ export function ImporterLiftosaurCsv(props: IImporterLiftosaurCsvProps): JSX.Ele
               href="https://www.liftosaur.com/liftosaur_example_csv.zip"
               className="text-xs text-center font-bold underline text-text-link"
             >
-              Download an example and instructions how to format a CSV file.
+              예시 CSV와 파일 작성 안내를 내려받습니다.
             </InternalLink>
           </View>
         )}

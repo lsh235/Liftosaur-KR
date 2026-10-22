@@ -14,6 +14,7 @@ import { UrlUtils_build } from "../utils/url";
 import { IExportedPlannerProgram } from "../pages/planner/models/types";
 import { PlannerProgram_convertExportedPlannerToProgram } from "../pages/planner/models/plannerProgram";
 import { Settings_build } from "../models/settings";
+import { AiWorkoutProgram_tryImport } from "../utils/aiWorkoutProgram";
 
 export function ImportExporter_exportStorage(storage: IStorage): void {
   Exporter_toFile(`liftosaur-${DateUtils_formatYYYYMMDD(Date.now())}.json`, JSON.stringify(storage, null, 2));
@@ -28,11 +29,22 @@ export async function ImportExporter_getExportedProgram(
   maybeProgram: string,
   settings?: ISettings
 ): Promise<IEither<IExportedProgram, string[]>> {
+  const aiProgram = AiWorkoutProgram_tryImport(maybeProgram, settings);
+  if (aiProgram?.success === false) {
+    return aiProgram;
+  }
   let parsedMaybeProgram: IExportedProgram | IExportedPlannerProgram;
-  try {
-    parsedMaybeProgram = JSON.parse(maybeProgram);
-  } catch (e) {
-    return { success: false, error: ["Couldn't parse the provided file"] };
+  if (aiProgram?.success === true) {
+    parsedMaybeProgram = aiProgram.data;
+  } else {
+    try {
+      parsedMaybeProgram = JSON.parse(maybeProgram);
+    } catch (e) {
+      return {
+        success: false,
+        error: ["파일을 읽을 수 없습니다. 유효한 Liftosaur JSON 또는 AI 운동 루틴 JSON/CSV인지 확인하세요."],
+      };
+    }
   }
   let exportedProgram: IExportedProgram;
   if (isPlanProgram(parsedMaybeProgram)) {
