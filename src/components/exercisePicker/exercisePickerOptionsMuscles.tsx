@@ -4,11 +4,12 @@ import { useRemScale } from "../../utils/useRem";
 import { FitText_fontSize } from "../../utils/fitText";
 import { Text } from "../primitives/text";
 import { availableMuscles, IMuscle, IScreenMuscle, ISettings } from "../../types";
-import { Muscle_getScreenMusclesFromMuscle, Muscle_getMuscleGroupName } from "../../models/muscle";
+import { Muscle_getScreenMusclesFromMuscle } from "../../models/muscle";
 import { ObjectUtils_keys } from "../../utils/object";
 import { StringUtils_dashcase } from "../../utils/string";
 import { IFilterValue } from "./exercisePickerOptions";
 import { MuscleImage } from "../muscleImage";
+import { ExercisePickerUtils_getMuscleGroupName, ExercisePickerUtils_getMuscleName } from "./exercisePickerUtils";
 
 interface IProps {
   selectedValues: IMuscle[];
@@ -30,7 +31,10 @@ export function ExercisePickerOptionsMuscles(props: IProps): JSX.Element {
   const groupedMuscles = props.dontGroup
     ? {
         muscles: availableMuscles.reduce<Record<string, { label: string; isSelected: boolean }>>((memo, muscle) => {
-          memo[muscle] = { label: muscle, isSelected: selectedValues.includes(muscle) };
+          memo[muscle] = {
+            label: ExercisePickerUtils_getMuscleName(muscle),
+            isSelected: selectedValues.includes(muscle),
+          };
           return memo;
         }, {}),
       }
@@ -40,7 +44,7 @@ export function ExercisePickerOptionsMuscles(props: IProps): JSX.Element {
           if (group != null) {
             memo[group] = memo[group] || {};
             const isSelected = selectedValues.includes(muscle);
-            memo[group][muscle] = { label: muscle, isSelected };
+            memo[group][muscle] = { label: ExercisePickerUtils_getMuscleName(muscle), isSelected };
           }
           return memo;
         },
@@ -56,7 +60,9 @@ export function ExercisePickerOptionsMuscles(props: IProps): JSX.Element {
         return (
           <View key={group} className="mb-4">
             {!props.dontGroup && (
-              <Text className="mb-2 font-semibold">{Muscle_getMuscleGroupName(group, props.settings)}</Text>
+              <Text className="mb-2 font-semibold">
+                {ExercisePickerUtils_getMuscleGroupName(group, props.settings)}
+              </Text>
             )}
             <View className="flex-row flex-wrap mt-2" onLayout={onRowLayout}>
               {sortedMuscles.map((key) => {
@@ -70,8 +76,8 @@ export function ExercisePickerOptionsMuscles(props: IProps): JSX.Element {
                 return (
                   <View key={key} style={{ width: "50%" }} className="p-1">
                     <Pressable
-                      testID={`select-muscle-${StringUtils_dashcase(value.label)}`}
-                      data-testid={`select-muscle-${StringUtils_dashcase(value.label)}`}
+                      testID={`select-muscle-${StringUtils_dashcase(key)}`}
+                      data-testid={`select-muscle-${StringUtils_dashcase(key)}`}
                       className={`bg-background-subtle flex-row items-center min-h-scaled-14 rounded-lg border ${value.isSelected ? "border-text-purple" : "border-border-neutral"}`}
                       style={{ borderWidth: value.isSelected ? 2 : 1 }}
                       onPress={() => props.onSelect(key)}

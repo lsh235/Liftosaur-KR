@@ -27,13 +27,13 @@ interface IWorkoutMenuProps {
 }
 
 const labels: Record<IWorkoutMenuAction, string> = {
-  editDay: "Edit Program Day",
-  muscles: "Day Muscles",
-  notes: "Show Workout Notes",
-  share: "Share",
-  createProgramDay: "Create Program Day",
-  tour: "Show Tour",
-  delete: "Delete Workout",
+  editDay: "운동일 편집",
+  muscles: "운동 부위 보기",
+  notes: "운동 메모 보기",
+  share: "공유",
+  createProgramDay: "프로그램 운동일 저장",
+  tour: "기능 둘러보기",
+  delete: "운동 기록 삭제",
 };
 
 function WorkoutMenuInner(props: IWorkoutMenuProps): JSX.Element {
@@ -109,7 +109,7 @@ function WorkoutMenuInner(props: IWorkoutMenuProps): JSX.Element {
   const actions = useMemo<IActionMenuAction[]>(
     () =>
       actionIds.map((id) => ({
-        label: id === "notes" && showWorkoutNotes ? "Hide Workout Notes" : labels[id],
+        label: id === "notes" && showWorkoutNotes ? "운동 메모 숨기기" : labels[id],
         onPress: handlers[id],
         destructive: id === "delete",
         testID: `workout-menu-${id}`,

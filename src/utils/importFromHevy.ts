@@ -359,13 +359,13 @@ function validateHevyRecord(record: IHevyRecord & { row: number }): IImportRowEr
       row: record.row,
       column: "start_time",
       value: `${record.start_time ?? ""}`,
-      message: `"${record.start_time ?? ""}" is not a valid date`,
+      message: `"${record.start_time ?? ""}" 값이 올바른 날짜가 아닙니다.`,
     };
   }
   for (const column of ["reps", "weight_lbs", "weight_kg"] as const) {
     const value = record[column];
     if (value != null && `${value}`.trim() !== "" && isNaN(Number(`${value}`))) {
-      return { row: record.row, column, value: `${value}`, message: `"${value}" is not a number` };
+      return { row: record.row, column, value: `${value}`, message: `"${value}" 값은 숫자가 아닙니다.` };
     }
   }
   return undefined;
@@ -378,7 +378,7 @@ function collectHevyWarnings(record: IHevyRecord & { row: number }, warnings: II
       row: record.row,
       column: "start_time",
       value: `${record.start_time}`,
-      message: `"${record.start_time}" looks like an implausible workout date`,
+      message: `"${record.start_time}" 날짜가 실제 운동 기록과 다를 수 있습니다.`,
     });
   }
   for (const [column, unit] of [
@@ -391,7 +391,7 @@ function collectHevyWarnings(record: IHevyRecord & { row: number }, warnings: II
         row: record.row,
         column,
         value: `${record[column]}`,
-        message: `${value} ${unit} looks like an implausible weight`,
+        message: `중량 ${value} ${unit}이 비정상적일 수 있습니다. 확인해 주세요.`,
       });
     }
   }
@@ -401,7 +401,7 @@ function collectHevyWarnings(record: IHevyRecord & { row: number }, warnings: II
       row: record.row,
       column: "reps",
       value: `${record.reps}`,
-      message: `${reps} looks like an implausible rep count`,
+      message: `반복 횟수 ${reps}회가 비정상적일 수 있습니다. 확인해 주세요.`,
     });
   }
 }
@@ -411,15 +411,15 @@ export function ImportFromHevy_convertHevyCsvToHistoryRecords(hevyCsvRaw: string
   const kind = ImportUtils_detectCsvKind((parsed.meta.fields ?? []).map((f) => `${f}`));
   if (kind === "liftosaur") {
     throw new ImportFileError(
-      'This looks like a Liftosaur history CSV. Use "Import history from CSV file" in Settings instead.'
+      "Liftosaur 기록 CSV 파일로 보입니다. 설정에서 'Liftosaur 기록 CSV 가져오기'를 선택하세요."
     );
   }
   if (kind !== "hevy") {
-    throw new ImportFileError("This doesn't look like a Hevy workout export CSV.");
+    throw new ImportFileError("올바른 Hevy 운동 기록 내보내기 CSV 파일이 아닙니다.");
   }
   const hevyRecords = parsed.data.map((record, i) => ({ ...record, row: i + 2 }));
   if (hevyRecords.length === 0) {
-    throw new ImportFileError("The file has no workout rows");
+    throw new ImportFileError("파일에 가져올 운동 기록이 없습니다.");
   }
 
   const errors: IImportRowError[] = [];
@@ -436,7 +436,7 @@ export function ImportFromHevy_convertHevyCsvToHistoryRecords(hevyCsvRaw: string
   }
   if (validRecords.length < hevyRecords.length / 2) {
     throw new ImportFileError(
-      `${errors.length} of ${hevyRecords.length} rows failed to parse - this doesn't look like a valid Hevy export.`
+      `전체 ${hevyRecords.length}행 중 ${errors.length}행을 읽지 못했습니다. 올바른 Hevy 내보내기 CSV인지 확인하세요.`
     );
   }
 
@@ -490,7 +490,7 @@ export function ImportFromHevy_convertHevyCsvToHistoryRecords(hevyCsvRaw: string
         row: hevyWorkout.row,
         column: "end_time",
         value: hevyWorkout.end_time,
-        message: `"${hevyWorkout.end_time}" is not a valid date, using the start time instead`,
+        message: `"${hevyWorkout.end_time}" 값이 올바른 날짜가 아니어서 시작 시간을 대신 사용합니다.`,
       });
     }
     const entries = hevyWorkout.exercises.map((record, index) => {

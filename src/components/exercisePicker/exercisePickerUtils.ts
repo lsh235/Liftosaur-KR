@@ -25,6 +25,7 @@ import {
   IExercisePickerProgramExercise,
   IExercisePickerState,
   IExerciseType,
+  IEquipment,
   IMuscle,
   IScreenMuscle,
   ISettings,
@@ -50,13 +51,118 @@ export function ExercisePickerUtils_getSelectedMuscleGroupNames(
     const group = Muscle_getScreenMusclesFromMuscle(muscle, settings)?.[0];
     return group && !currentGroups.includes(group);
   });
-  return [...currentGroups.map((g) => Muscle_getMuscleGroupName(g, settings)), ...currentMuscles];
+  return [
+    ...currentGroups.map((g) => ExercisePickerUtils_getMuscleGroupName(g, settings)),
+    ...currentMuscles.map((muscle) => ExercisePickerUtils_getMuscleName(muscle)),
+  ];
+}
+
+const exercisePickerMuscleGroupNames: Partial<Record<IScreenMuscle, string>> = {
+  shoulders: "어깨",
+  triceps: "삼두근",
+  back: "등",
+  abs: "복근",
+  glutes: "둔근",
+  hamstrings: "햄스트링",
+  quadriceps: "대퇴사두근",
+  chest: "가슴",
+  biceps: "이두근",
+  calves: "종아리",
+  forearms: "전완근",
+};
+
+const exercisePickerMuscleNames: Record<IMuscle, string> = {
+  "Adductor Brevis": "짧은모음근",
+  "Adductor Longus": "긴모음근",
+  "Adductor Magnus": "큰모음근",
+  "Biceps Brachii": "위팔두갈래근",
+  Brachialis: "위팔근",
+  Brachioradialis: "위팔노근",
+  "Deltoid Anterior": "앞어깨세모근",
+  "Deltoid Lateral": "가쪽어깨세모근",
+  "Deltoid Posterior": "뒤어깨세모근",
+  "Erector Spinae": "척추세움근",
+  Gastrocnemius: "장딴지근",
+  "Gluteus Maximus": "큰볼기근",
+  "Gluteus Medius": "중간볼기근",
+  Hamstrings: "햄스트링",
+  Iliopsoas: "엉덩허리근",
+  Infraspinatus: "가시아래근",
+  "Latissimus Dorsi": "넓은등근",
+  "Levator Scapulae": "어깨올림근",
+  Obliques: "배빗근",
+  Pectineous: "두덩근",
+  "Pectoralis Major Clavicular Head": "큰가슴근 빗장부분",
+  "Pectoralis Major Sternal Head": "큰가슴근 복장부분",
+  Quadriceps: "넙다리네갈래근",
+  "Rectus Abdominis": "배곧은근",
+  Sartorius: "넙다리빗근",
+  "Serratus Anterior": "앞톱니근",
+  Soleus: "가자미근",
+  Splenius: "널판근",
+  Sternocleidomastoid: "목빗근",
+  "Tensor Fasciae Latae": "넙다리근막긴장근",
+  "Teres Major": "큰원근",
+  "Teres Minor": "작은원근",
+  "Tibialis Anterior": "앞정강근",
+  "Trapezius Lower Fibers": "등세모근 아래섬유",
+  "Trapezius Middle Fibers": "등세모근 중간섬유",
+  "Trapezius Upper Fibers": "등세모근 위섬유",
+  "Triceps Brachii": "위팔세갈래근",
+  "Wrist Extensors": "손목폄근",
+  "Wrist Flexors": "손목굽힘근",
+};
+
+export function ExercisePickerUtils_getMuscleGroupName(
+  muscleGroup: IScreenMuscle | string,
+  settings: ISettings
+): string {
+  return (
+    settings.muscleGroups.data[muscleGroup]?.name ??
+    exercisePickerMuscleGroupNames[muscleGroup as IScreenMuscle] ??
+    Muscle_getMuscleGroupName(muscleGroup as IScreenMuscle, settings)
+  );
+}
+
+export function ExercisePickerUtils_getMuscleName(muscle: IMuscle): string {
+  return exercisePickerMuscleNames[muscle];
+}
+
+const exercisePickerEquipmentNames: Record<string, string> = {
+  barbell: "바벨",
+  cable: "케이블",
+  dumbbell: "덤벨",
+  smith: "스미스 머신",
+  band: "밴드",
+  kettlebell: "케틀벨",
+  bodyweight: "맨몸",
+  leverageMachine: "레버 머신",
+  medicineball: "메디신볼",
+  ezbar: "EZ바",
+  trapbar: "트랩바",
+};
+
+const exercisePickerExerciseKindNames: Record<string, string> = {
+  core: "코어",
+  pull: "당기기",
+  push: "밀기",
+  legs: "하체",
+  upper: "상체",
+  lower: "하체",
+};
+
+export function ExercisePickerUtils_getEquipmentName(equipment: IEquipment): string {
+  return exercisePickerEquipmentNames[equipment] ?? equipmentName(equipment);
+}
+
+export function ExercisePickerUtils_getExerciseKindName(kind: string): string {
+  return exercisePickerExerciseKindNames[kind] ?? StringUtils_capitalize(kind);
 }
 
 export function ExercisePickerUtils_getAllFilterNames(filters: IExercisePickerFilters, settings: ISettings): string[] {
   return [
-    ...(filters.equipment || []).map((f) => equipmentName(f)),
-    ...(filters.type || []).map((m) => StringUtils_capitalize(m)),
+    ...(filters.equipment || []).map((f) => ExercisePickerUtils_getEquipmentName(f)),
+    ...(filters.type || []).map((m) => ExercisePickerUtils_getExerciseKindName(m)),
     ...ExercisePickerUtils_getSelectedMuscleGroupNames(filters.muscles || [], settings),
   ];
 }

@@ -183,8 +183,8 @@ export class MockWorkoutMirroring implements IWorkoutMirroring {
 
   constructor(private readonly log: MockBridgeLog) {}
 
-  public setDesiredWorkout(_desired: IDesiredWorkout): void {
-    this.log.record("mirroring", "setDesiredWorkout");
+  public setDesiredWorkout(desired: IDesiredWorkout): void {
+    this.log.record("mirroring", "setDesiredWorkout", desired);
   }
 
   public subscribe(handler: (event: INativeWorkoutMirroringEvent) => void): () => void {

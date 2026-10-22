@@ -51,10 +51,10 @@ export function ScreenFirst(props: IProps): JSX.Element {
               header={
                 <View className="flex-row items-center justify-center">
                   <IconKettlebell color={Tailwind_colors().purple[600]} />
-                  <Text className="ml-1 font-semibold text-text-purple">Weightlifting Programs</Text>
+                  <Text className="ml-1 font-semibold text-text-purple">운동 프로그램</Text>
                 </View>
               }
-              bodyText="Start with a pre-built weightlifting program, or create your own."
+              bodyText="준비된 프로그램으로 시작하거나 나만의 루틴을 만들어 보세요."
               image="slide-2-image"
             />,
             <RestSlide
@@ -64,10 +64,10 @@ export function ScreenFirst(props: IProps): JSX.Element {
               header={
                 <View className="flex-row items-center justify-center">
                   <IconWorkoutProgress color={Tailwind_colors().yellow[600]} />
-                  <Text className="ml-1 font-semibold text-icon-yellow">Workout Tracker</Text>
+                  <Text className="ml-1 font-semibold text-icon-yellow">운동 기록</Text>
                 </View>
               }
-              bodyText="Log sets with one tap. Your reps and weight adjust automatically."
+              bodyText="한 번 눌러 세트를 기록하고, 프로그램 규칙에 따라 반복 횟수와 중량을 조정하세요."
               image="slide-3-image"
             />,
             <RestSlide
@@ -77,10 +77,10 @@ export function ScreenFirst(props: IProps): JSX.Element {
               header={
                 <View className="flex-row items-center justify-center">
                   <IconEditor color={Tailwind_colors().purple[600]} />
-                  <Text className="ml-1 font-semibold text-text-purple">Program Editor</Text>
+                  <Text className="ml-1 font-semibold text-text-purple">프로그램 편집기</Text>
                 </View>
               }
-              bodyText="Modify or switch any program anytime to fit your goals."
+              bodyText="목표에 맞게 언제든 운동 루틴을 수정하거나 바꿀 수 있습니다."
               image="slide-4-image"
             />,
             <RestSlide
@@ -90,10 +90,10 @@ export function ScreenFirst(props: IProps): JSX.Element {
               header={
                 <View className="flex-row items-center justify-center">
                   <IconTracker color={Tailwind_colors().red[600]} />
-                  <Text className="ml-1 font-semibold text-text-error">Workout History</Text>
+                  <Text className="ml-1 font-semibold text-text-error">운동 기록과 통계</Text>
                 </View>
               }
-              bodyText="Track your weekly stats to stay on target!"
+              bodyText="주간 통계를 확인하며 목표에 맞게 꾸준히 운동하세요."
               image="slide-5-image"
             />,
           ]}
@@ -108,7 +108,7 @@ export function ScreenFirst(props: IProps): JSX.Element {
           onClick={() => props.dispatch(Thunk_pushScreen("units"))}
         >
           <View className="flex-row items-center justify-center">
-            <Text className="text-xs font-semibold text-text-alwayswhite">Get started</Text>
+            <Text className="text-xs font-semibold text-text-alwayswhite">시작하기</Text>
             <AnimatedArrow />
           </View>
         </Button>
@@ -119,7 +119,7 @@ export function ScreenFirst(props: IProps): JSX.Element {
             kind="transparent-purple"
             onClick={() => navigateToModal("accountModal")}
           >
-            I have an account
+            이미 계정이 있어요
           </Button>
         </View>
       </View>
@@ -167,18 +167,17 @@ function FirstSlide(): JSX.Element {
         resizeMode="cover"
       />
       <Text className="px-8 pt-24 text-3xl font-bold leading-scaled-9 text-text-alwayswhite">
-        The most powerful weightlifting{" "}
+        나만의 웨이트 트레이닝 프로그램을{" "}
         <Text className="text-3xl" style={{ color: Tailwind_colors().purple[400] }}>
-          planner
+          계획하고
         </Text>{" "}
-        and{" "}
         <Text className="text-3xl" style={{ color: Tailwind_colors().red[400] }}>
-          tracker
+          기록하는
         </Text>{" "}
-        app
+        앱
       </Text>
       <Text className="px-8 py-6 text-base text-text-alwayswhite">
-        Build any weightlifting program using a simple scripting language and track your progress.
+        원하는 운동 프로그램을 만들고 운동 진행 상황을 기록하세요.
       </Text>
       <View className="flex-1 w-full overflow-hidden">
         {Platform.OS === "web" ? (

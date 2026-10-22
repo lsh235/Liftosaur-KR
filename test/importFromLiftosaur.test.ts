@@ -172,7 +172,7 @@ describe("ImportFromLiftosaur", () => {
     const csv = "a,b,c\n1,2,3";
     expect(() => ImportFromLiftosaur_convertLiftosaurCsvToHistoryRecords(csv, buildSettings())).to.throw(
       ImportFileError,
-      /doesn't look like a Liftosaur history CSV/
+      /Liftosaur 기록 CSV 형식이 아닙니다/
     );
   });
 
@@ -182,7 +182,7 @@ describe("ImportFromLiftosaur", () => {
         buildCsv(row({ completedReps: "x" }), row({ requiredReps: "y" }), row()),
         buildSettings()
       );
-    expect(result).to.throw(ImportFileError, /failed to parse/);
+    expect(result).to.throw(ImportFileError, /행 중.*읽지 못했습니다/);
   });
 
   it("produces warnings for implausible values but still imports", () => {
@@ -201,6 +201,7 @@ describe("ImportFromLiftosaur", () => {
       "completedReps",
       "Workout DateTime",
     ]);
+    expect(result.warnings.some((warning) => warning.message.includes("비정상적일 수 있습니다"))).to.equal(true);
   });
 
   it("warns (not errors) on a malformed completed reps time and falls back to the workout date", () => {

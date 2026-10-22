@@ -258,12 +258,12 @@ function WorkoutExerciseCardInner(props: IWorkoutExerciseCardProps): JSX.Element
   const kebabActions = useMemo<Array<{ action: IKebabAction; label: string }>>(() => {
     const actions: Array<{ action: IKebabAction; label: string }> = [];
     if (programExercise && programExerciseId) {
-      actions.push({ action: "edit", label: "Edit Program Exercise" });
+      actions.push({ action: "edit", label: "프로그램 운동 수정" });
     }
-    actions.push({ action: "swap", label: "Swap Exercise" });
-    actions.push({ action: "superset", label: "Edit Superset" });
-    actions.push({ action: "notes", label: showExerciseNotes ? "Hide Exercise Notes" : "Show Exercise Notes" });
-    actions.push({ action: "remove", label: "Remove Exercise" });
+    actions.push({ action: "swap", label: "운동 바꾸기" });
+    actions.push({ action: "superset", label: "슈퍼세트 수정" });
+    actions.push({ action: "notes", label: showExerciseNotes ? "운동 메모 숨기기" : "운동 메모 보기" });
+    actions.push({ action: "remove", label: "운동 삭제" });
     return actions;
   }, [programExercise, programExerciseId, showExerciseNotes]);
 
@@ -349,7 +349,7 @@ function WorkoutExerciseCardInner(props: IWorkoutExerciseCardProps): JSX.Element
       setIsKebabMenuOpen(true);
       return;
     }
-    const labels = kebabActions.map((a) => a.label).concat("Cancel");
+    const labels = kebabActions.map((a) => a.label).concat("취소");
     ActionSheet_show(
       {
         options: labels,
@@ -418,7 +418,7 @@ function WorkoutExerciseCardInner(props: IWorkoutExerciseCardProps): JSX.Element
               <IconArrowRight />
             </Pressable>
             <View data-testid="exercise-equipment" className="flex-row flex-wrap items-center">
-              <Text className="text-sm text-text-secondary">Equipment: </Text>
+              <Text className="text-sm text-text-secondary">기구: </Text>
               <LinkButton
                 name="exercise-equipment-picker"
                 data-testid="exercise-equipment-picker"
@@ -426,7 +426,7 @@ function WorkoutExerciseCardInner(props: IWorkoutExerciseCardProps): JSX.Element
                 onClick={openEquipmentModal}
                 className="text-sm"
               >
-                {currentEquipmentName || "None"}
+                {currentEquipmentName || "미지정"}
               </LinkButton>
             </View>
             {supersetExercise && (
@@ -490,7 +490,7 @@ function WorkoutExerciseCardInner(props: IWorkoutExerciseCardProps): JSX.Element
                       <View>
                         <IconEdit2 size={22} />
                       </View>
-                      <Text className="whitespace-nowrap">Edit Program Exercise</Text>
+                      <Text className="whitespace-nowrap">프로그램 운동 수정</Text>
                     </View>
                   </DropdownMenuItem>
                 )}
@@ -502,13 +502,13 @@ function WorkoutExerciseCardInner(props: IWorkoutExerciseCardProps): JSX.Element
                 >
                   <View className="flex-row items-center gap-2">
                     <IconSwap size={18} />
-                    <Text className="whitespace-nowrap">Swap Exercise</Text>
+                    <Text className="whitespace-nowrap">운동 바꾸기</Text>
                   </View>
                 </DropdownMenuItem>
                 <DropdownMenuItem data-testid="exercise-superset" testID="exercise-superset" onClick={onKebabSuperset}>
                   <View className="flex-row items-center" style={{ gap: 8 }}>
                     <IconReorder size={18} />
-                    <Text className="whitespace-nowrap">Edit Superset</Text>
+                    <Text className="whitespace-nowrap">슈퍼세트 수정</Text>
                   </View>
                 </DropdownMenuItem>
                 <DropdownMenuItem
@@ -519,7 +519,7 @@ function WorkoutExerciseCardInner(props: IWorkoutExerciseCardProps): JSX.Element
                   <View className="flex-row items-center" style={{ gap: 8 }}>
                     <IconNotebook size={18} />
                     <Text className="whitespace-nowrap">
-                      {showExerciseNotes ? "Hide Exercise Notes" : "Show Exercise Notes"}
+                      {showExerciseNotes ? "운동 메모 숨기기" : "운동 메모 보기"}
                     </Text>
                   </View>
                 </DropdownMenuItem>
@@ -530,7 +530,7 @@ function WorkoutExerciseCardInner(props: IWorkoutExerciseCardProps): JSX.Element
                 >
                   <View className="flex-row items-center" style={{ gap: 8 }}>
                     <IconTrash width={15} height={18} />
-                    <Text className="whitespace-nowrap">Remove Exercise</Text>
+                    <Text className="whitespace-nowrap">운동 삭제</Text>
                   </View>
                 </DropdownMenuItem>
               </DropdownMenu>
@@ -539,19 +539,19 @@ function WorkoutExerciseCardInner(props: IWorkoutExerciseCardProps): JSX.Element
         </View>
         {!!exerciseNotes && (
           <View className="mt-1">
-            {!!exerciseNotes && !!description && <GroupHeader name="Exercise Notes" />}
+            {!!exerciseNotes && !!description && <GroupHeader name="운동 메모" />}
             <Markdown value={exerciseNotes} />
           </View>
         )}
         {!!description && (
           <View className="mt-1">
-            {!!exerciseNotes && !!description && <GroupHeader name="Program Exercise Description" />}
+            {!!exerciseNotes && !!description && <GroupHeader name="프로그램 운동 설명" />}
             <Markdown value={description} />
           </View>
         )}
         {!!lastNote && !!timestamp && (
           <View>
-            <GroupHeader name={`Previous Note (from ${DateUtils_format(timestamp)})`} />
+            <GroupHeader name={`이전 메모 (${DateUtils_format(timestamp)})`} />
             <View className="pl-1 mb-1 border-purplev3-300" style={{ borderLeftWidth: 4 }}>
               {/* An Android text selection keeps its page on screen, so the exercise pager snaps back to it */}
               <Text className={Platform.OS === "web" ? "text-sm select-text" : "text-sm"}>{lastNote}</Text>

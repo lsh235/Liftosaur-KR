@@ -1,4 +1,4 @@
-import { JSX, memo, useEffect, useState } from "react";
+import { JSX, memo, useEffect, useRef, useState } from "react";
 import { View, Pressable, Linking, Platform } from "react-native";
 import { Text } from "./primitives/text";
 import { IDispatch } from "../ducks/types";
@@ -16,7 +16,7 @@ import { InternalLink } from "../internalLink";
 import { IUser } from "../models/user";
 import { ClipboardUtils_copy } from "../utils/clipboard";
 import { Share_generateProfileLink } from "../models/share";
-import { IImportSession, ILengthUnit, ISettings, IStats, ISubscription, IUnit } from "../types";
+import { IImportSession, ILengthUnit, IProgram, ISettings, IStats, ISubscription, IUnit } from "../types";
 import { WhatsNew_showWhatsNew } from "../models/whatsnewUtils";
 import { ImporterStorage } from "./importerStorage";
 import { ImporterProgram } from "./importerProgram";
@@ -50,6 +50,7 @@ interface IProps {
   currentProgramName?: string;
   settings: ISettings;
   importSessions?: IImportSession[];
+  programs: IProgram[];
   navCommon: INavCommon;
 }
 
@@ -60,8 +61,27 @@ function openExternal(url: string): void {
 function ScreenSettingsInner(props: IProps): JSX.Element {
   usePerfRenderCount("ScreenSettings");
   const [isCopied, setIsCopied] = useState<boolean>(false);
+  const selectedAiFeedbackProgramId = useRef<string | undefined>(undefined);
   const openAiFeedbackExport = useModal("editDetailsModal", (details) => {
-    props.dispatch(Thunk_exportAiFeedbackMarkdown(details.name, details.description || ""));
+    props.dispatch(
+      Thunk_exportAiFeedbackMarkdown(details.name, details.description || "", selectedAiFeedbackProgramId.current)
+    );
+    selectedAiFeedbackProgramId.current = undefined;
+  });
+  const openAiFeedbackProgramSelect = useModal("inputSelectModal", (value) => {
+    selectedAiFeedbackProgramId.current = value === "all" ? undefined : value || undefined;
+    const selectedProgram = props.programs.find((program) => program.id === selectedAiFeedbackProgramId.current);
+    openAiFeedbackExport({
+      title: "AI 피드백용 Markdown 내보내기",
+      nameLabel: "보고서 제목",
+      namePlaceholder: "예: 6주 PHAT 수행 기록",
+      descriptionPlaceholder: "프로그램 총평, 통증이나 불편 부위, 다음 루틴에 반영할 요청을 적어 주세요.",
+      submitLabel: "Markdown 내보내기",
+      cancelLabel: "취소",
+      requiredMessage: "보고서 제목을 입력해 주세요.",
+      dataCyPrefix: "ai-feedback-export",
+      name: selectedProgram ? selectedProgram.name + " 수행 기록" : "AI 운동 수행 기록",
+    });
   });
   const osFontScale = useOsFontScale();
   // This screen reads settings via `untrack`, so it doesn't re-render when `theme` changes.
@@ -73,26 +93,26 @@ function ScreenSettingsInner(props: IProps): JSX.Element {
   const currentBodyweight = Stats_getCurrentBodyweight(props.stats);
   const currentBodyfat = Stats_getCurrentBodyfat(props.stats);
 
-  useNavOptions({ navTitle: "Me", navHelpKey: "settings" });
+  useNavOptions({ navTitle: "내 정보", navHelpKey: "settings" });
 
   return (
     <View className="px-gutter">
       <MenuItem
         shouldShowRightArrow={true}
-        name="Program"
+        name="프로그램"
         value={props.currentProgramName}
         onClick={() => {
           props.dispatch(Thunk_pushScreen("programs"));
         }}
       />
-      <GroupHeader name="Account" topPadding={true} />
+      <GroupHeader name="계정" topPadding={true} />
       <MenuItem
-        name="Account"
+        name="계정"
         value={
           props.user?.email == null ? (
-            <Text className="text-text-error">Not signed in</Text>
+            <Text className="text-text-error">로그인되지 않음</Text>
           ) : props.user?.email === "noemail@example.com" ? (
-            "Signed In"
+            "로그인됨"
           ) : (
             StringUtils_truncate(props.user?.email || "", 30)
           )
@@ -102,11 +122,11 @@ function ScreenSettingsInner(props: IProps): JSX.Element {
       />
       <MenuItemEditable
         type="text"
-        name="Nickname"
+        name="별명"
         value={props.settings.nickname || ""}
         nextLine={
           <View className="pb-1" style={{ marginTop: -8 }}>
-            <Text className="text-xs text-text-secondary">Used for profile page if you have an account</Text>
+            <Text className="text-xs text-text-secondary">로그인하면 공개 프로필 페이지에 표시됩니다.</Text>
           </View>
         }
         onChange={(newValue) => {
@@ -122,7 +142,7 @@ function ScreenSettingsInner(props: IProps): JSX.Element {
       {props.user && (
         <MenuItemEditable
           type="boolean"
-          name="Is Profile Page Public?"
+          name="프로필 페이지 공개"
           value={props.settings.isPublicProfile ? "true" : "false"}
           nextLine={
             props.user?.id && props.settings.isPublicProfile ? (
@@ -138,7 +158,7 @@ function ScreenSettingsInner(props: IProps): JSX.Element {
                       }
                     }}
                   >
-                    <Text className="text-xs underline text-text-link">Copy Link To Clipboard</Text>
+                    <Text className="text-xs underline text-text-link">프로필 링크 복사</Text>
                   </Pressable>
                   <View className="ml-4">
                     <InternalLink
@@ -146,11 +166,11 @@ function ScreenSettingsInner(props: IProps): JSX.Element {
                       href={`/profile/${props.user.id}`}
                       className="text-xs underline text-text-link"
                     >
-                      Open Public Profile Page
+                      공개 프로필 열기
                     </InternalLink>
                   </View>
                 </View>
-                {isCopied && <Text className="text-xs italic text-text-success">Copied!</Text>}
+                {isCopied && <Text className="text-xs italic text-text-success">복사했습니다.</Text>}
               </View>
             ) : undefined
           }
@@ -168,16 +188,12 @@ function ScreenSettingsInner(props: IProps): JSX.Element {
         />
       )}
 
-      <MenuItem
-        name="API Keys"
-        shouldShowRightArrow={true}
-        onClick={() => props.dispatch(Thunk_pushScreen("apiKeys"))}
-      />
+      <MenuItem name="API 키" shouldShowRightArrow={true} onClick={() => props.dispatch(Thunk_pushScreen("apiKeys"))} />
 
-      <GroupHeader name="My Measurements" topPadding={true} />
+      <GroupHeader name="신체 정보" topPadding={true} />
       {currentBodyweight && (
         <MenuItem
-          name="Bodyweight"
+          name="체중"
           value={Weight_print(currentBodyweight)}
           shouldShowRightArrow={true}
           onClick={() => props.dispatch(Thunk_pushScreen("measurements", { key: "weight" }))}
@@ -185,39 +201,39 @@ function ScreenSettingsInner(props: IProps): JSX.Element {
       )}
       {currentBodyfat && (
         <MenuItem
-          name="Bodyfat"
+          name="체지방률"
           value={Weight_print(currentBodyfat)}
           shouldShowRightArrow={true}
           onClick={() => props.dispatch(Thunk_pushScreen("measurements", { key: "bodyfat" }))}
         />
       )}
       <MenuItem
-        name="Measurements"
+        name="측정 기록"
         shouldShowRightArrow={true}
         onClick={() => props.dispatch(Thunk_pushScreen("measurements"))}
       />
       <MenuItem
-        name="Sleep & Nutrition"
+        name="수면 및 영양"
         shouldShowRightArrow={true}
         onClick={() => props.dispatch(Thunk_pushScreen("sleepNutrition"))}
       />
 
-      <GroupHeader name="Workout" topPadding={true} />
+      <GroupHeader name="운동" topPadding={true} />
       <MenuItem
-        name="Exercises"
+        name="운동 종목"
         onClick={() => props.dispatch(Thunk_pushScreen("exercises"))}
         shouldShowRightArrow={true}
       />
       <MenuItem
-        name="Muscle Groups"
+        name="근육 그룹"
         onClick={() => props.dispatch(Thunk_pushScreen("muscleGroups"))}
         shouldShowRightArrow={true}
       />
-      <MenuItem name="Timers" onClick={() => props.dispatch(Thunk_pushScreen("timers"))} shouldShowRightArrow={true} />
+      <MenuItem name="타이머" onClick={() => props.dispatch(Thunk_pushScreen("timers"))} shouldShowRightArrow={true} />
       {props.settings.gyms.length > 1 && (
         <MenuItemEditable
           type="select"
-          name="Current Gym"
+          name="현재 운동 장소"
           value={props.settings.currentGymId ?? props.settings.gyms[0].id}
           values={props.settings.gyms.map((g) => [g.id, g.name])}
           onChange={(newValue) => {
@@ -233,7 +249,7 @@ function ScreenSettingsInner(props: IProps): JSX.Element {
       )}
       <MenuItem
         shouldShowRightArrow={true}
-        name="Available Equipment"
+        name="운동 기구 설정"
         onClick={() => {
           if (props.settings.gyms.length > 1) {
             props.dispatch(Thunk_pushScreen("gyms"));
@@ -244,7 +260,7 @@ function ScreenSettingsInner(props: IProps): JSX.Element {
       />
       <MenuItemEditable
         type="select"
-        name="Weight Units"
+        name="중량 단위"
         value={props.settings.units}
         values={[
           ["kg", "kg"],
@@ -262,7 +278,7 @@ function ScreenSettingsInner(props: IProps): JSX.Element {
       />
       <MenuItemEditable
         type="select"
-        name="Length Units"
+        name="길이 단위"
         value={props.settings.lengthUnits}
         values={[
           ["cm", "cm"],
@@ -280,11 +296,11 @@ function ScreenSettingsInner(props: IProps): JSX.Element {
       />
       <MenuItemEditable
         type="select"
-        name="Week starts from:"
+        name="한 주 시작 요일"
         value={props.settings.startWeekFromMonday ? "true" : "false"}
         values={[
-          ["false", "Sunday"],
-          ["true", "Monday"],
+          ["false", "일요일"],
+          ["true", "월요일"],
         ]}
         onChange={(newValue) => {
           props.dispatch({
@@ -299,7 +315,7 @@ function ScreenSettingsInner(props: IProps): JSX.Element {
       {(Platform.OS === "ios" || Platform.OS === "android") && (
         <MenuItemEditable
           type="boolean"
-          name="Always On Display"
+          name="화면 항상 켜기"
           value={props.settings.alwaysOnDisplay ? "true" : "false"}
           onChange={(newValue) => {
             props.dispatch({
@@ -314,10 +330,10 @@ function ScreenSettingsInner(props: IProps): JSX.Element {
       )}
       {(Platform.OS === "ios" || Platform.OS === "android") && (
         <View>
-          <GroupHeader name="Sound" topPadding={true} />
+          <GroupHeader name="알림 및 소리" topPadding={true} />
           <MenuItemEditable
             type="boolean"
-            name="Vibration"
+            name="진동"
             value={props.settings.vibration ? "true" : "false"}
             onChange={(newValue) => {
               props.dispatch({
@@ -354,12 +370,12 @@ function ScreenSettingsInner(props: IProps): JSX.Element {
           {Subscriptions_hasSubscription(props.subscription) && Platform.OS === "android" && (
             <MenuItemEditable
               type="boolean"
-              name="Ignore Do Not Disturb"
+              name="방해 금지 모드 무시"
               value={props.settings.ignoreDoNotDisturb ? "true" : "false"}
               nextLine={
                 <View className="mb-2" style={{ marginTop: -8 }}>
                   <Text className="text-xs text-text-secondary">
-                    Push notification will make a sound even in Silent or Do Not Disturb mode
+                    무음 또는 방해 금지 모드에서도 운동 알림 소리가 재생됩니다.
                   </Text>
                 </View>
               }
@@ -378,7 +394,7 @@ function ScreenSettingsInner(props: IProps): JSX.Element {
       )}
       {(HealthSync_eligibleForAppleHealth() || HealthSync_eligibleForGoogleHealth()) && (
         <>
-          <GroupHeader name="Sync" topPadding={true} />
+          <GroupHeader name="건강 데이터 연동" topPadding={true} />
           {HealthSync_eligibleForGoogleHealth() && (
             <MenuItem
               shouldShowRightArrow={true}
@@ -395,7 +411,7 @@ function ScreenSettingsInner(props: IProps): JSX.Element {
           )}
         </>
       )}
-      <GroupHeader name="Appearance" topPadding={true} />
+      <GroupHeader name="화면 설정" topPadding={true} />
       <MenuItemWrapper name="text-size">
         <View className="py-2">
           <View className="flex-row items-center">
@@ -422,7 +438,7 @@ function ScreenSettingsInner(props: IProps): JSX.Element {
           </View>
           <View className="flex-row items-center justify-between mt-1">
             <Text className="text-xs text-text-secondary">
-              {props.settings.textSize == null ? "Matching your device text size" : "Set in the app"}
+              {props.settings.textSize == null ? "기기 글자 크기와 동일" : "앱에서 글자 크기 설정"}
             </Text>
             {props.settings.textSize != null && (
               <LinkButton
@@ -437,7 +453,7 @@ function ScreenSettingsInner(props: IProps): JSX.Element {
                   });
                 }}
               >
-                Use device size
+                기기 설정 사용
               </LinkButton>
             )}
           </View>
@@ -445,12 +461,12 @@ function ScreenSettingsInner(props: IProps): JSX.Element {
       </MenuItemWrapper>
       <MenuItemEditable
         type="select"
-        name="Theme"
+        name="화면 테마"
         value={theme ?? "system"}
         values={[
-          ["system", "System"],
-          ["light", "Light"],
-          ["dark", "Dark"],
+          ["system", "기기 설정 따르기"],
+          ["light", "밝게"],
+          ["dark", "어둡게"],
         ]}
         onChange={(newValue) => {
           const newTheme = newValue === "dark" || newValue === "light" ? newValue : undefined;
@@ -464,12 +480,12 @@ function ScreenSettingsInner(props: IProps): JSX.Element {
       />
       {Features_isEnabled("affiliates", props.user?.id ?? props.tempUserId) && (
         <>
-          <GroupHeader name="Earn money with Liftosaur" topPadding={true} />
+          <GroupHeader name="Liftosaur 제휴 프로그램" topPadding={true} />
           <MenuItem
             expandName={true}
-            name="Affiliate Program"
+            name="제휴 프로그램 참여"
             onClick={() => navigateToModal("affiliateModal")}
-            value={props.settings.affiliateEnabled ? "On" : "Off"}
+            value={props.settings.affiliateEnabled ? "사용" : "사용 안 함"}
             shouldShowRightArrow={true}
           />
         </>
@@ -488,21 +504,21 @@ function ScreenSettingsInner(props: IProps): JSX.Element {
       <MenuItemWrapper
         name="AI 피드백용 운동 기록 Markdown 내보내기"
         onClick={() =>
-          openAiFeedbackExport({
-            title: "AI 피드백용 Markdown 내보내기",
-            nameLabel: "보고서 제목",
-            namePlaceholder: "예: 6주 PHAT 수행 기록",
-            descriptionPlaceholder: "프로그램 총평, 통증이나 불편 부위, 다음 루틴에 반영할 요청을 적어 주세요.",
-            submitLabel: "Markdown 내보내기",
-            dataCyPrefix: "ai-feedback-export",
-            name: "AI 운동 수행 기록",
+          openAiFeedbackProgramSelect({
+            name: "ai-feedback-export-program",
+            hint: "내보낼 기록의 범위를 선택하세요.",
+            values: [
+              ["all", "전체 프로그램 기록"],
+              ...props.programs.map((program): [string, string] => [program.id, program.name]),
+            ],
+            selectedValue: "all",
           })
         }
       >
         <View className="py-3">
           <Text className="text-base text-text-primary">AI 피드백용 Markdown 내보내기</Text>
           <Text className="pt-1 text-sm text-text-secondary">
-            운동 기록과 총평 메모를 LLM 분석용 파일로 저장합니다.
+            전체 기록 또는 선택한 프로그램의 기록과 총평 메모를 LLM 분석용 파일로 저장합니다.
           </Text>
         </View>
       </MenuItemWrapper>
@@ -530,13 +546,13 @@ function ScreenSettingsInner(props: IProps): JSX.Element {
         />
       )}
 
-      <GroupHeader name="Miscellaneous" topPadding={true} />
-      <MenuItem name="Changelog" onClick={() => WhatsNew_showWhatsNew(props.dispatch)} />
+      <GroupHeader name="기타" topPadding={true} />
+      <MenuItem name="업데이트 내역" onClick={() => WhatsNew_showWhatsNew(props.dispatch)} />
       <Pressable
         className="py-3 border-b border-border-neutral"
         onPress={() => openExternal("mailto:info@liftosaur.com")}
       >
-        <Text className="text-base text-text-primary">Contact Us</Text>
+        <Text className="text-base text-text-primary">문의하기</Text>
       </Pressable>
       <Pressable
         className="py-3 border-b border-border-neutral"
@@ -546,44 +562,44 @@ function ScreenSettingsInner(props: IProps): JSX.Element {
           <View className="pr-2">
             <IconDiscord />
           </View>
-          <Text className="text-base text-text-primary">Discord Server</Text>
+          <Text className="text-base text-text-primary">Discord 커뮤니티</Text>
         </View>
       </Pressable>
       <Pressable
         className="py-3 border-b border-border-neutral"
         onPress={() => openExternal("https://www.liftosaur.com/privacy.html")}
       >
-        <Text className="text-base text-text-primary">Privacy Policy</Text>
+        <Text className="text-base text-text-primary">개인정보 처리방침</Text>
       </Pressable>
       <Pressable
         className="py-3 border-b border-border-neutral"
         onPress={() => openExternal("https://www.liftosaur.com/terms.html")}
       >
-        <Text className="text-base text-text-primary">Terms & Conditions</Text>
+        <Text className="text-base text-text-primary">이용 약관</Text>
       </Pressable>
       <Pressable
         className="py-3 border-b border-border-neutral"
         onPress={() => openExternal("https://www.liftosaur.com/licenses.html")}
       >
-        <Text className="text-base text-text-primary">Licenses</Text>
+        <Text className="text-base text-text-primary">오픈소스 라이선스</Text>
       </Pressable>
       <Pressable
         className="py-3 border-b border-border-neutral"
         onPress={() => openExternal("https://www.liftosaur.com/doc")}
       >
-        <Text className="text-base text-text-primary">Documentation</Text>
+        <Text className="text-base text-text-primary">문서</Text>
       </Pressable>
       <Pressable
         className="py-3 border-b border-border-neutral"
         onPress={() => openExternal("https://github.com/astashov/liftosaur")}
       >
-        <Text className="text-base text-text-primary">Source Code on Github</Text>
+        <Text className="text-base text-text-primary">GitHub 소스 코드</Text>
       </Pressable>
       <Pressable
         className="py-3 border-b border-border-neutral"
         onPress={() => openExternal("https://github.com/astashov/liftosaur/discussions")}
       >
-        <Text className="text-base text-text-primary">📍 Roadmap</Text>
+        <Text className="text-base text-text-primary">📍 개발 로드맵</Text>
       </Pressable>
     </View>
   );

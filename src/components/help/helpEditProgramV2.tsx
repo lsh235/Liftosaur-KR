@@ -14,80 +14,70 @@ export function HelpEditProgramV2(): JSX.Element {
 
   return (
     <View>
-      <Text className="pb-2 text-xl font-semibold">Edit Program</Text>
+      <Text className="pb-2 text-xl font-semibold">프로그램 편집</Text>
       <Text className="mb-2 text-sm">
-        In Liftosaur, you need to build a weightlifting program in order to do workouts. This is the screen where you
-        can do it. You can build your weightlifting program and ensure you have proper{" "}
-        <Text className="text-sm font-bold">weekly volume per muscle group</Text>, and balance it with the{" "}
-        <Text className="text-sm font-bold">time you spend in a gym</Text>. You can build multi-week programs, plan your
-        mesocycles, deload weeks, testing 1RM weeks, and see the weekly undulation of volume and intensity of each
-        exercise on a graph.
+        운동을 시작하려면 운동 프로그램이 필요합니다. 여기에서 프로그램을 만들고 근육별{" "}
+        <Text className="text-sm font-bold">주간 운동량</Text>을 확인해 체육관에서 보내는{" "}
+        <Text className="text-sm font-bold">운동 시간</Text>과 균형을 맞출 수 있습니다. 여러 주차로 구성된 프로그램,
+        메조사이클, 디로드 주간, 1RM 측정 주간을 계획하고 그래프에서 종목별 주간 운동량과 강도의 변화를 확인할 수
+        있습니다.
       </Text>
       <View className="flex-row flex-wrap items-center mb-2">
         <Text className="text-sm">
-          The source of truth for a program is the program text. It uses a special syntax to describe programs called{" "}
-          <Text className="text-sm font-bold">Liftoscript</Text>, which looks kinda similar to how you would write a
-          program on paper. By default, in the app there's UI to edit the program, but it really just edits the program
-          text under the hood. To access all the features (editing progressions, descriptions, etc) - you can switch to
-          the plain text mode (by clicking on{" "}
+          프로그램의 기준 데이터는 프로그램 텍스트입니다. 텍스트는 종이에 운동 계획을 적는 방식과 비슷한{" "}
+          <Text className="text-sm font-bold">Liftoscript</Text> 문법을 사용합니다. 화면의 편집 도구도 내부적으로는 이
+          텍스트를 수정합니다. 점진적 과부하 규칙이나 설명 등 모든 기능을 편집하려면 일반 텍스트 모드로 전환하세요.{" "}
         </Text>
         <IconDoc width={14} height={14} />
-        <Text className="text-sm">)</Text>
+        <Text className="text-sm">아이콘을 누르세요.</Text>
       </View>
       <View className="flex-row flex-wrap items-center mb-2">
         <Text className="text-sm">
-          Set the program name, create weeks and days. Then, either create exercises through UI, or switch to the plain
-          text mode (by tapping on{" "}
+          프로그램 이름을 정하고 주차와 운동일을 추가하세요. 화면에서 종목을 만들거나 일반 텍스트 모드로 전환해{" "}
         </Text>
         <IconDoc width={14} height={14} />
         <Text className="text-sm">
-          ), type the list of exercises for each day, putting each exercise on a new line, along with the number of sets
-          and reps after slash (
+          아이콘을 누른 뒤 운동일마다 종목을 입력할 수 있습니다. 각 종목은 한 줄에 적고, 슬래시 (
           <Text className="text-sm" style={{ fontFamily: "Courier" }}>
             /
           </Text>
-          ) character, like this:
+          ) 뒤에 세트와 반복 횟수를 적습니다. 예:
         </Text>
       </View>
       <View className="px-4 py-2 my-1 mb-2 bg-background-default border rounded-md border-border-neutral">
         <PlannerCodeBlock script={script} />
       </View>
       <Text className="mb-2 text-sm">
-        You can specify weight - either in absolute units (<Text className="text-sm font-bold">kg</Text> or{" "}
-        <Text className="text-sm font-bold">lb</Text>) or as a percentage of your 1RM (One Rep Max - the maximum weight
-        you can lift for one repetition):
+        중량은 <Text className="text-sm font-bold">kg</Text> 또는 <Text className="text-sm font-bold">lb</Text> 단위의
+        실제 값이나 1회 최대 중량(1RM)에 대한 백분율로 지정할 수 있습니다.
       </Text>
       <View className="px-4 py-2 my-1 mb-2 bg-background-default border rounded-md border-border-neutral">
         <PlannerCodeBlock script={script2} />
       </View>
       <Text className="mb-2 text-sm">
-        Autocomplete will help you with the exercise names. You can also create custom exercises if they're missing in
-        the library.
+        종목 이름은 자동 완성으로 찾을 수 있습니다. 목록에 없는 종목은 사용자 지정 종목으로 추가할 수 있습니다.
       </Text>
       <View className="flex-row flex-wrap items-center mb-2">
-        <Text className="text-sm">The </Text>
         <IconMusclesW size={14} />
         <Text className="text-sm">
           {" "}
-          opens <Text className="text-sm font-bold">Weekly Stats</Text>, where you can see the number of sets per week
-          per muscle group, whether you're in the recommended range (indicated by color), strength/hypertrophy split,
-          and if you tap the numbers - you'll see what exercises contribute to that number, and how much.
+          아이콘을 누르면 <Text className="text-sm font-bold">주간 통계</Text>에서 근육별 주간 세트 수와 권장 범위,
+          근력·근비대 비중을 확인할 수 있습니다. 숫자를 누르면 어떤 종목이 운동량에 얼마나 기여하는지도 볼 수 있습니다.
         </Text>
       </View>
       <View className="flex-row flex-wrap items-center mb-2">
-        <Text className="text-sm">Same thing exists for the day - </Text>
+        <Text className="text-sm">운동일별 통계도 확인할 수 있습니다. </Text>
         <IconMusclesD size={14} />
-        <Text className="text-sm">, and you can also see exercise details and undulation graphs by tapping on </Text>
+        <Text className="text-sm"> 아이콘을 누르세요. 종목 상세 정보와 운동량 변화 그래프는 </Text>
         <IconGraphsE width={14} height={14} />
-        <Text className="text-sm">.</Text>
+        <Text className="text-sm"> 아이콘에서 확인할 수 있습니다.</Text>
       </View>
       <Text className="mb-2 text-sm">
-        The exercise syntax supports RPEs (Rate of Perceived Exertion - a subjective measure of how hard the set was),
-        rest timers, various progressive overload types, etc. It's very powerful, read more about all the features{" "}
+        종목 문법은 RPE(운동 자각도), 휴식 타이머, 여러 방식의 점진적 과부하 등을 지원합니다. 자세한 기능은{" "}
         <Link className="text-sm" href="https://www.liftosaur.com/doc">
-          in the docs
+          공식 문서
         </Link>
-        !
+        에서 확인하세요.
       </Text>
     </View>
   );

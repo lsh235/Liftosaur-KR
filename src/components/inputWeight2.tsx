@@ -216,13 +216,13 @@ export const PlatesCalculator = memo(function PlatesCalculator(props: IPlatesCal
       <View>
         <IconBarbellSide size={13} color={Tailwind_colors().blue[400]} />
       </View>
-      <Text className="text-xs text-text-secondary">Plates:</Text>
+      <Text className="text-xs text-text-secondary">원판:</Text>
       <View className="flex-1">
         {picture != null ? (
           <EquipmentLoadPicture picture={picture} size="sm" testID="plates-list" highlightMismatch={true} />
         ) : (
           <Text className="text-xs font-semibold text-text-primary" data-testid="plates-list" testID="plates-list">
-            None
+            없음
           </Text>
         )}
       </View>

@@ -290,23 +290,23 @@ function rangesText(ranges: IWeightRange[]): string {
     return "";
   }
   if (ranges.length === 1) {
-    return `${ranges[0].from}–${ranges[0].to} by ${ranges[0].step}`;
+    return `${ranges[0].from}~${ranges[0].to} (간격 ${ranges[0].step})`;
   }
-  return `${ranges[0].from}–${ranges[ranges.length - 1].to} · uneven steps`;
+  return `${ranges[0].from}~${ranges[ranges.length - 1].to} (불균일 간격)`;
 }
 
 function ratioText(ratio: number | undefined): string | undefined {
   if (ratio == null || ratio === 1) {
     return undefined;
   }
-  return ratio === 0.5 ? "half" : ratio === 0.25 ? "quarter" : `×${ratio}`;
+  return `당기는 비율 ×${ratio}`;
 }
 
 function bodyweightText(setup: IEquipmentSetup): string | undefined {
   if (setup.direction === "assists") {
-    return setup.bodyweight != null ? "bodyweight − assist" : "assists";
+    return setup.bodyweight != null ? "체중 − 보조 중량" : "보조 중량";
   }
-  return setup.bodyweight != null ? "+ bodyweight" : undefined;
+  return setup.bodyweight != null ? "+ 체중" : undefined;
 }
 
 function isNumber(value: number): boolean {
@@ -412,32 +412,30 @@ export function EquipmentSetup_summary(setup: IEquipmentSetup): string {
   switch (setup.type) {
     case "stack": {
       const addOns = [...(setup.builtin ?? []), ...(setup.addOn ?? []).map((p) => p.weight)];
-      parts.push("Weight stack", rangesText(setup.ranges), ratioText(setup.pullRatio));
-      parts.push(setup.stackCount != null && setup.stackCount > 1 ? `${setup.stackCount} stacks` : undefined);
-      parts.push(setup.showPinNumbers ? "pin numbers" : undefined);
-      parts.push(addOns.length > 0 ? `+${addOns.join("/")}` : undefined);
+      parts.push("중량 스택", rangesText(setup.ranges), ratioText(setup.pullRatio));
+      parts.push(setup.stackCount != null && setup.stackCount > 1 ? `스택 ${setup.stackCount}개` : undefined);
+      parts.push(setup.showPinNumbers ? "핀 번호 표시" : undefined);
+      parts.push(addOns.length > 0 ? `추가 중량 ${addOns.join("/")}` : undefined);
       break;
     }
     case "plates": {
       const loadedHorns = (setup.horns ?? []).filter((h) => h.ratio > 0);
-      parts.push("Plates", setup.base > 0 ? `${setup.base} ${setup.unit} base` : undefined);
-      parts.push(setup.horns != null && setup.horns.length > 1 ? `${setup.horns.length} horns` : undefined);
-      parts.push(loadedHorns.length > 1 ? loadedHorns.map((h) => h.ratio).join(":") : undefined);
-      parts.push(setup.sides === 1 ? "one side" : undefined);
-      parts.push(setup.warmupPlates != null ? `warmups ${setup.warmupPlates.join("/")}` : undefined);
+      parts.push("원판 장착", setup.base > 0 ? `바 ${setup.base}${setup.unit}` : undefined);
+      parts.push(setup.horns != null && setup.horns.length > 1 ? `로드 핀 ${setup.horns.length}개` : undefined);
+      parts.push(loadedHorns.length > 1 ? `로드 핀 비율 ${loadedHorns.map((h) => h.ratio).join(":")}` : undefined);
+      parts.push(setup.sides === 1 ? "한쪽만 적재" : undefined);
+      parts.push(setup.warmupPlates != null ? `워밍업 원판 ${setup.warmupPlates.join("/")}` : undefined);
       break;
     }
     case "fixed":
-      parts.push("Fixed weights", rangesText(setup.ranges));
-      parts.push(
-        setup.values.length > 0 ? `${setup.ranges.length > 0 ? "+" : ""}${setup.values.join(", ")}` : undefined
-      );
+      parts.push("고정 중량", rangesText(setup.ranges));
+      parts.push(setup.values.length > 0 ? `중량 ${setup.values.join(", ")}` : undefined);
       break;
     case "electric":
-      parts.push("Electric", `${setup.min}–${setup.max} by ${setup.step}`);
+      parts.push("전자식 중량", `${setup.min}~${setup.max} (간격 ${setup.step})`);
       break;
     case "bands":
-      parts.push("Bands", setup.bands.map((b) => b.name).join(", "));
+      parts.push("저항 밴드", setup.bands.map((b) => b.name).join(", "));
       break;
   }
   parts.push(bodyweightText(setup));

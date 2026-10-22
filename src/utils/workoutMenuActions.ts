@@ -7,6 +7,10 @@ export interface IWorkoutMenuActionsArgs {
   isInAnyProgram: boolean;
 }
 
+export function WorkoutMenu_deleteConfirmationMessage(isCurrent: boolean): string {
+  return isCurrent ? "진행 중인 운동 기록을 삭제할까요?" : "이 운동 기록을 삭제할까요?";
+}
+
 export function WorkoutMenuActions_list(args: IWorkoutMenuActionsArgs): IWorkoutMenuAction[] {
   const actions: IWorkoutMenuAction[] = [];
   if (args.hasNonEmptyProgram && args.hasNonEmptyCurrentProgram) {

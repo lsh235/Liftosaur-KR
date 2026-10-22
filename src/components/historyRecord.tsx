@@ -75,7 +75,7 @@ export const HistoryRecordView = memo((props: IProps): JSX.Element => {
           testID="history-record-date"
           className="mx-1 mb-1 text-base font-semibold"
         >
-          {!isCurrent ? DateUtils_format(historyRecord.date) : props.isOngoing ? "Ongoing workout" : "Next workout"}
+          {!isCurrent ? DateUtils_format(historyRecord.date) : props.isOngoing ? "진행 중인 운동" : "다음 운동"}
         </Text>
       )}
       <Pressable
@@ -125,7 +125,7 @@ export const HistoryRecordView = memo((props: IProps): JSX.Element => {
           {historyRecord.notes && (
             <View className="mt-2">
               <Text>
-                <Text className="text-sm">Note: </Text>
+                <Text className="text-sm">메모: </Text>
                 <Text className="text-sm text-text-secondary">{historyRecord.notes}</Text>
               </Text>
             </View>
@@ -141,7 +141,7 @@ export const HistoryRecordView = memo((props: IProps): JSX.Element => {
                   className="w-full"
                   onPress={handleCardPress}
                 >
-                  Start
+                  운동 시작
                 </Button>
               ) : (
                 <Button
@@ -152,7 +152,7 @@ export const HistoryRecordView = memo((props: IProps): JSX.Element => {
                   className="w-full"
                   onPress={handleCardPress}
                 >
-                  Continue
+                  운동 계속하기
                 </Button>
               )}
             </View>

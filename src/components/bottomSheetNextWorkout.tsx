@@ -105,14 +105,14 @@ export function BottomSheetNextWorkoutContent(props: IBottomSheetNextWorkoutCont
 
   return (
     <View>
-      <Text className="pb-4 text-lg font-semibold text-center">New Workout</Text>
+      <Text className="pb-4 text-lg font-semibold text-center">새 운동</Text>
       {doesProgressNotMatchProgram && (
         <Text className="mb-1 text-xs text-center text-text-secondary">
-          You currently have ongoing workout. Finish it first to see newly chosen program or a different day.
+          현재 진행 중인 운동이 있습니다. 완료한 뒤 선택한 프로그램이나 다른 운동일을 확인하세요.
         </Text>
       )}
       {Program_isEmpty(props.currentProgram) && (
-        <Text className="mb-1 text-xs text-center text-text-secondary">No program currently selected.</Text>
+        <Text className="mb-1 text-xs text-center text-text-secondary">선택된 프로그램이 없습니다.</Text>
       )}
       {programDay && nextHistoryRecord && (
         <HistoryRecordView
@@ -240,7 +240,7 @@ export function BottomSheetNextWorkoutContent(props: IBottomSheetNextWorkoutCont
         >
           <View className="flex-row items-center">
             <IconSwap color={Tailwind_colors().blue[400]} size={16} />
-            <Text className="pl-1 text-sm font-bold underline text-text-link">Select next workout</Text>
+            <Text className="pl-1 text-sm font-bold underline text-text-link">다음 운동 선택</Text>
           </View>
         </LinkButton>
         <LinkButton
@@ -253,7 +253,7 @@ export function BottomSheetNextWorkoutContent(props: IBottomSheetNextWorkoutCont
         >
           <View className="flex-row items-center">
             <IconPlus2 color={Tailwind_colors().blue[400]} size={16} />
-            <Text className="pl-1 text-sm font-bold underline text-text-link">Ad-Hoc Workout</Text>
+            <Text className="pl-1 text-sm font-bold underline text-text-link">자유 운동</Text>
           </View>
         </LinkButton>
       </View>

@@ -1,8 +1,13 @@
 import "mocha";
 import { expect } from "chai";
-import { WorkoutMenuActions_list } from "../src/utils/workoutMenuActions";
+import { WorkoutMenuActions_list, WorkoutMenu_deleteConfirmationMessage } from "../src/utils/workoutMenuActions";
 
 describe("WorkoutMenuActions", () => {
+  it("uses clear Korean text for deleting current and previous workout records", () => {
+    expect(WorkoutMenu_deleteConfirmationMessage(true)).to.equal("진행 중인 운동 기록을 삭제할까요?");
+    expect(WorkoutMenu_deleteConfirmationMessage(false)).to.equal("이 운동 기록을 삭제할까요?");
+  });
+
   it("lists edit day, muscles, tour and delete for an ongoing program workout", () => {
     const actions = WorkoutMenuActions_list({
       isCurrent: true,

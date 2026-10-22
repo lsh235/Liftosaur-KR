@@ -90,19 +90,24 @@ function validateRecord(record: ILiftosaurRecord): IImportRowError | undefined {
       row: record.row,
       column: "Workout DateTime",
       value: record.workoutDateTime,
-      message: `"${record.workoutDateTime}" is not a valid date`,
+      message: `"${record.workoutDateTime}" 값이 올바른 날짜가 아닙니다.`,
     };
   }
   for (const column of numericColumns) {
     const value = record[column];
     if (value && isNaN(Number(value))) {
-      return { row: record.row, column, value, message: `"${value}" is not a number` };
+      return { row: record.row, column, value, message: `"${value}" 값은 숫자가 아닙니다.` };
     }
   }
   for (const column of unitColumns) {
     const value = record[column];
     if (value && value !== "kg" && value !== "lb") {
-      return { row: record.row, column, value, message: `"${value}" is not a valid unit (expected "kg" or "lb")` };
+      return {
+        row: record.row,
+        column,
+        value,
+        message: `"${value}" 단위는 사용할 수 없습니다. kg 또는 lb를 입력하세요.`,
+      };
     }
   }
   return undefined;
@@ -115,7 +120,7 @@ function collectWarnings(record: ILiftosaurRecord, warnings: IImportRowError[]):
       row: record.row,
       column: "Workout DateTime",
       value: record.workoutDateTime,
-      message: `"${record.workoutDateTime}" looks like an implausible workout date`,
+      message: `"${record.workoutDateTime}" 날짜가 실제 운동 기록과 다를 수 있습니다.`,
     });
   }
   for (const [valueColumn, unitColumn] of [
@@ -129,14 +134,19 @@ function collectWarnings(record: ILiftosaurRecord, warnings: IImportRowError[]):
         row: record.row,
         column: valueColumn,
         value,
-        message: `${value} ${unit} looks like an implausible weight`,
+        message: `중량 ${value} ${unit}이 비정상적일 수 있습니다. 확인해 주세요.`,
       });
     }
   }
   for (const column of ["requiredReps", "completedReps"] as const) {
     const value = record[column];
     if (value && !isNaN(Number(value)) && ImportUtils_isSuspiciousReps(Number(value))) {
-      warnings.push({ row: record.row, column, value, message: `${value} looks like an implausible rep count` });
+      warnings.push({
+        row: record.row,
+        column,
+        value,
+        message: `반복 횟수 ${value}회가 비정상적일 수 있습니다. 확인해 주세요.`,
+      });
     }
   }
   if (record.completedRepsTime && parseTimestamp(record.completedRepsTime) == null) {
@@ -144,7 +154,7 @@ function collectWarnings(record: ILiftosaurRecord, warnings: IImportRowError[]):
       row: record.row,
       column: "Completed Reps Time",
       value: record.completedRepsTime,
-      message: `"${record.completedRepsTime}" is not a valid time, using the workout date instead`,
+      message: `"${record.completedRepsTime}" 값이 올바른 시간이 아니어서 운동 날짜를 대신 사용합니다.`,
     });
   }
 }
@@ -156,18 +166,17 @@ export function ImportFromLiftosaur_convertLiftosaurCsvToHistoryRecords(
   const parsed = Papa.parse<string[]>(liftosaurCsvRaw, { skipEmptyLines: true });
   const rows = parsed.data;
   if (rows.length < 2) {
-    throw new ImportFileError("The file has no workout rows");
+    throw new ImportFileError("파일에 가져올 운동 기록이 없습니다.");
   }
   const kind = ImportUtils_detectCsvKind(rows[0].map((h) => `${h}`));
   if (kind === "hevy") {
     throw new ImportFileError(
-      'This looks like a Hevy export. Use "Import history from other apps" in Settings instead.'
+      "Hevy에서 내보낸 CSV 파일로 보입니다. 설정에서 '다른 앱의 운동 기록 가져오기'를 선택하세요."
     );
   }
   if (kind !== "liftosaur") {
     throw new ImportFileError(
-      "This doesn't look like a Liftosaur history CSV - the header row doesn't match the format of " +
-        '"Export history to CSV file".'
+      "Liftosaur 기록 CSV 형식이 아닙니다. 헤더가 '운동 기록을 CSV로 내보내기' 파일과 일치하는지 확인하세요."
     );
   }
 
@@ -193,7 +202,7 @@ export function ImportFromLiftosaur_convertLiftosaurCsvToHistoryRecords(
   }
   if (validRecords.length < liftosaurRecords.length / 2) {
     throw new ImportFileError(
-      `${errors.length} of ${liftosaurRecords.length} rows failed to parse - this doesn't look like a valid Liftosaur history CSV.`
+      `전체 ${liftosaurRecords.length}행 중 ${errors.length}행을 읽지 못했습니다. 올바른 Liftosaur 기록 CSV인지 확인하세요.`
     );
   }
 

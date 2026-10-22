@@ -11,10 +11,10 @@ export function NavModalExercisePickerSettings(): JSX.Element {
   return (
     <FormSheet>
       <View className="pb-4 bg-background-default">
-        <Text className="pb-3 text-base font-semibold text-center">Exercise Picker Settings</Text>
+        <Text className="pb-3 text-base font-semibold text-center">운동 선택 설정</Text>
         <MenuItemEditable
           type="boolean"
-          name="Keep existing program exercise logic when pick adhoc exercise"
+          name="종목 변경 후에도 기존 프로그램 진행 규칙 유지"
           value={state.storage.settings.workoutSettings.shouldKeepProgramExerciseId ? "true" : "false"}
           onChange={(v) => {
             Settings_changePickerSettings(dispatch, { shouldKeepProgramExerciseId: v === "true" });

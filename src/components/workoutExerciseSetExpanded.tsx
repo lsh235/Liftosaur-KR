@@ -19,6 +19,7 @@ import { ActionMenu, IActionMenuAction } from "./actionMenu";
 import type { IWorkoutExerciseSetBodyProps } from "./workoutExerciseSet";
 import {
   RpeWeightHint,
+  WorkoutExerciseSetE1RMHint,
   WorkoutExerciseLastSet,
   WorkoutExerciseSetRpeTime,
   WorkoutExerciseSetTargetField,
@@ -34,9 +35,9 @@ export function WorkoutExerciseSetExpanded(props: IWorkoutExerciseSetBodyProps):
   const actions = useMemo<IActionMenuAction[]>(() => {
     const list: IActionMenuAction[] = [];
     if (onEditTarget) {
-      list.push({ label: "Edit Target", onPress: onEditTarget, testID: "edit-set-target" });
+      list.push({ label: "목표 수정", onPress: onEditTarget, testID: "edit-set-target" });
     }
-    list.push({ label: "Delete Set", onPress: onDeleteSet, destructive: true, testID: "delete-set" });
+    list.push({ label: "세트 삭제", onPress: onDeleteSet, destructive: true, testID: "delete-set" });
     return list;
   }, [onEditTarget, onDeleteSet]);
   const previousLines = props.previousLines ?? [];
@@ -105,6 +106,7 @@ export function WorkoutExerciseSetExpanded(props: IWorkoutExerciseSetBodyProps):
                     sizeClass="text-lg"
                     dimIncomplete={false}
                   />
+                  <WorkoutExerciseSetE1RMHint set={set} settings={props.settings} />
                 </View>
               </Pressable>
               <ActionMenu

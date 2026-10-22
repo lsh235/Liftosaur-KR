@@ -173,6 +173,8 @@ import {
   Subscriptions_hasSubscription,
 } from "./utils/subscriptions";
 import { Progress_getCurrentProgress, Progress_lbProgress } from "./models/progress";
+import { Program_getProgram } from "./models/program";
+import { ProgramSchedule_buildReminderRequests } from "./models/programSchedule";
 import { DesiredHeartRateWorkout_fromProgress } from "./models/desiredHeartRateWorkout";
 import { NativeEffects_apply } from "./models/nativeEffects";
 import { lg } from "./utils/posthog";
@@ -291,6 +293,21 @@ export function AppRoot(props: { initialState: IState; env: IEnv }): React.JSX.E
   const [state, dispatch] = useThunkReducer<IState, IAction, IEnv>(reducer, props.initialState, env, onActions);
   const stateRef = useRef(state);
   stateRef.current = state;
+  const scheduledProgram = Program_getProgram(state, state.storage.currentProgramId);
+  useEffect(() => {
+    const scheduleWorkoutReminders = (): void => {
+      env.timer.scheduleWorkoutReminders(
+        scheduledProgram ? ProgramSchedule_buildReminderRequests(scheduledProgram) : []
+      );
+    };
+    scheduleWorkoutReminders();
+    const appStateSubscription = AppState.addEventListener("change", (appState) => {
+      if (appState === "active") {
+        scheduleWorkoutReminders();
+      }
+    });
+    return () => appStateSubscription.remove();
+  }, [env.timer, scheduledProgram]);
   // Route key (not name) so same-screen setParams doesn't fragment one visit into many perf_screen
   // events; name is kept separately to label the outgoing screen's partial frame window.
   const lastRouteKeyRef = useRef<string | undefined>(undefined);

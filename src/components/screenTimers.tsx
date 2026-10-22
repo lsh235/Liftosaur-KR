@@ -26,48 +26,48 @@ export function ScreenTimers(props: IProps): JSX.Element {
     };
   };
 
-  useNavOptions({ navTitle: "Rest Timers", navHelpKey: "timers" });
+  useNavOptions({ navTitle: "타이머 설정", navHelpKey: "timers" });
 
   return (
     <View className="px-gutter">
-      <GroupHeader name="Rest Timers between sets" />
+      <GroupHeader name="세트 간 휴식 시간" />
       <MenuItemEditable
-        name="Warmup"
+        name="워밍업 세트"
         type="number"
         value={props.timers.warmup?.toString() || undefined}
-        valueUnits="sec"
+        valueUnits="초"
         onChange={onChange("warmup")}
       />
       <MenuItemEditable
-        name="Workout"
+        name="일반 세트"
         type="number"
         value={props.timers.workout?.toString() || undefined}
-        valueUnits="sec"
+        valueUnits="초"
         onChange={onChange("workout")}
       />
       <MenuItemEditable
-        name="Superset"
+        name="슈퍼세트"
         type="number"
         value={props.timers.superset?.toString()}
-        valueUnits="sec"
+        valueUnits="초"
         onChange={onChange("superset")}
       />
-      <GroupHeader name="Timed sets" topPadding={true} />
+      <GroupHeader name="시간 지정 세트" topPadding={true} />
       <MenuItemEditable
-        name="Get ready"
+        name="시작 전 준비 시간"
         type="number"
         value={props.timers.getReady?.toString()}
-        valueUnits="sec"
+        valueUnits="초"
         onChange={onChange("getReady")}
       />
       {(Platform.OS === "ios" || Platform.OS === "android") && (
         <>
-          <GroupHeader name="Reminders" topPadding={true} />
+          <GroupHeader name="운동 알림" topPadding={true} />
           <MenuItemEditable
-            name="About ongoing workout"
+            name="운동 종료 확인 알림"
             type="number"
             value={props.timers.reminder?.toString() || undefined}
-            valueUnits="sec"
+            valueUnits="초"
             onChange={onChange("reminder")}
           />
         </>

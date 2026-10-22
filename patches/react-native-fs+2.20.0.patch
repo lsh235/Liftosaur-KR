@@ -1,0 +1,83 @@
+diff --git a/node_modules/react-native-fs/android/src/main/java/com/rnfs/RNFSManager.java b/node_modules/react-native-fs/android/src/main/java/com/rnfs/RNFSManager.java
+index 351ac06..518b734 100755
+--- a/node_modules/react-native-fs/android/src/main/java/com/rnfs/RNFSManager.java
++++ b/node_modules/react-native-fs/android/src/main/java/com/rnfs/RNFSManager.java
+@@ -36,6 +36,7 @@ import java.io.RandomAccessFile;
+ import java.net.URL;
+ import java.security.MessageDigest;
+ import java.util.ArrayList;
++import java.util.Arrays;
+ import java.util.HashMap;
+ import java.util.Map;
+ 
+@@ -235,18 +236,64 @@ public class RNFSManager extends ReactContextBaseJavaModule {
+ 
+   @ReactMethod
+   public void read(String filepath, int length, int position, Promise promise) {
++    InputStream inputStream = null;
+     try {
+-      InputStream inputStream = getInputStream(filepath);
+-      byte[] buffer = new byte[length];
+-      inputStream.skip(position);
+-      int bytesRead = inputStream.read(buffer, 0, length);
+-
+-      String base64Content = Base64.encodeToString(buffer, 0, bytesRead, Base64.NO_WRAP);
++      inputStream = getInputStream(filepath);
++      byte[] buffer = readRange(inputStream, length, position);
++      String base64Content = Base64.encodeToString(buffer, 0, buffer.length, Base64.NO_WRAP);
+ 
+       promise.resolve(base64Content);
+     } catch (Exception ex) {
+       ex.printStackTrace();
+       reject(promise, filepath, ex);
++    } finally {
++      if (inputStream != null) {
++        try {
++          inputStream.close();
++        } catch (IOException ignored) {
++        }
++      }
++    }
++  }
++
++  static byte[] readRange(InputStream inputStream, int length, int position) throws IOException {
++    skipFully(inputStream, position);
++    if (length <= 0) {
++      return getInputStreamBytes(inputStream);
++    }
++
++    byte[] buffer = new byte[length];
++    int bytesRead = 0;
++    while (bytesRead < length) {
++      int count = inputStream.read(buffer, bytesRead, length - bytesRead);
++      if (count < 0) {
++        break;
++      }
++      if (count == 0) {
++        int value = inputStream.read();
++        if (value < 0) {
++          break;
++        }
++        buffer[bytesRead++] = (byte) value;
++      } else {
++        bytesRead += count;
++      }
++    }
++    return bytesRead == buffer.length ? buffer : Arrays.copyOf(buffer, bytesRead);
++  }
++
++  private static void skipFully(InputStream inputStream, int position) throws IOException {
++    long remaining = Math.max(0, position);
++    while (remaining > 0) {
++      long skipped = inputStream.skip(remaining);
++      if (skipped > 0) {
++        remaining -= skipped;
++      } else {
++        if (inputStream.read() < 0) {
++          return;
++        }
++        remaining -= 1;
++      }
+     }
+   }
+ 

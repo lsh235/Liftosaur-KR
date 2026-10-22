@@ -18,8 +18,27 @@ import androidx.core.app.NotificationManagerCompat
 import com.facebook.react.modules.core.PermissionAwareActivity
 import com.facebook.react.modules.core.PermissionListener
 import org.json.JSONArray
+import org.json.JSONObject
+import java.util.Calendar
+import java.util.GregorianCalendar
+import java.util.TimeZone
 import kotlin.math.ceil
 import java.util.concurrent.TimeUnit
+
+internal enum class NotificationPermissionAction {
+    ALLOW,
+    REQUEST_RUNTIME,
+    OPEN_SETTINGS
+}
+
+internal fun notificationPermissionAction(apiLevel: Int, notificationsEnabled: Boolean): NotificationPermissionAction {
+    if (notificationsEnabled) return NotificationPermissionAction.ALLOW
+    return if (apiLevel >= Build.VERSION_CODES.TIRAMISU) {
+        NotificationPermissionAction.REQUEST_RUNTIME
+    } else {
+        NotificationPermissionAction.OPEN_SETTINGS
+    }
+}
 
 class Notification(private val context: Context, private val activity: Activity? = null) {
     private fun showAlertOnce(permission: String, message: String, onOk: () -> Unit) {
@@ -55,6 +74,41 @@ class Notification(private val context: Context, private val activity: Activity?
         private const val WORKOUT_REMINDERS_KEY: String = "pending"
         var startedIntents: MutableMap<Int, PendingIntent> = mutableMapOf()
 
+        fun workoutReminderTimestamp(reminder: JSONObject): Long {
+            val fallback = reminder.optLong("timestamp", 0L)
+            val date = Regex("^(\\d{4})-(\\d{2})-(\\d{2})$").matchEntire(reminder.optString("localDate", ""))
+                ?: return fallback
+            val time = Regex("^(\\d{2}):(\\d{2})$").matchEntire(reminder.optString("localTime", ""))
+                ?: return fallback
+            val year = date.groupValues[1].toIntOrNull() ?: return fallback
+            val month = date.groupValues[2].toIntOrNull() ?: return fallback
+            val day = date.groupValues[3].toIntOrNull() ?: return fallback
+            val hour = time.groupValues[1].toIntOrNull() ?: return fallback
+            val minute = time.groupValues[2].toIntOrNull() ?: return fallback
+            if (month !in 1..12 || day !in 1..31 || hour !in 0..23 || minute !in 0..59) {
+                return fallback
+            }
+
+            val dateValidator = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
+            dateValidator.isLenient = false
+            dateValidator.clear()
+            dateValidator.set(year, month - 1, day, hour, minute, 0)
+            try {
+                dateValidator.timeInMillis
+            } catch (_: IllegalArgumentException) {
+                return fallback
+            }
+
+            return WorkoutReminderTime.resolveLocalTimestamp(
+                year,
+                month,
+                day,
+                hour,
+                minute,
+                TimeZone.getDefault()
+            ) ?: fallback
+        }
+
         fun storeWorkoutReminders(context: Context, payload: String): Boolean {
             return context.applicationContext
                 .getSharedPreferences(WORKOUT_REMINDERS_PREFS, Context.MODE_PRIVATE)
@@ -78,8 +132,10 @@ class Notification(private val context: Context, private val activity: Activity?
                 android.util.Log.i("LftTimer", "Workout reminders not restored: exact alarm access is unavailable")
                 return
             }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
-                !NotificationManagerCompat.from(context).areNotificationsEnabled()
+            if (notificationPermissionAction(
+                    Build.VERSION.SDK_INT,
+                    NotificationManagerCompat.from(context).areNotificationsEnabled()
+                ) != NotificationPermissionAction.ALLOW
             ) {
                 android.util.Log.i("LftTimer", "Workout reminders not restored: notifications are disabled")
                 return
@@ -93,7 +149,7 @@ class Notification(private val context: Context, private val activity: Activity?
             for (index in 0 until reminders.length()) {
                 val reminder = reminders.optJSONObject(index) ?: continue
                 val scheduleId = reminder.optInt("id", index)
-                val timestamp = reminder.optLong("timestamp", 0L)
+                val timestamp = workoutReminderTimestamp(reminder)
                 if (scheduleId !in 0 until WORKOUT_REMINDER_ID_LIMIT || timestamp <= now) continue
                 val delaySeconds = ceil((timestamp - now) / 1000.0).toLong()
                 notification.send(
@@ -147,34 +203,51 @@ class Notification(private val context: Context, private val activity: Activity?
             android.util.Log.d("LftTimer", "Notification.send -> missing exactAlarm")
             showAlertOnce(
                 "exactAlarm",
-                """Please grant permissions to use alarms, otherwise the app won't be able to notify you when the app is in background and the when rest timer is triggered.
-
-If you don't want the alarm and timers, set Rest Timers to 0 in Settings."""
+                "정확한 알람 권한을 허용하면 앱이 백그라운드에 있어도 운동 일정과 휴식 타이머 알림을 받을 수 있습니다."
             ) {
                 val act = activity ?: return@showAlertOnce
-                act.startActivity(
-                    Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
-                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                )
+                act.startActivity(Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
+                    data = android.net.Uri.parse("package:${context.packageName}")
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                })
             }
             return "exactAlarm"
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
-            !NotificationManagerCompat.from(context).areNotificationsEnabled()
-        ) {
+        val permissionAction = notificationPermissionAction(
+            Build.VERSION.SDK_INT,
+            NotificationManagerCompat.from(context).areNotificationsEnabled()
+        )
+        if (permissionAction != NotificationPermissionAction.ALLOW) {
             android.util.Log.d("LftTimer", "Notification.send -> missing notifications permission")
             showAlertOnce(
                 "notifications",
-                """Please grant permissions to show notifications, otherwise the app won't be able to notify you when the app is in background and the when rest timer is triggered.
-
-If you don't want the notifications and timers, set Rest Timers to 0 in Settings."""
+                if (permissionAction == NotificationPermissionAction.REQUEST_RUNTIME) {
+                    "알림 권한을 허용하면 운동 일정과 휴식 타이머 알림을 받을 수 있습니다."
+                } else {
+                    "앱 알림이 꺼져 있습니다. 앱 설정에서 알림을 허용하면 운동 일정과 휴식 타이머 알림을 받을 수 있습니다."
+                }
             ) {
-                val act = activity as? PermissionAwareActivity ?: return@showAlertOnce
-                act.requestPermissions(
-                    arrayOf(Manifest.permission.POST_NOTIFICATIONS),
-                    NOTIF_PERM_REQUEST_CODE,
-                    PermissionListener { _, _, _ -> true }
-                )
+                if (permissionAction == NotificationPermissionAction.REQUEST_RUNTIME) {
+                    val act = activity as? PermissionAwareActivity ?: return@showAlertOnce
+                    act.requestPermissions(
+                        arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                        NOTIF_PERM_REQUEST_CODE,
+                        PermissionListener { code, _, results ->
+                            if (code != NOTIF_PERM_REQUEST_CODE) return@PermissionListener false
+                            val granted = results.firstOrNull() == PackageManager.PERMISSION_GRANTED
+                            if (granted && isWorkoutReminder) restoreWorkoutReminders(context)
+                            true
+                        }
+                    )
+                } else {
+                    val act = activity ?: return@showAlertOnce
+                    act.startActivity(
+                        Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                            data = android.net.Uri.parse("package:${context.packageName}")
+                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        }
+                    )
+                }
             }
             return "notifications"
         }
@@ -185,9 +258,7 @@ If you don't want the notifications and timers, set Rest Timers to 0 in Settings
             android.util.Log.d("LftTimer", "Notification.send -> missing dndAccess")
             showAlertOnce(
                 "dndAccess",
-                """Please grant permissions to fire notification even in Do Not Disturb mode, so that you definitely don't miss it!
-
-If you don't want that, disable 'Ignore Do Not Disturb' in Settings."""
+                "방해 금지 모드에서도 타이머 알림을 받으려면 알림 정책 접근 권한을 허용해 주세요. 원하지 않으면 설정에서 '방해 금지 무시'를 끌 수 있습니다."
             ) {
                 val act = activity ?: return@showAlertOnce
                 act.startActivity(
@@ -218,5 +289,47 @@ If you don't want that, disable 'Ignore Do Not Disturb' in Settings."""
         alarmManager.setAlarmClock(alarmInfo, pendingIntent)
         android.util.Log.d("LftTimer", "Notification.send -> scheduled, fires in ${delay}ms id=$id")
         return null
+    }
+}
+
+/** Resolves a wall-clock time the same way JavaScript Date does for local reminder times. */
+internal object WorkoutReminderTime {
+    private const val MILLIS_PER_HOUR = 60L * 60L * 1000L
+
+    fun resolveLocalTimestamp(
+        year: Int,
+        month: Int,
+        day: Int,
+        hour: Int,
+        minute: Int,
+        timeZone: TimeZone
+    ): Long? {
+        val utcCalendar = GregorianCalendar(TimeZone.getTimeZone("UTC"))
+        utcCalendar.isLenient = false
+        utcCalendar.clear()
+        utcCalendar.set(year, month - 1, day, hour, minute, 0)
+        val wallTimeMillis = try {
+            utcCalendar.timeInMillis
+        } catch (_: IllegalArgumentException) {
+            return null
+        }
+
+        // Calendar's lenient resolution matches JavaScript's forward adjustment for a local
+        // time skipped by a spring DST transition.
+        val localCalendar = GregorianCalendar(timeZone)
+        localCalendar.clear()
+        localCalendar.set(year, month - 1, day, hour, minute, 0)
+        val calendarResolution = localCalendar.timeInMillis
+
+        // During a fall DST overlap, Calendar chooses the later (standard-time) occurrence,
+        // while JavaScript Date chooses the earlier occurrence. Collect nearby offsets and
+        // select the earliest instant that maps back to the requested wall-clock fields.
+        val offsets = mutableSetOf<Int>()
+        for (hoursFromWallTime in -72..72 step 6) {
+            offsets.add(timeZone.getOffset(wallTimeMillis + hoursFromWallTime * MILLIS_PER_HOUR))
+        }
+        val matchingInstants = offsets.map { offset -> wallTimeMillis - offset }
+            .filter { instant -> timeZone.getOffset(instant) == (wallTimeMillis - instant).toInt() }
+        return matchingInstants.minOrNull() ?: calendarResolution
     }
 }

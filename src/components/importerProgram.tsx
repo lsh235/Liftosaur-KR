@@ -8,6 +8,7 @@ import { FileImport_pickFile, FileImport_confirm } from "../utils/fileImport";
 import { AiWorkoutProgram_buildPhatSeedJson, AiWorkoutProgram_buildPromptTemplate } from "../utils/aiWorkoutProgram";
 import { ClipboardUtils_copy } from "../utils/clipboard";
 import { Dialog_alert } from "../utils/dialog";
+import { FILE_IMPORT_PROGRAM_MAX_SIZE_BYTES } from "../utils/fileImportLimits";
 
 interface IImporterProgramProps {
   dispatch: IDispatch;
@@ -15,7 +16,7 @@ interface IImporterProgramProps {
 
 export function ImporterProgram(props: IImporterProgramProps): JSX.Element {
   const onPress = useCallback(async () => {
-    const contents = await FileImport_pickFile("any");
+    const contents = await FileImport_pickFile("any", { maxSizeBytes: FILE_IMPORT_PROGRAM_MAX_SIZE_BYTES });
     if (contents == null) {
       return;
     }

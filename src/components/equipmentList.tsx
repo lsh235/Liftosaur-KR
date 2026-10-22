@@ -14,8 +14,7 @@ import { IconEquipmentLeverageMachine } from "./icons/iconEquipmentLeverageMachi
 import { IconEquipmentSmith } from "./icons/iconEquipmentSmith";
 import { IconEquipmentTrapbar } from "./icons/iconEquipmentTrapbar";
 import { IDispatch } from "../ducks/types";
-import { IAllEquipment, ISettings } from "../types";
-import { equipmentName } from "../models/exercise";
+import { IAllEquipment, IEquipment, ISettings } from "../types";
 import { Equipment_isBuiltIn, Equipment_setupOf } from "../models/equipment";
 import { EquipmentSetup_summary } from "../models/equipmentSetup";
 import {
@@ -27,6 +26,11 @@ import { IconDuplicate2 } from "./icons/iconDuplicate2";
 import { ObjectUtils_keys } from "../utils/object";
 import { StringUtils_dashcase } from "../utils/string";
 import { Dialog_confirm } from "../utils/dialog";
+import { ExercisePickerUtils_getEquipmentName } from "./exercisePicker/exercisePickerUtils";
+
+function equipmentDisplayName(equipment: IEquipment, allEquipment: IAllEquipment): string {
+  return allEquipment[equipment]?.name?.trim() || ExercisePickerUtils_getEquipmentName(equipment);
+}
 
 export const equipmentToIcon: Record<string, () => JSX.Element> = {
   barbell: () => <IconEquipmentBarbell />,
@@ -57,7 +61,7 @@ export function EquipmentList(props: IEquipmentListProps): JSX.Element {
     <View>
       {visibleKeys.map((key) => {
         const data = props.allEquipment[key]!;
-        const name = equipmentName(key, props.allEquipment);
+        const name = equipmentDisplayName(key, props.allEquipment);
         const isBuiltIn = Equipment_isBuiltIn(key);
         const summary = EquipmentSetup_summary(Equipment_setupOf(data, props.settings));
         return (
@@ -97,7 +101,7 @@ export function EquipmentList(props: IEquipmentListProps): JSX.Element {
               testID={`delete-equipment-${StringUtils_dashcase(name)}`}
               data-testid={`delete-equipment-${StringUtils_dashcase(name)}`}
               onPress={async () => {
-                if (isBuiltIn || (await Dialog_confirm("Are you sure?"))) {
+                if (isBuiltIn || (await Dialog_confirm("이 기구를 삭제할까요?"))) {
                   EditEquipment_setDeleted(props.dispatch, props.gymId, key, true);
                 }
               }}
@@ -110,7 +114,7 @@ export function EquipmentList(props: IEquipmentListProps): JSX.Element {
       })}
       {hiddenKeys.length > 0 && (
         <View className="flex-row flex-wrap mx-4 my-2">
-          <Text className="text-xs">Hidden Equipment: </Text>
+          <Text className="text-xs">숨긴 기구: </Text>
           {hiddenKeys.map((key, i) => (
             <View key={key} className="flex-row">
               {i !== 0 && <Text className="text-xs">, </Text>}
@@ -119,7 +123,7 @@ export function EquipmentList(props: IEquipmentListProps): JSX.Element {
                 name={`show-equipment-${key}`}
                 onClick={() => EditEquipment_setDeleted(props.dispatch, props.gymId, key, false)}
               >
-                {equipmentName(key, props.allEquipment)}
+                {equipmentDisplayName(key, props.allEquipment)}
               </LinkButton>
             </View>
           ))}
@@ -127,7 +131,7 @@ export function EquipmentList(props: IEquipmentListProps): JSX.Element {
       )}
       <View className="m-4">
         <LinkButton className="text-sm" name="add-new-equipment" onClick={props.onAdd}>
-          Add New Equipment Type
+          새 기구 종류 추가
         </LinkButton>
       </View>
     </View>

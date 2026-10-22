@@ -65,52 +65,52 @@ export function BuiltinProgramsList(props: IProps): JSX.Element {
   const listHeader = (
     <View className="pt-4">
       <Text className="pb-4">
-        I've been lifting for{" "}
+        운동 경력은{" "}
         <SelectLink
           name="builtin-filter-age"
           className="font-semibold"
           values={builtinProgramAges}
           onChange={(age) => setFilter({ ...filter, age })}
-          emptyLabel="any time"
+          emptyLabel="전체 기간"
           value={filter.age}
         />
-        . I can work out{" "}
+        입니다. 주당{" "}
         <SelectLink
           name="builtin-filter-frequency"
           className="font-semibold"
           values={builtinProgramFrequencies}
           onChange={(frequency) => setFilter({ ...filter, frequency })}
-          emptyLabel="any number days a week"
+          emptyLabel="원하는 일수"
           value={filter.frequency}
         />{" "}
-        for{" "}
+        운동할 수 있고, 회당{" "}
         <SelectLink
           name="builtin-filter-duration"
           className="font-semibold"
           values={builtinProgramDurations}
           onChange={(duration) => setFilter({ ...filter, duration })}
-          emptyLabel="any time"
+          emptyLabel="원하는 시간"
           value={filter.duration}
-        />
-        . My goal is{" "}
+        />{" "}
+        운동합니다. 목표는{" "}
         <SelectLink
           name="builtin-filter-goal"
           className="font-semibold"
           values={builtinProgramGoals}
           onChange={(goal) => setFilter({ ...filter, goal })}
-          emptyLabel="strength or hypertrophy"
+          emptyLabel="근력 또는 근비대"
           value={filter.goal}
         />
-        .
+        입니다.
       </Text>
       <Text className="pb-4">
-        Sort ascending by:{" "}
+        정렬 기준:{" "}
         <SelectLink
           name="builtin-sort"
           className="font-semibold"
-          values={{ age: "Age", frequency: "Frequency", duration: "Duration" }}
+          values={{ age: "운동 경력", frequency: "주당 운동일", duration: "운동 시간" }}
           onChange={(v) => setSort(v)}
-          emptyLabel="None"
+          emptyLabel="정렬 안 함"
           value={sort}
         />
       </Text>
@@ -119,7 +119,7 @@ export function BuiltinProgramsList(props: IProps): JSX.Element {
 
   const listEmpty = (
     <View className="px-6 py-8">
-      <Text className="text-lg text-center text-text-secondarysubtle">No programs found with selected filters</Text>
+      <Text className="text-lg text-center text-text-secondarysubtle">선택한 조건에 맞는 프로그램이 없습니다.</Text>
     </View>
   );
 

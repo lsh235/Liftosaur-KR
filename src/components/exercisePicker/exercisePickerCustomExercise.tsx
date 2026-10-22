@@ -63,11 +63,11 @@ export function ExercisePickerCustomExercise(props: IExercisePickerCustomExercis
                 props.onGoBack("Save custom exercise");
               }}
             >
-              Save
+              저장
             </Button>
           </View>
           <View className="absolute top-0 left-0 right-0 items-center py-2" pointerEvents="none">
-            <Text className="font-semibold">{props.exercise ? "Edit" : "Create"} Custom Exercise</Text>
+            <Text className="font-semibold">{props.originalExercise ? "사용자 운동 수정" : "사용자 운동 추가"}</Text>
           </View>
         </View>
       </SheetDragHandle>

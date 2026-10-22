@@ -15,7 +15,7 @@ export function ExercisePickerCurrentExercise(props: IExercisePickerCurrentExerc
   const exercise = Exercise_get(props.exerciseType, props.settings.exercises);
   return (
     <View className="mx-4 mb-3">
-      <GroupHeader name="Current Exercise" />
+      <GroupHeader name="현재 종목" />
       <View className="px-2 border bg-background-cardpurple border-border-cardpurple rounded-2xl">
         <ExercisePickerExerciseItem
           exercise={exercise}

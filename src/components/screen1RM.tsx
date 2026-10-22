@@ -41,7 +41,7 @@ export function Screen1RM(props: IScreen1RMProps): JSX.Element {
   const [exerciseTypes] = useState<IExerciseType[]>(Settings_getExercisesWithUnset1RMs(props.program, props.settings));
   const insets = useSafeAreaInsets();
 
-  useNavOptions({ navTitle: "Set 1 Rep Maxes" });
+  useNavOptions({ navTitle: "1회 최대 중량(1RM) 설정" });
 
   return (
     <View className="flex-1 bg-background-default">
@@ -53,30 +53,27 @@ export function Screen1RM(props: IScreen1RMProps): JSX.Element {
       >
         <View className="px-gutter pb-2">
           <Text className="text-sm">
-            The selected program uses <Text className="text-sm font-bold">1RM</Text> -{" "}
-            <Text className="text-sm font-bold">1 Rep Max</Text> weights - it calculates set weights based on what
-            weight you can do for 1 rep max.
+            선택한 프로그램은 <Text className="text-sm font-bold">1RM(1회 최대 중량)</Text>을 기준으로 세트 중량을
+            계산합니다.
           </Text>
         </View>
         <View className="px-gutter pb-2">
           <Text className="text-sm">
-            Enter your <Text className="text-sm font-bold">1 Rep Max</Text> for the following exercises. If you don't
-            know it, but you know <Text className="text-sm font-bold">N rep max</Text> (for example, you remember you
-            were able to do only 5 reps with 185lb) - use the{" "}
-            <Text className="text-sm font-bold">1 Rep Max calculator in the keyboard</Text>.
+            아래 운동의 1RM을 입력하세요. 직접 모른다면 185lb로 5회만 할 수 있었던 것처럼{" "}
+            <Text className="text-sm font-bold">N회 최대 중량</Text>을 아는 경우 키보드의 1RM 계산기를 사용하세요.
           </Text>
         </View>
         <View className="px-gutter pb-4">
           <Text className="text-sm font-bold text-text-secondary">
-            You can skip it - and do it later during your first workout!
+            건너뛰어도 됩니다. 첫 운동 중에 입력할 수 있습니다.
           </Text>
         </View>
         <View className="flex-row pb-1 border-b border-background-subtle">
           <View className="flex-1 pl-4">
-            <Text className="text-xs text-text-secondary">Exercise</Text>
+            <Text className="text-xs text-text-secondary">운동</Text>
           </View>
           <View className="pr-4 w-scaled-36">
-            <Text className="text-xs text-center text-text-secondary">1 Rep Max</Text>
+            <Text className="text-xs text-center text-text-secondary">1회 최대 중량</Text>
           </View>
         </View>
         {exerciseTypes.map((exerciseType) => {
@@ -143,7 +140,7 @@ export function Screen1RM(props: IScreen1RMProps): JSX.Element {
           data-testid="continue-1rms"
           testID="continue-1rms"
         >
-          Continue
+          계속
         </Button>
       </View>
     </View>

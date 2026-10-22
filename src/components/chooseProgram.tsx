@@ -35,7 +35,7 @@ export function ChooseProgramView(props: IProps): JSX.Element {
   const remScale = useRemScale();
 
   useNavOptions({
-    navTitle: "Choose a program",
+    navTitle: "운동 프로그램 선택",
     navRightButtons: [
       <LinkButton
         key="import"
@@ -43,7 +43,7 @@ export function ChooseProgramView(props: IProps): JSX.Element {
         name="import-program"
         onClick={() => navigateToModal("importFromLinkModal")}
       >
-        Import
+        프로그램 가져오기
       </LinkButton>,
     ],
   });
@@ -58,7 +58,7 @@ export function ChooseProgramView(props: IProps): JSX.Element {
           <TextInput
             className="w-full py-2 pr-4 border rounded-lg pl-9 border-border-neutral bg-background-default text-text-primary"
             style={{ fontSize: 15 * remScale }}
-            placeholder="Search by name"
+            placeholder="이름으로 검색"
             placeholderTextColor={Tailwind_semantic().text.secondarysubtle}
             defaultValue=""
             onChangeText={(text) => setSearch(text)}
@@ -71,7 +71,7 @@ export function ChooseProgramView(props: IProps): JSX.Element {
       {hasCustomPrograms ? (
         <>
           <View className="flex-row border-b border-border-neutral">
-            {["Yours", "Built-in"].map((label, index) => (
+            {["내 프로그램", "기본 프로그램"].map((label, index) => (
               <Pressable
                 key={label}
                 className="items-center flex-1 pb-2"
@@ -156,7 +156,7 @@ function Footer(props: IFooterProps): JSX.Element {
         testID="create-program"
         onPress={props.onCreate}
       >
-        <Text className="text-sm font-semibold text-text-link">Create New Program</Text>
+        <Text className="text-sm font-semibold text-text-link">새 프로그램 만들기</Text>
       </Pressable>
       <View style={{ width: 1 }} className="bg-background-subtle" />
       <Pressable
@@ -165,9 +165,9 @@ function Footer(props: IFooterProps): JSX.Element {
         testID="empty-program"
         onPress={props.onEmpty}
       >
-        <Text className="text-sm font-semibold text-text-link">Go Without Program</Text>
+        <Text className="text-sm font-semibold text-text-link">프로그램 없이 시작</Text>
         {remScale <= FOOTER_SUBTITLE_MAX_SCALE && (
-          <Text className="text-xs text-gray-500">and build your program along the way</Text>
+          <Text className="text-xs text-gray-500">운동하면서 프로그램을 만들어 갑니다.</Text>
         )}
       </Pressable>
     </View>

@@ -12,7 +12,6 @@ import { IconAi } from "../icons/iconAi";
 import { ExercisePickerOptionsMuscles } from "./exercisePickerOptionsMuscles";
 import { IconArrowDown2 } from "../icons/iconArrowDown2";
 import { ExercisePickerOptions, IFilterValue } from "./exercisePickerOptions";
-import { StringUtils_capitalize } from "../../utils/string";
 import { ObjectUtils_keys, ObjectUtils_clone, ObjectUtils_mapValues } from "../../utils/object";
 import { Exercise_targetMuscles, Exercise_synergistMuscles, Exercise_nameError } from "../../models/exercise";
 import { AppContext } from "../appContext";
@@ -31,6 +30,7 @@ import { ExerciseImageUtils_url } from "../../models/exerciseImage";
 import { BottomSheetOrModal } from "../bottomSheetOrModal";
 import { useModal } from "../../navigation/ModalStateContext";
 import { ImagePicker_pick } from "../../utils/imagePicker";
+import { ExercisePickerUtils_getExerciseKindName } from "./exercisePickerUtils";
 
 interface IExercisePickerCustomExerciseContentProps {
   settings: ISettings;
@@ -112,7 +112,7 @@ export function ExercisePickerCustomExerciseContent(props: IExercisePickerCustom
   const typeValues = exerciseKinds.reduce<Record<IExerciseKind, IFilterValue>>(
     (memo, type) => {
       memo[type] = {
-        label: StringUtils_capitalize(type),
+        label: ExercisePickerUtils_getExerciseKindName(type),
         isSelected: !!editCustomExercise.types?.includes(type),
       };
       return memo;
@@ -141,18 +141,18 @@ export function ExercisePickerCustomExerciseContent(props: IExercisePickerCustom
       <View>
         <View className="items-center pb-2">
           <LinkButton className="text-xs" name="clone-builtin-exercise" onPress={openCloneLibrary}>
-            Clone from another exercise
+            다른 운동 복제
           </LinkButton>
         </View>
         <View>
           <Text className="pb-1 text-sm">
-            Name<Text className="text-text-error"> *</Text>
+            이름<Text className="text-text-error"> *</Text>
           </Text>
           <TextInput
             data-testid="custom-exercise-name-input"
             testID="custom-exercise-name-input"
             defaultValue={editCustomExercise.name}
-            placeholder="Super Squat"
+            placeholder="예: 바벨 스쿼트"
             placeholderTextColor={Tailwind_semantic().text.secondarysubtle}
             style={{ minHeight: 40 }}
             className="px-4 py-2 text-base border rounded-lg bg-background-default border-border-prominent text-text-primary"
@@ -173,7 +173,7 @@ export function ExercisePickerCustomExerciseContent(props: IExercisePickerCustom
                 />
               </Pressable>
               <LinkButton name="custom-exercise-change-image" className="text-xs" onPress={openImageSourceAction}>
-                Change Image
+                이미지 변경
               </LinkButton>
             </View>
           ) : (
@@ -184,7 +184,7 @@ export function ExercisePickerCustomExerciseContent(props: IExercisePickerCustom
               buttonSize="md"
               onPress={openImageSourceAction}
             >
-              Add image
+              이미지 추가
             </Button>
           )}
         </View>
@@ -196,7 +196,7 @@ export function ExercisePickerCustomExerciseContent(props: IExercisePickerCustom
             className="w-full"
             onPress={async () => {
               if (!isValid) {
-                Dialog_alert("Please enter a name");
+                Dialog_alert("운동 이름을 입력해 주세요.");
                 return;
               }
               setIsAutofilling(true);
@@ -210,10 +210,10 @@ export function ExercisePickerCustomExerciseContent(props: IExercisePickerCustom
                     lb<ICustomExercise>().p("meta").p("synergistMuscles").record(synergistMuscles),
                     lb<ICustomExercise>().p("types").record(types),
                   ],
-                  "Autofill custom exercise muscles and types"
+                  "사용자 운동의 근육과 유형 자동 입력"
                 );
               } else {
-                Dialog_alert("Couldn't autofill the muscles for this exercise. Try a different name!");
+                Dialog_alert("운동 정보를 자동으로 불러오지 못했습니다. 다른 이름으로 시도해 주세요.");
               }
             }}
           >
@@ -225,7 +225,7 @@ export function ExercisePickerCustomExerciseContent(props: IExercisePickerCustom
               ) : (
                 <>
                   <IconAi color={Tailwind_semantic().icon.blue} />
-                  <Text className="ml-1 text-sm">Autofill Muscles and Types</Text>
+                  <Text className="ml-1 text-sm">근육 및 운동 유형 자동 입력</Text>
                 </>
               )}
             </View>
@@ -236,9 +236,9 @@ export function ExercisePickerCustomExerciseContent(props: IExercisePickerCustom
             settings={props.settings}
             useInlineModals={props.useInlineModals}
             name="target-muscles"
-            bottomSheetTitle="Target Muscles"
+            bottomSheetTitle="주동근"
             muscleKey="targetMuscles"
-            label="Target Muscles"
+            label="주동근"
             selectedMuscles={editCustomExercise.meta.targetMuscles}
             onSelect={(muscle) => {
               const current = new Set(editCustomExercise.meta.targetMuscles);
@@ -265,9 +265,9 @@ export function ExercisePickerCustomExerciseContent(props: IExercisePickerCustom
             settings={props.settings}
             useInlineModals={props.useInlineModals}
             name="synergist-muscles"
-            bottomSheetTitle="Synergist Muscles"
+            bottomSheetTitle="협력근"
             muscleKey="synergistMuscles"
-            label="Synergist Muscles"
+            label="협력근"
             selectedMuscles={editCustomExercise.meta.synergistMuscles}
             onSelect={(muscle) => {
               const current = new Set(editCustomExercise.meta.synergistMuscles);
@@ -306,8 +306,8 @@ export function ExercisePickerCustomExerciseContent(props: IExercisePickerCustom
         {!props.hideNotes && (
           <View className="pt-2 pb-4">
             <Text className="pb-1 text-sm text-text-primary">
-              <Text className="text-sm">Exercise Notes</Text>
-              <Text className="text-xs text-text-secondary"> (optional)</Text>
+              <Text className="text-sm">운동 메모</Text>
+              <Text className="text-xs text-text-secondary"> (선택)</Text>
             </Text>
             <MarkdownEditor
               value={notes ?? ""}
@@ -328,16 +328,14 @@ export function ExercisePickerCustomExerciseContent(props: IExercisePickerCustom
             buttonSize="md"
             className="w-full mt-4"
             onPress={async () => {
-              const ok = await confirmAsync(
-                "Are you sure you want to delete this exercise? This action cannot be undone."
-              );
+              const ok = await confirmAsync("이 운동을 삭제할까요? 삭제한 내용은 되돌릴 수 없습니다.");
               if (ok) {
                 props.onDelete();
               }
               props.onGoBack("Delete custom exercise");
             }}
           >
-            Delete Exercise
+            운동 삭제
           </Button>
         </View>
       )}
@@ -348,10 +346,10 @@ export function ExercisePickerCustomExerciseContent(props: IExercisePickerCustom
           isHidden={!showImageBottomSheet}
         >
           <View className="p-4">
-            <Text className="text-xs text-center text-text-secondary">Prefer 2:3 aspect ratio</Text>
+            <Text className="text-xs text-center text-text-secondary">2:3 비율을 권장합니다.</Text>
             <BottomSheetItem
               name="from-image-library"
-              title="From Image Library"
+              title="이미지 라이브러리에서 선택"
               onClick={() => {
                 setShowImageBottomSheet(false);
                 setShowImageLibrary(true);
@@ -360,10 +358,10 @@ export function ExercisePickerCustomExerciseContent(props: IExercisePickerCustom
             {Platform.OS !== "web" ? (
               <BottomSheetItem
                 name="upload-image"
-                title="Upload Image"
+                title="이미지 업로드"
                 onClick={() => {
                   if (!props.isLoggedIn) {
-                    Dialog_alert("You need to be logged in to upload custom exercise images");
+                    Dialog_alert("사용자 운동 이미지를 업로드하려면 로그인해야 합니다.");
                     return;
                   }
                   setShowImageBottomSheet(false);
@@ -391,10 +389,10 @@ export function ExercisePickerCustomExerciseContent(props: IExercisePickerCustom
                   <BottomSheetItem
                     name="upload-image"
                     icon={isUploading ? <IconSpinner width={18} height={18} /> : undefined}
-                    title="Upload Image"
+                    title="이미지 업로드"
                     onClick={() => {
                       if (!props.isLoggedIn) {
-                        Dialog_alert("You need to be logged in to upload custom exercise images");
+                        Dialog_alert("사용자 운동 이미지를 업로드하려면 로그인해야 합니다.");
                       } else {
                         onClick();
                       }
@@ -414,17 +412,17 @@ export function ExercisePickerCustomExerciseContent(props: IExercisePickerCustom
         >
           <View className="p-4">
             <BottomSheetItem
-              title="From Camera"
+              title="카메라로 촬영"
               name="from-camera"
               icon={isUploading ? <IconSpinner width={18} height={18} /> : <IconCamera size={24} />}
               isFirst={true}
-              description="Take a photo"
+              description="사진을 촬영합니다"
               onClick={async () => {
                 setIsUploading(true);
                 try {
                   await uploadAndUpdateImage("camera", editCustomExercise.id, service, props.dispatch);
                 } catch (e) {
-                  Dialog_alert("Failed to upload image. Please try again.");
+                  Dialog_alert("이미지 업로드에 실패했습니다. 다시 시도해 주세요.");
                 } finally {
                   setIsUploading(false);
                   setShowPicturePickerBottomSheet(false);
@@ -432,16 +430,16 @@ export function ExercisePickerCustomExerciseContent(props: IExercisePickerCustom
               }}
             />
             <BottomSheetItem
-              title="From Photo Library"
+              title="사진 보관함에서 선택"
               name="from-photo-library"
               icon={isUploading ? <IconSpinner width={18} height={18} /> : <IconPicture size={24} />}
-              description="Pick photo from your photo library"
+              description="사진 보관함에서 사진을 선택합니다"
               onClick={async () => {
                 setIsUploading(true);
                 try {
                   await uploadAndUpdateImage("photo-library", editCustomExercise.id, service, props.dispatch);
                 } catch (e) {
-                  Dialog_alert("Failed to upload image. Please try again.");
+                  Dialog_alert("이미지 업로드에 실패했습니다. 다시 시도해 주세요.");
                 } finally {
                   setIsUploading(false);
                   setShowPicturePickerBottomSheet(false);
@@ -532,8 +530,8 @@ function ExercisePickerCustomExerciseTypes(props: IExercisePickerCustomExerciseT
   return (
     <View className="w-full">
       <Text className="pb-1 text-sm text-text-primary">
-        <Text className="text-sm">Types</Text>
-        <Text className="text-xs text-text-secondary"> (optional)</Text>
+        <Text className="text-sm">운동 유형</Text>
+        <Text className="text-xs text-text-secondary"> (선택)</Text>
       </Text>
       <Pressable onPress={openPicker}>
         <ExercisePickerCustomExercise2SelectInput selectedValues={selectedValues} />
@@ -547,7 +545,7 @@ function ExercisePickerCustomExerciseTypes(props: IExercisePickerCustomExerciseT
           isHidden={!isOpened}
         >
           <View className="flex-1 px-4" style={{ marginTop: -12 }}>
-            <Text className="pt-6 pb-3 text-base font-semibold text-center">Types</Text>
+            <Text className="pt-6 pb-3 text-base font-semibold text-center">운동 유형</Text>
             <View className="flex-1 pb-4">
               <ExercisePickerOptions
                 values={props.types}
@@ -572,7 +570,7 @@ function ExercisePickerCustomExerciseTypes(props: IExercisePickerCustomExerciseT
                   setIsOpened(false);
                 }}
               >
-                Done
+                완료
               </Button>
             </View>
           </View>

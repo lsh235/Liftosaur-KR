@@ -45,8 +45,9 @@ import {
   Progress_getNextSupersetEntry,
 } from "../models/progress";
 import { IconPlus2 } from "./icons/iconPlus2";
-import { History_buildPrevExerciseData, IPrevExerciseData } from "../models/history";
+import { History_buildPrevExerciseData, History_totalEntryWeight, IPrevExerciseData } from "../models/history";
 import { Exercise_get, Exercise_nameWithEquipment, Exercise_toKey } from "../models/exercise";
+import { Weight_add, Weight_build, Weight_print } from "../models/weight";
 import {
   IWorkoutStripLabelFadeRange,
   WorkoutStripLabel_fadeRange,
@@ -250,6 +251,14 @@ function WorkoutInner(props: IWorkoutViewProps): JSX.Element {
   const progressStartTime = props.progress.startTime;
   const progressUserPromptedStateVars = props.progress.userPromptedStateVars;
   const progressDay = props.progress.day;
+  const totalVolume = useMemo(
+    () =>
+      props.progress.entries.reduce(
+        (volume, entry) => Weight_add(volume, History_totalEntryWeight(entry, props.settings)),
+        Weight_build(0, props.settings.units)
+      ),
+    [props.progress.entries, props.settings]
+  );
   const showReorderHint = props.progress.entries.length > 1 && !WorkoutHints_isLearned(props.helps, "workout-reorder");
 
   return (
@@ -266,9 +275,12 @@ function WorkoutInner(props: IWorkoutViewProps): JSX.Element {
           <View>
             {showReorderHint && (
               <Text className="px-4 pt-1 text-xs text-text-secondary" testID="workout-reorder-hint">
-                Long-tap a thumbnail to reorder
+                운동 순서를 바꾸려면 종목을 길게 누르세요
               </Text>
             )}
+            <Text className="px-4 pt-1 text-xs text-text-secondary" testID="workout-total-volume">
+              이번 운동 누적 볼륨 (워밍업 제외): {Weight_print(totalVolume)}
+            </Text>
           </View>
           <WorkoutThumbnailsStrip
             progress={props.progress}

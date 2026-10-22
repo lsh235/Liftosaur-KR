@@ -18,16 +18,15 @@ import { IconArrowUp } from "../icons/iconArrowUp";
 import { IconArrowDown2 } from "../icons/iconArrowDown2";
 import { lb } from "lens-shmens";
 import { ILensDispatch } from "../../utils/useLensReducer";
-import { equipmentName } from "../../models/exercise";
 import { CollectionUtils_remove } from "../../utils/collection";
-import { StringUtils_capitalize } from "../../utils/string";
 import { ScrollableTabs } from "../scrollableTabs";
+import { Muscle_getAvailableMuscleGroups, Muscle_getMusclesFromScreenMuscle } from "../../models/muscle";
 import {
-  Muscle_getAvailableMuscleGroups,
-  Muscle_getMuscleGroupName,
-  Muscle_getMusclesFromScreenMuscle,
-} from "../../models/muscle";
-import { ExercisePickerUtils_getSelectedMuscleGroupNames } from "./exercisePickerUtils";
+  ExercisePickerUtils_getEquipmentName,
+  ExercisePickerUtils_getExerciseKindName,
+  ExercisePickerUtils_getMuscleGroupName,
+  ExercisePickerUtils_getSelectedMuscleGroupNames,
+} from "./exercisePickerUtils";
 import { ExercisePickerOptionsMuscles } from "./exercisePickerOptionsMuscles";
 import { ExercisePickerOptions } from "./exercisePickerOptions";
 import { MuscleGroupImage } from "../muscleGroupImage";
@@ -43,8 +42,8 @@ interface IProps {
 }
 
 export const exercisePickerSortNames = {
-  name_asc: "Name, A to Z",
-  similar_muscles: "Similar Muscles",
+  name_asc: "이름순",
+  similar_muscles: "근육 유사도순",
 };
 
 type IFilterValue = { label: string; isSelected: boolean; disabledReason?: string };
@@ -55,7 +54,7 @@ export function ExercisePickerFilter(props: IProps): JSX.Element {
     similar_muscles: {
       label: exercisePickerSortNames.similar_muscles,
       isSelected: props.state.sort === "similar_muscles",
-      disabledReason: props.state.exerciseType != null ? undefined : "Enabled only for swap/edit",
+      disabledReason: props.state.exerciseType != null ? undefined : "종목 교체·편집 시에만 사용",
     },
   };
   const gymEquipment = Equipment_getCurrentGym(props.settings).equipment;
@@ -63,11 +62,11 @@ export function ExercisePickerFilter(props: IProps): JSX.Element {
   const equipmentValues = equipments.reduce<Record<IBuiltinEquipment, IFilterValue>>(
     (memo, equipment) => {
       memo[equipment] = {
-        label: equipmentName(equipment, {}),
+        label: ExercisePickerUtils_getEquipmentName(equipment),
         isSelected: props.state.filters.equipment?.includes(equipment) ?? false,
         disabledReason:
           !props.settings.workoutSettings.shouldShowInvisibleEquipment && gymEquipment[equipment]?.isDeleted
-            ? "Hidden"
+            ? "숨김"
             : undefined,
       };
       return memo;
@@ -78,7 +77,7 @@ export function ExercisePickerFilter(props: IProps): JSX.Element {
   const typeValues = exerciseKinds.reduce<Record<IExerciseKind, IFilterValue>>(
     (memo, type) => {
       memo[type] = {
-        label: StringUtils_capitalize(type),
+        label: ExercisePickerUtils_getExerciseKindName(type),
         isSelected: props.state.filters.type?.includes(type) ?? false,
       };
       return memo;
@@ -105,12 +104,12 @@ export function ExercisePickerFilter(props: IProps): JSX.Element {
         >
           <IconBack />
         </Pressable>
-        <Text className="flex-1 pr-12 font-bold text-center">Filter and sort</Text>
+        <Text className="flex-1 pr-12 font-bold text-center">종목 필터 및 정렬</Text>
       </View>
       <ScrollView className="flex-1">
         <Filter
           name="sort"
-          title="Sort by"
+          title="정렬 기준"
           values={sortValues}
           onChange={(value) => {
             props.onChangeSettings({
@@ -125,7 +124,7 @@ export function ExercisePickerFilter(props: IProps): JSX.Element {
         <View className="px-4">
           <MenuItemEditable
             type="boolean"
-            name="Show only available equipment"
+            name="사용 가능한 기구만 표시"
             value={props.settings.workoutSettings.shouldShowInvisibleEquipment ? "false" : "true"}
             onChange={(v) => {
               props.onChangeSettings({
@@ -148,7 +147,7 @@ export function ExercisePickerFilter(props: IProps): JSX.Element {
         </View>
         <Filter
           name="equipment"
-          title="Equipment"
+          title="운동 기구"
           values={equipmentValues}
           onChange={(value) => {
             props.dispatch(
@@ -168,7 +167,7 @@ export function ExercisePickerFilter(props: IProps): JSX.Element {
         />
         <Filter
           name="type"
-          title="Type"
+          title="운동 유형"
           values={typeValues}
           onChange={(value) => {
             props.dispatch(
@@ -208,7 +207,7 @@ function Filter<T extends string>(props: IFilterProps<T>): JSX.Element {
         <View className="flex-1">
           <Text>
             <Text>{props.title}: </Text>
-            <Text className="font-semibold">{selectedValues.map((v) => v.label).join(", ") || "All"}</Text>
+            <Text className="font-semibold">{selectedValues.map((v) => v.label).join(", ") || "전체"}</Text>
           </Text>
         </View>
         <View className="px-2">{isExpanded ? <IconArrowUp /> : <IconArrowDown2 />}</View>
@@ -234,8 +233,8 @@ function FilterMuscles(props: IFilterMusclesProps): JSX.Element {
       <Pressable className="flex-row items-center pb-1" onPress={() => setIsExpanded(!isExpanded)}>
         <View className="flex-1">
           <Text>
-            <Text>Muscles: </Text>
-            <Text className="font-semibold">{selectedMuscleGroups.join(", ") || "All"}</Text>
+            <Text>근육: </Text>
+            <Text className="font-semibold">{selectedMuscleGroups.join(", ") || "전체"}</Text>
           </Text>
         </View>
         <View className="px-2">{isExpanded ? <IconArrowUp /> : <IconArrowDown2 />}</View>
@@ -247,7 +246,7 @@ function FilterMuscles(props: IFilterMusclesProps): JSX.Element {
           color="purple"
           tabs={[
             {
-              label: "Muscle Groups",
+              label: "근육 그룹",
               children: () => {
                 const muscleGroups = Muscle_getAvailableMuscleGroups(props.settings).reduce<
                   Record<IScreenMuscle, IFilterValue>
@@ -258,7 +257,10 @@ function FilterMuscles(props: IFilterMusclesProps): JSX.Element {
                       return memo;
                     }
                     const isSelected = muscles.every((muscle) => selectedValues.includes(muscle));
-                    memo[muscleGroup] = { label: Muscle_getMuscleGroupName(muscleGroup, props.settings), isSelected };
+                    memo[muscleGroup] = {
+                      label: ExercisePickerUtils_getMuscleGroupName(muscleGroup, props.settings),
+                      isSelected,
+                    };
                     return memo;
                   },
                   {} as Record<IScreenMuscle, IFilterValue>
@@ -306,7 +308,7 @@ function FilterMuscles(props: IFilterMusclesProps): JSX.Element {
               },
             },
             {
-              label: "Muscles",
+              label: "근육",
               children: () => {
                 return (
                   <ExercisePickerOptionsMuscles

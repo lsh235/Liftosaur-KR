@@ -7,8 +7,13 @@ import {
   ProgramSchedule_getSessionDate,
   ProgramSchedule_isValid,
   ProgramSchedule_skipSession,
+  ProgramSchedule_today,
 } from "../src/models/programSchedule";
 import { Program_create, Program_createExercise } from "../src/models/program";
+import { Thunk_skipProgramSchedule } from "../src/ducks/thunks";
+import { IDispatch } from "../src/ducks/types";
+import { IEnv, IState } from "../src/models/state";
+import { IProgram, IWorkoutScheduleReminder } from "../src/types";
 
 describe("ProgramSchedule", () => {
   it("maps weekdays and keeps weekend rest days out of the session calendar", () => {
@@ -22,6 +27,7 @@ describe("ProgramSchedule", () => {
     const beforeSkip = ProgramSchedule_build("2026-10-19", [1, 2, 3, 4, 5], 3);
     const afterSkip = ProgramSchedule_skipSession(beforeSkip, 30);
 
+    expect(ProgramSchedule_getSessionDate(beforeSkip, 2, 30)).to.equal("2026-10-21");
     expect(ProgramSchedule_getSessionDate(beforeSkip, 3, 30)).to.equal("2026-10-22");
     expect(ProgramSchedule_getSessionDate(afterSkip, 2, 30)).to.equal("2026-10-21");
     expect(ProgramSchedule_getSessionDate(afterSkip, 3, 30)).to.equal("2026-10-23");
@@ -75,10 +81,51 @@ describe("ProgramSchedule", () => {
     expect(reminders[0]).to.eql({
       id: 0,
       timestamp: new Date(2026, 9, 19, 19, 0, 0).getTime(),
+      localDate: "2026-10-19",
+      localTime: "19:00",
       title: "1주차 · 월요일: 상체 파워",
       body: "바벨 벤치프레스 외 1종목 시작할 시간입니다!",
     });
     expect(reminders[1].timestamp).to.equal(new Date(2026, 9, 21, 19, 0, 0).getTime());
+  });
+
+  it("keeps reminder wall time consistent with JavaScript across daylight-saving transitions", () => {
+    const originalTimeZone = process.env.TZ;
+    process.env.TZ = "America/New_York";
+    try {
+      const buildReminder = (
+        startDate: string,
+        reminderTime: string,
+        now: number
+      ): IWorkoutScheduleReminder | undefined => {
+        const program = {
+          ...Program_create("DST reminder", "dst-reminder"),
+          planner: {
+            vtype: "planner" as const,
+            name: "DST reminder",
+            weeks: [{ name: "Week 1", days: [{ name: "Workout", exerciseText: "Bench Press / 3x5" }] }],
+          },
+          schedule: ProgramSchedule_build(startDate, [7], 0, 0, reminderTime),
+        };
+        return ProgramSchedule_buildReminderRequests(program, now)[0];
+      };
+
+      const springForward = buildReminder("2026-03-08", "02:30", new Date(2026, 2, 7, 12).getTime());
+      expect(springForward?.timestamp).to.equal(Date.UTC(2026, 2, 8, 7, 30));
+      expect(new Date(springForward!.timestamp).getHours()).to.equal(3);
+      expect(new Date(springForward!.timestamp).getMinutes()).to.equal(30);
+
+      const fallBack = buildReminder("2026-11-01", "01:30", new Date(2026, 9, 31, 12).getTime());
+      expect(fallBack?.timestamp).to.equal(Date.UTC(2026, 10, 1, 5, 30));
+      expect(new Date(fallBack!.timestamp).getHours()).to.equal(1);
+      expect(new Date(fallBack!.timestamp).getMinutes()).to.equal(30);
+    } finally {
+      if (originalTimeZone == null) {
+        delete process.env.TZ;
+      } else {
+        process.env.TZ = originalTimeZone;
+      }
+    }
   });
 
   it("does not schedule past or completed workout sessions", () => {
@@ -131,9 +178,61 @@ describe("ProgramSchedule", () => {
     expect(reminders[0]).to.eql({
       id: 0,
       timestamp: new Date(2026, 9, 19, 19, 0, 0).getTime(),
+      localDate: "2026-10-19",
+      localTime: "19:00",
       title: "1주 차 · 월요일: 상체 파워",
       body: "바벨 벤치프레스 외 1종목 시작할 시간입니다!",
     });
     expect(reminders[1].title).to.equal("1주 차 · 수요일: 하체 파워");
+  });
+
+  it("persists a due skip through the schedule thunk and ignores a future session", async () => {
+    const today = ProgramSchedule_today();
+    const todayUtc = new Date(today + "T00:00:00Z");
+    const todayWeekday = ((todayUtc.getUTCDay() + 6) % 7) + 1;
+    const tomorrow = new Date(todayUtc.getTime() + 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+    const sameWeekdayNextWeek = new Date(todayUtc.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+
+    const makeProgram = (startDate: string, weekday: number): IProgram => ({
+      ...Program_create("Schedule thunk", "schedule-thunk"),
+      planner: {
+        vtype: "planner" as const,
+        name: "Schedule thunk",
+        weeks: [{ name: "Week 1", days: [{ name: "Workout", exerciseText: "Bench Press / 3x5" }] }],
+      },
+      schedule: ProgramSchedule_build(startDate, [weekday]),
+    });
+
+    const runSkip = async (
+      program: IProgram
+    ): Promise<{ state: IState; startingState: IState; updateCount: number }> => {
+      let state = { storage: { programs: [program] } } as unknown as IState;
+      const startingState = state;
+      let updateCount = 0;
+      const dispatch: IDispatch = (action) => {
+        if (typeof action === "function") {
+          throw new Error("Unexpected nested thunk in schedule skip test");
+        }
+        if (action.type === "UpdateState") {
+          updateCount += 1;
+          state = action.lensRecording.reduce((memo, recording) => recording.fn(memo), state);
+        }
+      };
+
+      await Thunk_skipProgramSchedule(program.id)(dispatch, () => state, {} as IEnv);
+      return { state, startingState, updateCount };
+    };
+
+    const dueProgram = makeProgram(today, todayWeekday);
+    const dueResult = await runSkip(dueProgram);
+    const shiftedProgram = dueResult.state.storage.programs[0];
+    expect(dueResult.updateCount).to.equal(1);
+    expect(shiftedProgram.schedule?.shiftCount).to.equal(1);
+    expect(shiftedProgram.schedule?.completedSessions).to.equal(0);
+    expect(ProgramSchedule_getNextDate(shiftedProgram.schedule!, 1)).to.equal(sameWeekdayNextWeek);
+
+    const futureResult = await runSkip(makeProgram(tomorrow, (todayWeekday % 7) + 1));
+    expect(futureResult.updateCount).to.equal(0);
+    expect(futureResult.state).to.equal(futureResult.startingState);
   });
 });

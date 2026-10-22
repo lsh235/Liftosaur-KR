@@ -33,6 +33,13 @@ describe("WorkoutSetPlates", () => {
     expect(line?.exact).to.eql(false);
   });
 
+  it("calculates plates from the completed weight when the target weight is unspecified", () => {
+    const line = WorkoutSetPlates_line(set(undefined, 135), settings, { id: "squat", equipment: "barbell" }, false);
+
+    expect(line).to.include({ text: "45", exact: true });
+    expect(line?.bars?.[0].plates).to.eql([{ value: 45, unit: "lb" }]);
+  });
+
   it("returns nothing without a weight, without equipment, or when the bar alone is enough", () => {
     expect(WorkoutSetPlates_line(set(undefined), settings, { id: "squat", equipment: "barbell" }, false)).to.eql(
       undefined

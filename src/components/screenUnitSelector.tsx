@@ -32,10 +32,10 @@ export function ScreenUnitSelector(props: IProps): JSX.Element {
               resizeMode="contain"
             />
           </View>
-          <Text className="px-6 pt-4 text-2xl font-semibold text-center">Pick your units</Text>
+          <Text className="px-6 pt-4 text-2xl font-semibold text-center">중량 단위를 선택하세요</Text>
           <Text className="px-6 py-4 text-base text-center">
-            Your chosen units will be the default, but you can override them or change them in{" "}
-            <Text className="font-bold">Settings</Text> or <Text className="font-bold">per equipment</Text> anytime.
+            선택한 단위를 기본값으로 사용합니다. <Text className="font-bold">설정</Text>이나{" "}
+            <Text className="font-bold">기구별 설정</Text>에서 언제든 변경할 수 있습니다.
           </Text>
           <View className="flex-row px-6">
             <Pressable
@@ -47,7 +47,7 @@ export function ScreenUnitSelector(props: IProps): JSX.Element {
               <Text
                 className={`text-sm font-semibold text-center ${props.settings.units === "lb" ? "text-text-alwayswhite" : "text-text-purple"}`}
               >
-                Pounds (lb)
+                파운드 (lb)
               </Text>
             </Pressable>
             <Pressable
@@ -59,7 +59,7 @@ export function ScreenUnitSelector(props: IProps): JSX.Element {
               <Text
                 className={`text-sm font-semibold text-center ${props.settings.units === "kg" ? "text-text-alwayswhite" : "text-text-purple"}`}
               >
-                Kilograms (kg)
+                킬로그램 (kg)
               </Text>
             </Pressable>
           </View>
@@ -72,7 +72,7 @@ export function ScreenUnitSelector(props: IProps): JSX.Element {
           kind="purple"
           onClick={() => props.dispatch(Thunk_pushScreen("setupequipment"))}
         >
-          Continue
+          계속
         </Button>
       </View>
     </View>

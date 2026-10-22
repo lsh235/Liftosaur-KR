@@ -12,6 +12,8 @@ export interface IEditDetailsFormData {
   namePlaceholder: string;
   descriptionPlaceholder: string;
   submitLabel: string;
+  cancelLabel?: string;
+  requiredMessage?: string;
   dataCyPrefix: string;
   name: string;
   description?: string;
@@ -28,11 +30,7 @@ export function EditDetailsForm(props: {
   const inputHandle = useRef<IInputHandle>(null);
 
   const name =
-    typedNameResult == null
-      ? data.name.trim()
-      : typedNameResult.success
-        ? typedNameResult.data.trim()
-        : undefined;
+    typedNameResult == null ? data.name.trim() : typedNameResult.success ? typedNameResult.data.trim() : undefined;
 
   const onSubmit = (): void => {
     if (!name) {
@@ -50,7 +48,7 @@ export function EditDetailsForm(props: {
         identifier={`${data.dataCyPrefix}-name`}
         label={data.nameLabel}
         required
-        requiredMessage={`${data.nameLabel} cannot be empty`}
+        requiredMessage={data.requiredMessage ?? `${data.nameLabel} cannot be empty`}
         type="text"
         placeholder={data.namePlaceholder}
         defaultValue={data.name}
@@ -75,7 +73,7 @@ export function EditDetailsForm(props: {
           className="mr-3"
           onClick={props.onCancel}
         >
-          Cancel
+          {data.cancelLabel ?? "Cancel"}
         </Button>
         <Button
           kind="purple"

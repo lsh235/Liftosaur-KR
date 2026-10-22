@@ -22,10 +22,12 @@ import UserNotifications
   private let reminderIdentifier = "reminderNotification"
   // The notification sits after the in-process deadline so cancelling it after the cue lands in time.
   private let notificationFloorDelay: TimeInterval = 1
+  private let workoutReminderPrefix = "workoutSchedule-"
   private var audioPlayer: AVAudioPlayer?
   fileprivate var keepAlivePlayer: AVAudioPlayer?
   private var deadlineTimer: DispatchSourceTimer?
   private var generation = 0
+  private var workoutReminderGeneration = 0
   private var pendingRest: PendingRest?
 
   override init() {
@@ -408,44 +410,95 @@ import UserNotifications
 
   @objc func scheduleWorkoutReminders(payload: String,
                                       completion: @escaping (Bool, String?) -> Void) {
-    guard let data = payload.data(using: .utf8),
-          let reminders = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] else {
-      completion(false, nil)
-      return
-    }
-    center.getPendingNotificationRequests { requests in
-      let staleIds = requests.map(\.identifier).filter { $0.hasPrefix("workoutSchedule-") }
-      self.center.removePendingNotificationRequests(withIdentifiers: staleIds)
+    DispatchQueue.main.async {
+      self.workoutReminderGeneration += 1
+      let generation = self.workoutReminderGeneration
+      guard let data = payload.data(using: .utf8),
+            let reminders = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] else {
+        completion(false, nil)
+        return
+      }
       guard !reminders.isEmpty else {
-        completion(true, nil)
+        self.clearWorkoutReminders(generation: generation) {
+          completion(true, nil)
+        }
         return
       }
       self.center.getNotificationSettings { settings in
-        switch settings.authorizationStatus {
-        case .authorized, .provisional, .ephemeral:
-          self.scheduleWorkoutRemindersInternal(reminders, completion: completion)
-        case .notDetermined:
-          self.center.requestAuthorization(options: [.alert, .badge, .sound]) { granted, _ in
-            if granted {
-              self.scheduleWorkoutRemindersInternal(reminders, completion: completion)
-            } else {
+        DispatchQueue.main.async {
+          guard generation == self.workoutReminderGeneration else {
+            completion(true, nil)
+            return
+          }
+          switch settings.authorizationStatus {
+          case .authorized, .provisional, .ephemeral:
+            self.scheduleWorkoutRemindersInternal(reminders, generation: generation, completion: completion)
+          case .notDetermined:
+            self.center.requestAuthorization(options: [.alert, .badge, .sound]) { granted, _ in
+              DispatchQueue.main.async {
+                guard generation == self.workoutReminderGeneration else {
+                  completion(true, nil)
+                  return
+                }
+                if granted {
+                  self.scheduleWorkoutRemindersInternal(reminders, generation: generation, completion: completion)
+                } else {
+                  self.clearWorkoutReminders(generation: generation) {
+                    completion(false, "notifications")
+                  }
+                }
+              }
+            }
+          case .denied:
+            self.clearWorkoutReminders(generation: generation) {
+              completion(false, "notifications")
+            }
+          @unknown default:
+            self.clearWorkoutReminders(generation: generation) {
               completion(false, "notifications")
             }
           }
-        case .denied:
-          completion(false, "notifications")
-        @unknown default:
-          completion(false, "notifications")
         }
       }
     }
   }
 
+  private func clearWorkoutReminders(generation: Int, completion: @escaping () -> Void) {
+    center.getPendingNotificationRequests { requests in
+      DispatchQueue.main.async {
+        guard generation == self.workoutReminderGeneration else {
+          completion()
+          return
+        }
+        let staleIds = requests.map(\.identifier).filter { $0.hasPrefix(self.workoutReminderPrefix) }
+        self.center.removePendingNotificationRequests(withIdentifiers: staleIds)
+        completion()
+      }
+    }
+  }
+
+  private func workoutReminderDateComponents(for timestamp: Double) -> DateComponents {
+    // Program schedule dates are ISO/Gregorian calendar dates. Keep the intended wall-clock
+    // components tied to the device's live time zone so a later time-zone change moves the alert
+    // with the user's local workout time instead of leaving it bound to the old zone.
+    var calendar = Calendar(identifier: .gregorian)
+    calendar.timeZone = TimeZone.autoupdatingCurrent
+    var components = calendar.dateComponents(
+      [.year, .month, .day, .hour, .minute],
+      from: Date(timeIntervalSince1970: timestamp / 1000)
+    )
+    components.calendar = calendar
+    components.timeZone = TimeZone.autoupdatingCurrent
+    return components
+  }
+
   private func scheduleWorkoutRemindersInternal(_ reminders: [[String: Any]],
+                                                generation: Int,
                                                 completion: @escaping (Bool, String?) -> Void) {
     let group = DispatchGroup()
     let lock = NSLock()
     var firstError: Error?
+    var scheduledIdentifiers = Set<String>()
     let now = Date()
     for reminder in reminders.prefix(60) {
       guard let id = reminder["id"] as? Int,
@@ -457,14 +510,12 @@ import UserNotifications
       content.title = reminder["title"] as? String ?? "오늘의 운동"
       content.body = reminder["body"] as? String ?? "오늘의 루틴을 시작할 시간입니다."
       content.sound = UNNotificationSound(named: UNNotificationSoundName("notification.caf"))
-      var components = Calendar.current.dateComponents(
-        [.year, .month, .day, .hour, .minute],
-        from: Date(timeIntervalSince1970: timestamp / 1000)
-      )
-      components.calendar = Calendar.current
+      let components = workoutReminderDateComponents(for: timestamp)
       let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
+      let identifier = "\(workoutReminderPrefix)\(id)"
+      scheduledIdentifiers.insert(identifier)
       let request = UNNotificationRequest(
-        identifier: "workoutSchedule-\(id)",
+        identifier: identifier,
         content: content,
         trigger: trigger
       )
@@ -481,11 +532,27 @@ import UserNotifications
       }
     }
     group.notify(queue: .main) {
+      guard generation == self.workoutReminderGeneration else {
+        completion(true, nil)
+        return
+      }
       if let error = firstError {
         Logger.notifications.error("workout reminder schedule failed: \(error.localizedDescription)")
         completion(false, "notifications")
       } else {
-        completion(true, nil)
+        self.center.getPendingNotificationRequests { requests in
+          DispatchQueue.main.async {
+            guard generation == self.workoutReminderGeneration else {
+              completion(true, nil)
+              return
+            }
+            let staleIds = requests.map(\.identifier).filter {
+              $0.hasPrefix(self.workoutReminderPrefix) && !scheduledIdentifiers.contains($0)
+            }
+            self.center.removePendingNotificationRequests(withIdentifiers: staleIds)
+            completion(true, nil)
+          }
+        }
       }
     }
   }

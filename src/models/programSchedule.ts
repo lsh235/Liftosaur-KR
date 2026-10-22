@@ -232,7 +232,7 @@ export function ProgramSchedule_buildReminderRequests(
       info.exercise +
       (info.exerciseCount > 1 ? " 외 " + (info.exerciseCount - 1) + "종목" : "") +
       " 시작할 시간입니다!";
-    reminders.push({ id: reminders.length, timestamp, title, body });
+    reminders.push({ id: reminders.length, timestamp, localDate: date, localTime: schedule.reminderTime, title, body });
   }
   return reminders;
 }

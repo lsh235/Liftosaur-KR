@@ -22,6 +22,7 @@ import { navigateToModal, getCurrentRouteName } from "../navigation/navigationSe
 import { Dialog_confirm } from "../utils/dialog";
 import { usePerfRenderCount } from "../utils/usePerfRenderCount";
 import { IWorkoutProgressView, WorkoutProgressView_next } from "../utils/workoutProgressView";
+import { WorkoutMenu_deleteConfirmationMessage } from "../utils/workoutMenuActions";
 
 interface IScreenWorkoutProps {
   progress: IHistoryRecord;
@@ -147,9 +148,7 @@ function ScreenWorkoutInner(props: IScreenWorkoutProps): JSX.Element | null {
   const trackClick = useTrackClick();
   const isCurrent = Progress_isCurrent(progress);
   const onDeletePress = useCallback(async (): Promise<void> => {
-    const confirmed = await Dialog_confirm(
-      `Are you sure you want to delete this ${isCurrent ? "ONGOING" : "PAST"} workout?`
-    );
+    const confirmed = await Dialog_confirm(WorkoutMenu_deleteConfirmationMessage(isCurrent));
     if (confirmed) {
       dispatch(Thunk_deleteProgress(progress.id));
     }
@@ -255,7 +254,7 @@ function ScreenWorkoutInner(props: IScreenWorkoutProps): JSX.Element | null {
   progressViewRef.current = progressView;
 
   useNavOptions({
-    navTitle: isCurrent ? "Ongoing workout" : `${DateUtils_format(progress.date)}`,
+    navTitle: isCurrent ? "진행 중인 운동" : `${DateUtils_format(progress.date)}`,
     navOnTitleClick: !isCurrent ? onTitleClick : undefined,
     navSubtitle,
     navRightButtons,

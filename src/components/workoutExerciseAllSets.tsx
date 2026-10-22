@@ -76,11 +76,11 @@ export interface IWorkoutExerciseSetsExpansion {
 function getTargetColumnLabel(targetType: ITargetType): string {
   switch (targetType) {
     case "target":
-      return "Target";
+      return "목표";
     case "lasttime":
-      return "Previous Set";
+      return "이전 세트";
     case "platescalculator":
-      return "Plates";
+      return "원판";
     case "e1rm":
       return "e1RM";
   }
@@ -203,12 +203,12 @@ function WorkoutExerciseAllSetsInner(props: IWorkoutExerciseAllSets): JSX.Elemen
     <View className="overflow-hidden">
       {props.onTargetClick && showTargetHint && (
         <Text className="px-4 pb-1 text-xs text-text-secondary" testID="workout-target-hint">
-          Tap "{targetLabel}" to switch values
+          "{targetLabel}"을 눌러 표시 값을 바꾸세요
         </Text>
       )}
       <View className="flex-row items-center pb-1 border-b border-border-neutral">
         <View className="items-center" style={{ width: columnWidths.set }}>
-          <Text className="text-xs text-text-secondary">Set</Text>
+          <Text className="text-xs text-text-secondary">세트</Text>
         </View>
         <View className="flex-1 flex-row">
           <Pressable onPress={props.onTargetClick} className="flex-row items-center py-2 pr-4 -my-2" hitSlop={8}>
@@ -221,7 +221,7 @@ function WorkoutExerciseAllSetsInner(props: IWorkoutExerciseAllSets): JSX.Elemen
           </Pressable>
         </View>
         <View className="items-center" style={{ width: columnWidths.reps }}>
-          <Text className="text-xs text-text-secondary">Reps</Text>
+          <Text className="text-xs text-text-secondary">횟수</Text>
         </View>
         <View style={{ width: columnWidths.separator }} />
         <View className="items-center" style={{ width: columnWidths.weight }}>
@@ -297,7 +297,7 @@ function WorkoutExerciseAllSetsInner(props: IWorkoutExerciseAllSets): JSX.Elemen
       <Animated.View layout={WorkoutLayoutTransition}>
         {showExpandHint && (
           <Text className="px-4 pt-1 text-xs text-text-secondary" testID="workout-expand-hint">
-            Tap a set to expand or collapse it
+            세트를 눌러 상세 정보를 펼치거나 접으세요
           </Text>
         )}
 
@@ -337,7 +337,7 @@ function WorkoutExerciseAllSetsInner(props: IWorkoutExerciseAllSets): JSX.Elemen
               onPress={onAddWarmupSet}
             >
               <IconPlus2 size={10} color={Tailwind_colors().blue[400]} />
-              <Text className="ml-2 text-xs font-semibold text-text-link">Add Warmup Set</Text>
+              <Text className="ml-2 text-xs font-semibold text-text-link">워밍업 세트 추가</Text>
             </Pressable>
           </View>
           <View className="flex-1">
@@ -348,7 +348,7 @@ function WorkoutExerciseAllSetsInner(props: IWorkoutExerciseAllSets): JSX.Elemen
               onPress={onAddSet}
             >
               <IconPlus2 size={10} color={Tailwind_colors().blue[400]} />
-              <Text className="ml-2 text-xs font-semibold text-text-link">Add Set</Text>
+              <Text className="ml-2 text-xs font-semibold text-text-link">세트 추가</Text>
             </Pressable>
           </View>
         </View>

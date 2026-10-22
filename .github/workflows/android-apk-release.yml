@@ -1,0 +1,122 @@
+name: Android APK Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: android-apk-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build-test-and-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: gradle
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v4
+        with:
+          packages: >-
+            platforms;android-36
+            build-tools;36.0.0
+            ndk;27.1.12297006
+            cmake;3.22.1
+
+      - name: Install JavaScript dependencies
+        run: npm ci
+
+      - name: Create default native build configuration
+        run: npm run ensure:localdomain
+
+      - name: Prepare release signing key
+        env:
+          ANDROID_RELEASE_KEYSTORE_BASE64: ${{ secrets.LIFTOSAUR_ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_RELEASE_STORE_PASSWORD: ${{ secrets.LIFTOSAUR_ANDROID_STORE_PASSWORD }}
+          ANDROID_RELEASE_KEY_ALIAS: ${{ secrets.LIFTOSAUR_ANDROID_KEY_ALIAS }}
+          ANDROID_RELEASE_KEY_PASSWORD: ${{ secrets.LIFTOSAUR_ANDROID_KEY_PASSWORD }}
+        run: |
+          test -n "$ANDROID_RELEASE_KEYSTORE_BASE64"
+          test -n "$ANDROID_RELEASE_STORE_PASSWORD"
+          test -n "$ANDROID_RELEASE_KEY_ALIAS"
+          test -n "$ANDROID_RELEASE_KEY_PASSWORD"
+          printf '%s' "$ANDROID_RELEASE_KEYSTORE_BASE64" | base64 --decode > android/app/liftosaur-kr-release.keystore
+          chmod 600 android/app/liftosaur-kr-release.keystore
+          cat > android/keystore.properties <<EOF
+          storeFile=liftosaur-kr-release.keystore
+          storePassword=$ANDROID_RELEASE_STORE_PASSWORD
+          keyAlias=$ANDROID_RELEASE_KEY_ALIAS
+          keyPassword=$ANDROID_RELEASE_KEY_PASSWORD
+          EOF
+
+      - name: Run Android unit tests and build APK
+        env:
+          DISABLE_OTA: "true"
+        run: |
+          cd android
+          ./gradlew --no-daemon testDebugUnitTest assembleRelease
+
+      - name: Verify APK signature and metadata
+        run: |
+          APK=android/app/build/outputs/apk/release/app-release.apk
+          test -s "$APK"
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose "$APK"
+          apkanalyzer manifest application-id "$APK" | grep -Fx 'com.liftosaur.www.twa'
+          apkanalyzer manifest version-code "$APK" | grep -Fx '157'
+          VERSION="${GITHUB_REF_NAME#v}"
+          cp "$APK" "Liftosaur-KR-${VERSION}.apk"
+          sha256sum "Liftosaur-KR-${VERSION}.apk" > "Liftosaur-KR-${VERSION}.apk.sha256"
+
+      - name: Install and launch APK in Android emulator
+        uses: reactivecircus/android-emulator-runner@v2.38.0
+        with:
+          api-level: 36
+          arch: x86_64
+          target: google_apis
+          profile: pixel_6
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+          disable-animations: true
+          script: |
+            adb install Liftosaur-KR-${GITHUB_REF_NAME#v}.apk
+            adb shell am start -n com.liftosaur.www.twa/.MainActivity
+            sleep 20
+            adb shell pidof -s com.liftosaur.www.twa
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          cat > release-notes.md <<EOF
+          ## 설치 파일
+
+          - `Liftosaur-KR-${VERSION}.apk`: Android용 서명된 APK입니다. 다운로드한 뒤 파일을 열어 설치하세요. 설치를 위해 브라우저 또는 파일 앱의 '알 수 없는 앱 설치' 허용이 필요할 수 있습니다.
+          - `Liftosaur-KR-${VERSION}.apk.sha256`: APK 무결성 확인용 SHA-256 체크섬입니다.
+
+          이 APK는 GitHub Actions에서 Android 단위 테스트를 통과했고, Android 에뮬레이터에 설치한 뒤 실행을 확인했습니다.
+          EOF
+          gh release create "$GITHUB_REF_NAME" \
+            "Liftosaur-KR-${VERSION}.apk#Android APK" \
+            "Liftosaur-KR-${VERSION}.apk.sha256#SHA-256 checksum" \
+            --title "Liftosaur-KR ${VERSION}" \
+            --notes-file release-notes.md \
+            --verify-tag

@@ -1822,7 +1822,7 @@ export function Thunk_exportHistoryToCSV(): IThunk {
   };
 }
 
-export function Thunk_exportAiFeedbackMarkdown(title: string, userNote: string): IThunk {
+export function Thunk_exportAiFeedbackMarkdown(title: string, userNote: string, selectedProgramId?: string): IThunk {
   return async (dispatch, getState) => {
     dispatch(Thunk_postevent("export-ai-feedback-markdown"));
     const state = getState();
@@ -1832,7 +1832,8 @@ export function Thunk_exportAiFeedbackMarkdown(title: string, userNote: string):
       userNote,
       Date.now(),
       title,
-      state.storage.programs
+      state.storage.programs,
+      selectedProgramId
     );
     Exporter_toFile(`liftosaur_ai_feedback_${DateUtils_formatYYYYMMDD(Date.now())}.md`, markdown);
   };
@@ -1861,15 +1862,15 @@ export function Thunk_importStorage(maybeStorage: string): IThunk {
     try {
       parsedMaybeStorage = JSON.parse(maybeStorage);
     } catch (e) {
-      Dialog_alert("Couldn't parse the provided file");
+      Dialog_alert("선택한 파일의 JSON을 읽을 수 없습니다. 파일 형식을 확인하세요.");
       return;
     }
     const result = Storage_get(parsedMaybeStorage, false);
     if (result.success) {
       updateState(dispatch, [lb<IState>().p("storage").record(result.data)], "Importing Storage");
-      Dialog_alert("Successfully imported");
+      Dialog_alert("운동 데이터를 가져왔습니다.");
     } else {
-      Dialog_alert(`Couldn't import the storage, errors: \n${result.error.join("\n")}`);
+      Dialog_alert(`운동 데이터를 가져오지 못했습니다. 오류:\n${result.error.join("\n")}`);
     }
   };
 }
@@ -1904,7 +1905,7 @@ export function Thunk_importCsvData(rawCsv: string): IThunk {
         ImportFromLiftosaur_convertLiftosaurCsvToHistoryRecords(rawCsv, getState().storage.settings)
       );
       if (result.historyRecords.length === 0) {
-        Dialog_alert("No workouts found in the file.");
+        Dialog_alert("파일에서 가져올 운동 기록을 찾지 못했습니다.");
         return;
       }
       updateState(
@@ -1918,7 +1919,7 @@ export function Thunk_importCsvData(rawCsv: string): IThunk {
         Dialog_alert(e.message);
       } else {
         console.error(e);
-        Dialog_alert("Couldn't parse the provided file");
+        Dialog_alert("선택한 파일을 읽을 수 없습니다. 파일 형식을 확인하세요.");
       }
     }
   };
@@ -1932,7 +1933,7 @@ export function Thunk_importHevyData(rawCsv: string): IThunk {
         ImportFromHevy_convertHevyCsvToHistoryRecords(rawCsv, getState().storage.settings)
       );
       if (result.historyRecords.length === 0) {
-        Dialog_alert("No workouts found in the file.");
+        Dialog_alert("파일에서 가져올 운동 기록을 찾지 못했습니다.");
         return;
       }
       updateState(
@@ -1947,7 +1948,7 @@ export function Thunk_importHevyData(rawCsv: string): IThunk {
       } else {
         console.error(e);
         Rollbar.error(e as Error);
-        Dialog_alert("Failed to import history from Hevy.");
+        Dialog_alert("Hevy 운동 기록을 가져오지 못했습니다.");
       }
     }
   };

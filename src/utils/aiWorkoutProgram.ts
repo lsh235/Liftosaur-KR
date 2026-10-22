@@ -1,12 +1,26 @@
-import { IPlannerProgram, IPlannerProgramWeek, ISettings, IUnit } from "../types";
-import { IExportedProgram } from "../models/program";
+import {
+  availableMuscles,
+  IEquipment,
+  IMuscle,
+  IPlannerProgram,
+  IPlannerProgramWeek,
+  ISettings,
+  IUnit,
+} from "../types";
+import { IExportedProgram, Program_evaluate, Program_getProgramDayUsedExercises } from "../models/program";
 import { PlannerProgram_buildExportedProgram } from "../pages/planner/models/plannerProgram";
 import { Settings_build } from "../models/settings";
 import { UidFactory_generateUid } from "./generator";
 import { IEither } from "./types";
+import { Exercise_createCustomExercise, Exercise_findIdByName, Exercise_nameError } from "../models/exercise";
+import type { IExerciseKind } from "../models/exercise";
 
 const setTypes = ["WARMUP", "TOP", "BACKOFF", "STRAIGHT", "DROP"] as const;
 type IAISetType = (typeof setTypes)[number];
+const MAX_WORKOUTS = 7;
+const MAX_EXERCISES_PER_WORKOUT = 100;
+const MAX_WEEKLY_SETS_PER_EXERCISE = 100;
+const MAX_TOTAL_SETS = 50000;
 
 interface IAISet {
   set_no: number;
@@ -41,6 +55,137 @@ interface IAIProgram {
   days_per_week: number;
   weight_unit?: IUnit;
   workouts: IAIWorkout[];
+}
+
+const equipmentNames: Record<string, IEquipment> = {
+  barbell: "barbell",
+  dumbbell: "dumbbell",
+  cable: "cable",
+  smith: "smith",
+  "smith machine": "smith",
+  band: "band",
+  "resistance band": "band",
+  kettlebell: "kettlebell",
+  bodyweight: "bodyweight",
+  "body weight": "bodyweight",
+  machine: "leverageMachine",
+  "leverage machine": "leverageMachine",
+  "medicine ball": "medicineball",
+  "ez bar": "ezbar",
+  "trap bar": "trapbar",
+};
+
+function normalizeExerciseLookupName(name: string): string {
+  return name
+    .trim()
+    .toLowerCase()
+    .replace(/[\s_-]+/g, " ");
+}
+
+function getExerciseNameAndEquipment(name: string): {
+  name: string;
+  equipment?: IEquipment;
+  hasUnsupportedQualifier?: boolean;
+} {
+  const commaIndex = name.lastIndexOf(",");
+  if (commaIndex >= 0) {
+    const baseName = name.slice(0, commaIndex).trim();
+    const equipment = equipmentNames[normalizeExerciseLookupName(name.slice(commaIndex + 1))];
+    return equipment ? { name: baseName, equipment } : { name: name.trim(), hasUnsupportedQualifier: true };
+  }
+
+  const normalizedName = normalizeExerciseLookupName(name);
+  const paddedName = ` ${normalizedName} `;
+  const equipmentName = Object.keys(equipmentNames)
+    .sort((a, b) => b.length - a.length)
+    .find((candidate) => paddedName.includes(` ${candidate} `));
+  return { name: name.trim(), equipment: equipmentName ? equipmentNames[equipmentName] : undefined };
+}
+
+const targetMuscleAliases: Record<string, IMuscle[]> = {
+  chest: ["Pectoralis Major Clavicular Head", "Pectoralis Major Sternal Head"],
+  pectorals: ["Pectoralis Major Clavicular Head", "Pectoralis Major Sternal Head"],
+  back: ["Latissimus Dorsi", "Trapezius Lower Fibers", "Trapezius Middle Fibers"],
+  shoulders: ["Deltoid Anterior", "Deltoid Lateral", "Deltoid Posterior"],
+  deltoids: ["Deltoid Anterior", "Deltoid Lateral", "Deltoid Posterior"],
+  biceps: ["Biceps Brachii", "Brachialis"],
+  triceps: ["Triceps Brachii"],
+  arms: ["Biceps Brachii", "Brachialis", "Triceps Brachii"],
+  legs: ["Quadriceps", "Hamstrings", "Gluteus Maximus", "Gastrocnemius", "Soleus"],
+  quads: ["Quadriceps"],
+  quadriceps: ["Quadriceps"],
+  hamstrings: ["Hamstrings"],
+  glutes: ["Gluteus Maximus", "Gluteus Medius"],
+  calves: ["Gastrocnemius", "Soleus"],
+  core: ["Rectus Abdominis", "Obliques"],
+  abs: ["Rectus Abdominis", "Obliques"],
+  전완: ["Brachioradialis", "Wrist Flexors", "Wrist Extensors"],
+  어깨: ["Deltoid Anterior", "Deltoid Lateral", "Deltoid Posterior"],
+  가슴: ["Pectoralis Major Clavicular Head", "Pectoralis Major Sternal Head"],
+  등: ["Latissimus Dorsi", "Trapezius Lower Fibers", "Trapezius Middle Fibers"],
+  이두: ["Biceps Brachii", "Brachialis"],
+  삼두: ["Triceps Brachii"],
+  하체: ["Quadriceps", "Hamstrings", "Gluteus Maximus", "Gastrocnemius", "Soleus"],
+  대퇴사두근: ["Quadriceps"],
+  햄스트링: ["Hamstrings"],
+  둔근: ["Gluteus Maximus", "Gluteus Medius"],
+  종아리: ["Gastrocnemius", "Soleus"],
+  복근: ["Rectus Abdominis", "Obliques"],
+};
+
+function getTargetMuscles(targetMuscle?: string): IMuscle[] {
+  if (!targetMuscle) {
+    return [];
+  }
+  const normalized = normalizeExerciseLookupName(targetMuscle);
+  const exact = availableMuscles.find((muscle) => normalizeExerciseLookupName(muscle) === normalized);
+  return exact ? [exact] : targetMuscleAliases[normalized] || [];
+}
+
+function getExerciseKinds(name: string, targetMuscle?: string): IExerciseKind[] {
+  const description = `${name} ${targetMuscle || ""}`.toLowerCase();
+  const kinds = new Set<IExerciseKind>();
+  if (/(chest|shoulder|tricep|bicep|back|arm|가슴|어깨|등|팔|이두|삼두)/.test(description)) {
+    kinds.add("upper");
+  }
+  if (/(chest|shoulder|tricep|가슴|어깨|삼두)/.test(description)) {
+    kinds.add("push");
+  }
+  if (/(back|bicep|forearm|등|이두|전완)/.test(description)) {
+    kinds.add("pull");
+  }
+  if (/(leg|quad|hamstring|glute|calf|하체|대퇴|햄스트링|둔근|종아리)/.test(description)) {
+    kinds.add("lower");
+    kinds.add("legs");
+  }
+  if (/(abs|abdominal|core|복근|복부)/.test(description)) {
+    kinds.add("core");
+  }
+  return [...kinds];
+}
+
+function addUnknownExercisesAsCustom(input: IAIProgram, settings: ISettings): ISettings {
+  let nextSettings = settings;
+  for (const workout of input.workouts) {
+    for (const exercise of workout.exercises) {
+      const parsedName = getExerciseNameAndEquipment(exercise.name);
+      if (Exercise_findIdByName(parsedName.name, nextSettings.exercises) != null) {
+        continue;
+      }
+      const customExercise = Exercise_createCustomExercise(
+        parsedName.name,
+        getTargetMuscles(exercise.target_muscle),
+        [],
+        getExerciseKinds(exercise.name, exercise.target_muscle)
+      );
+      customExercise.defaultEquipment = parsedName.equipment;
+      nextSettings = {
+        ...nextSettings,
+        exercises: { ...nextSettings.exercises, [customExercise.id]: customExercise },
+      };
+    }
+  }
+  return nextSettings;
 }
 
 type IOutcome =
@@ -91,8 +236,11 @@ function stringAt(
   if (options.max != null && result.length > options.max) {
     errors.push(pathLabel(path + "." + key) + " 값은 " + options.max + "자 이하여야 합니다.");
   }
-  if (options.plannerName && /[\n\r/#{}()[\]|!]/.test(result)) {
+  if (options.plannerName && /[\n\r\t/#{}()[\]|!:]/.test(result)) {
     errors.push(pathLabel(path + "." + key) + " 값에 Liftosaur 구분 문자는 사용할 수 없습니다.");
+  }
+  if (options.plannerName && Exercise_nameError(result)) {
+    errors.push(pathLabel(path + "." + key) + " 값에 Liftosaur 운동 이름으로 사용할 수 없는 문자가 있습니다.");
   }
   return result;
 }
@@ -141,8 +289,12 @@ function validateProgram(value: unknown): { program?: IAIProgram; errors: string
   }
 
   const rawWorkouts = arrayAt(root.workouts, "program.workouts", errors) || [];
+  if (rawWorkouts.length > MAX_WORKOUTS) {
+    return { errors: [`workouts는 최대 ${MAX_WORKOUTS}개까지 입력할 수 있습니다.`] };
+  }
   const workouts: IAIWorkout[] = [];
   const dayIndexes = new Set<number>();
+  let totalSetCount = 0;
   for (const [wi, rawWorkout] of rawWorkouts.entries()) {
     const path = "program.workouts[" + wi + "]";
     const workout = objectAt(rawWorkout, path, errors);
@@ -156,6 +308,10 @@ function validateProgram(value: unknown): { program?: IAIProgram; errors: string
     });
     const dayName = stringAt(workout, "day_name", path, errors, { max: 80 });
     const rawExercises = arrayAt(workout.exercises, path + ".exercises", errors) || [];
+    if (rawExercises.length > MAX_EXERCISES_PER_WORKOUT) {
+      errors.push(pathLabel(path + ".exercises") + `에는 최대 ${MAX_EXERCISES_PER_WORKOUT}개 운동만 넣을 수 있습니다.`);
+      continue;
+    }
     const exercises: IAIExercise[] = [];
     const exerciseOrders = new Set<number>();
     for (const [ei, rawExercise] of rawExercises.entries()) {
@@ -169,6 +325,14 @@ function validateProgram(value: unknown): { program?: IAIProgram; errors: string
         max: 100,
         plannerName: true,
       });
+      if (exerciseName) {
+        const parsedName = getExerciseNameAndEquipment(exerciseName);
+        if (parsedName.hasUnsupportedQualifier) {
+          errors.push(pathLabel(exercisePath + ".name") + " 뒤에 쉼표를 쓰면 지원하는 기구 이름을 적어야 합니다.");
+        } else if (!parsedName.name) {
+          errors.push(pathLabel(exercisePath + ".name") + "에 운동 이름이 없습니다.");
+        }
+      }
       const targetMuscle = stringAt(exercise, "target_muscle", exercisePath, errors, {
         optional: true,
         max: 80,
@@ -179,6 +343,10 @@ function validateProgram(value: unknown): { program?: IAIProgram; errors: string
         max: 7200,
       });
       const rawWeeks = arrayAt(exercise.weekly_progression, exercisePath + ".weekly_progression", errors) || [];
+      if (rawWeeks.length > 52) {
+        errors.push(pathLabel(exercisePath + ".weekly_progression") + "에는 최대 52주까지만 입력할 수 있습니다.");
+        continue;
+      }
       const progressions: IAIProgression[] = [];
       const weekNumbers = new Set<number>();
       for (const [pi, rawProgression] of rawWeeks.entries()) {
@@ -193,6 +361,17 @@ function validateProgram(value: unknown): { program?: IAIProgram; errors: string
           max: duration ?? 52,
         });
         const rawSets = arrayAt(progression.sets, progressionPath + ".sets", errors) || [];
+        if (rawSets.length > MAX_WEEKLY_SETS_PER_EXERCISE) {
+          errors.push(
+            pathLabel(progressionPath + ".sets") +
+              `에는 한 주에 최대 ${MAX_WEEKLY_SETS_PER_EXERCISE}세트까지 입력할 수 있습니다.`
+          );
+          continue;
+        }
+        totalSetCount += rawSets.length;
+        if (totalSetCount > MAX_TOTAL_SETS) {
+          return { errors: [`운동 계획 전체 세트 수는 최대 ${MAX_TOTAL_SETS}개까지 입력할 수 있습니다.`] };
+        }
         const sets: IAISet[] = [];
         const setNumbers = new Set<number>();
         for (const [si, rawSet] of rawSets.entries()) {
@@ -327,6 +506,7 @@ function buildExerciseText(exercise: IAIExercise, week: number, unit: IUnit): st
 
 function buildProgram(input: IAIProgram, settings?: ISettings): IOutcome {
   const unit = input.weight_unit || "kg";
+  const programSettings = addUnknownExercisesAsCustom(input, settings || Settings_build(unit));
   const weeks: IPlannerProgramWeek[] = [];
   for (let week = 1; week <= input.duration_weeks; week += 1) {
     weeks.push({
@@ -339,14 +519,34 @@ function buildProgram(input: IAIProgram, settings?: ISettings): IOutcome {
   }
   const planner: IPlannerProgram = { vtype: "planner", name: input.program_name, weeks };
   try {
-    const exported = PlannerProgram_buildExportedProgram(
-      UidFactory_generateUid(8),
-      planner,
-      settings || Settings_build(unit)
-    );
+    const exported = PlannerProgram_buildExportedProgram(UidFactory_generateUid(8), planner, programSettings);
     exported.program.name = input.program_name;
     exported.program.description = input.description || "AI에서 가져온 운동 루틴";
     exported.program.isMultiweek = input.duration_weeks > 1;
+    const evaluatedProgram = Program_evaluate(exported.program, programSettings);
+    const missingExercises: string[] = [];
+    for (let weekIndex = 0; weekIndex < input.duration_weeks; weekIndex += 1) {
+      for (const [dayIndex, workout] of input.workouts.entries()) {
+        const evaluatedDay = evaluatedProgram.weeks[weekIndex]?.days[dayIndex];
+        const evaluatedExerciseCount = evaluatedDay ? Program_getProgramDayUsedExercises(evaluatedDay).length : 0;
+        if (evaluatedExerciseCount !== workout.exercises.length) {
+          missingExercises.push(
+            `${weekIndex + 1}주차 ${workout.day_name}: ${evaluatedExerciseCount}/${workout.exercises.length}개`
+          );
+        }
+      }
+    }
+    if (evaluatedProgram.errors.length > 0 || missingExercises.length > 0) {
+      const details = evaluatedProgram.errors.slice(0, 3).map((error) => error.error.message);
+      return {
+        kind: "error",
+        errors: [
+          "운동 이름이나 계획 형식을 해석하지 못해 일부 종목이 누락되었습니다. 운동 이름과 기구 표기를 확인하세요.",
+          ...details,
+          ...missingExercises.slice(0, 3),
+        ],
+      };
+    }
     return { kind: "program", program: exported };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
@@ -361,7 +561,10 @@ function parseJson(contents: string, settings?: ISettings): IOutcome {
   } catch (_) {
     return { kind: "not-ai" };
   }
-  if (!isRecord(value) || !("program_name" in value)) {
+  if (
+    !isRecord(value) ||
+    !("program_name" in value || "duration_weeks" in value || "days_per_week" in value || "workouts" in value)
+  ) {
     return { kind: "not-ai" };
   }
   const validation = validateProgram(value);
@@ -456,7 +659,7 @@ const csvAliases: Record<string, string[]> = {
 function normalizeHeader(value: string): string {
   return value
     .trim()
-    .toLocaleLowerCase()
+    .toLowerCase()
     .replace(/[\s-]+/g, "_");
 }
 
@@ -466,20 +669,29 @@ function parseCsv(contents: string, settings?: ISettings): IOutcome {
     return { kind: "error", errors: [parsed.error] };
   }
   const rows = parsed.rows || [];
-  if (rows.length < 2) {
+  if (rows.length === 0) {
     return { kind: "not-ai" };
   }
   const headers = rows[0].map(normalizeHeader);
   const indexes: Record<string, number> = {};
+  let recognizedHeaderCount = 0;
   for (const [field, aliases] of Object.entries(csvAliases)) {
-    const index = headers.findIndex((header) => aliases.some((alias) => normalizeHeader(alias) === header));
-    if (index >= 0) {
-      indexes[field] = index;
+    const matchingIndexes = headers.flatMap((header, index) =>
+      aliases.some((alias) => normalizeHeader(alias) === header) ? [index] : []
+    );
+    if (matchingIndexes.length > 1) {
+      return { kind: "error", errors: ["CSV 헤더에 " + field + " 열이 여러 번 있습니다."] };
+    }
+    if (matchingIndexes.length === 1) {
+      indexes[field] = matchingIndexes[0];
+      recognizedHeaderCount += 1;
     }
   }
-  const signature = ["program_name", "day_index", "exercise_name", "week", "set_no", "target_reps"];
-  if (!signature.every((field) => indexes[field] != null)) {
+  if (recognizedHeaderCount === 0) {
     return { kind: "not-ai" };
+  }
+  if (rows.length < 2) {
+    return { kind: "error", errors: ["CSV에 운동 세트 데이터 행이 없습니다."] };
   }
   const required = [
     "program_name",
@@ -505,13 +717,7 @@ function parseCsv(contents: string, settings?: ISettings): IOutcome {
     const value = get(cells, field);
     return value === "" ? NaN : Number(value);
   };
-  const first = rows[1];
-  const data: Record<string, unknown> = {
-    program_name: get(first, "program_name"),
-    duration_weeks: numeric(first, "duration_weeks"),
-    days_per_week: numeric(first, "days_per_week"),
-    weight_unit: get(first, "weight_unit") || undefined,
-  };
+  const data: Record<string, unknown> = {};
   const workoutMap = new Map<number, Record<string, unknown>>();
   const exerciseMap = new Map<string, Record<string, unknown>>();
   const metadata = new Map<string, string>();
@@ -577,12 +783,27 @@ function parseCsv(contents: string, settings?: ISettings): IOutcome {
   if (errors.length > 0) {
     return { kind: "error", errors };
   }
+  const metadataNumber = (field: string): number => {
+    const value = metadata.get(field);
+    return value == null ? NaN : Number(value);
+  };
+  data.program_name = metadata.get("program_name") || "";
+  data.duration_weeks = metadataNumber("duration_weeks");
+  data.days_per_week = metadataNumber("days_per_week");
+  data.weight_unit = metadata.get("weight_unit") || undefined;
   data.workouts = [...workoutMap.values()].sort((a, b) => Number(a.day_index) - Number(b.day_index));
   const validation = validateProgram(data);
   if (validation.errors.length > 0 || !validation.program) {
     return { kind: "error", errors: validation.errors };
   }
   return buildProgram(validation.program, settings);
+}
+
+function unwrapMarkdownCodeFence(contents: string): { contents: string; wrapped: boolean } {
+  const normalized = contents.replace(/^\uFEFF/, "");
+  const trimmed = normalized.trim();
+  const match = trimmed.match(/^```(?:json|csv)?(?:[ \t]*\r?\n|[ \t]+)([\s\S]*?)(?:\r?\n)?```$/i);
+  return match ? { contents: match[1], wrapped: true } : { contents: normalized, wrapped: false };
 }
 
 function toEither(outcome: IOutcome): IEither<IExportedProgram, string[]> | undefined {
@@ -599,7 +820,11 @@ export function AiWorkoutProgram_tryImport(
   contents: string,
   settings?: ISettings
 ): IEither<IExportedProgram, string[]> | undefined {
-  const normalized = contents.replace(/^\uFEFF/, "");
+  const unwrapped = unwrapMarkdownCodeFence(contents);
+  if (!unwrapped.wrapped && unwrapped.contents.includes("```")) {
+    return undefined;
+  }
+  const normalized = unwrapped.contents;
   const trimmed = normalized.trimStart();
   if (trimmed.startsWith("{")) {
     return toEither(parseJson(normalized, settings));
@@ -621,6 +846,7 @@ export function AiWorkoutProgram_buildPromptTemplate(): string {
     "필드 규칙:",
     "- program_name, description: 문자열",
     "- duration_weeks: 1~52 정수, days_per_week: 1~7 정수",
+    "- 파일 크기는 UTF-8 기준 10MB 이하로 만들고, 하루 운동은 최대 100종목, 종목당 주간 세트는 최대 100개, 전체 루틴 세트는 최대 50,000개로 제한해.",
     "- weight_unit: kg 또는 lb. 생략하면 kg",
     "- workouts[]: day_index(1부터 시작), day_name, exercises[]",
     "- exercises[]: order, name, target_muscle, rest_seconds, weekly_progression[]",
@@ -629,6 +855,11 @@ export function AiWorkoutProgram_buildPromptTemplate(): string {
     "- type은 WARMUP, TOP, BACKOFF, STRAIGHT, DROP 중 하나",
     "- 중량은 weight_unit을 사용하고, 개인 중량을 모르면 target_weight를 0으로 둬. 앱에서 운동 중량을 입력하도록 처리한다.",
     "- 한 세트마다 고유한 set_no를 사용하고 목표 반복 수는 양의 정수로 적는다.",
+    "- 주차별 과부하 계획을 weekly_progression에 실제 숫자로 표현해. 의도한 경우가 아니라면 모든 주차에 같은 목표를 복사하지 마.",
+    "- target_weight에는 해당 주차의 절대 중량만 적어. 1RM이나 최근 기록이 없으면 백분율을 임의의 kg/lb 중량으로 바꾸지 말고 0을 사용해.",
+    "- 실제 수행 결과에 따라 증량 여부가 달라지는 프로그램은 description에 정확한 유지·증량·반복 초기화 기준을 적어. 앱은 기록만으로 다음 주차 중량을 자동 변경하지 않아.",
+    "- 예: PHAT 파워 운동은 3–5회 이중 진행을 쓸 수 있어. 모든 세트에서 5회를 달성하면 가능한 최소 단위로 증량하고 3회로 초기화하며, 목표를 못 채우면 중량과 반복 목표를 유지해.",
+    "- 예: PHAT 근비대 운동은 정한 반복 범위의 아래쪽에서 시작해 반복 수를 올리고, 모든 세트에서 상단을 달성한 뒤 최소 단위로 증량하고 범위 아래쪽으로 초기화해.",
     "",
     "예시 형식(예시는 첫 주 일부만 보여 줌. 실제 응답에는 전체 주차와 모든 운동일을 채워):",
     "{",
@@ -688,7 +919,7 @@ const seedWorkouts: ISeedWorkout[] = [
         target_muscle: "가슴",
         rest_seconds: 180,
         sets: [
-          { type: "TOP", reps: 4, count: 2 },
+          { type: "TOP", reps: 3, count: 2 },
           { type: "BACKOFF", reps: 8, count: 3 },
         ],
       },
@@ -697,7 +928,7 @@ const seedWorkouts: ISeedWorkout[] = [
         target_muscle: "등",
         rest_seconds: 180,
         sets: [
-          { type: "TOP", reps: 5, count: 2 },
+          { type: "TOP", reps: 3, count: 2 },
           { type: "BACKOFF", reps: 8, count: 2 },
         ],
       },
@@ -706,7 +937,7 @@ const seedWorkouts: ISeedWorkout[] = [
         target_muscle: "어깨",
         rest_seconds: 150,
         sets: [
-          { type: "TOP", reps: 5, count: 1 },
+          { type: "TOP", reps: 3, count: 1 },
           { type: "BACKOFF", reps: 8, count: 3 },
         ],
       },
@@ -727,7 +958,7 @@ const seedWorkouts: ISeedWorkout[] = [
         target_muscle: "대퇴사두근",
         rest_seconds: 210,
         sets: [
-          { type: "TOP", reps: 4, count: 2 },
+          { type: "TOP", reps: 3, count: 2 },
           { type: "BACKOFF", reps: 8, count: 3 },
         ],
       },
@@ -736,7 +967,7 @@ const seedWorkouts: ISeedWorkout[] = [
         target_muscle: "둔근·햄스트링",
         rest_seconds: 210,
         sets: [
-          { type: "TOP", reps: 4, count: 1 },
+          { type: "TOP", reps: 3, count: 1 },
           { type: "BACKOFF", reps: 6, count: 2 },
         ],
       },
@@ -861,7 +1092,7 @@ export function AiWorkoutProgram_buildPhatSeedJson(): string {
   const program: IAIProgram = {
     program_name: "6주 완성 PHAT 변형 루틴 (평일 5일)",
     description:
-      "상하체 파워와 3분할 근비대를 결합한 예시 프리셋입니다. 개인별 중량 정보가 없어 목표 중량은 비워 두었습니다. 본인에게 맞는 안전한 중량을 앱에서 입력하세요. 4주차는 반복 수를 낮춘 회복 주간 예시입니다.",
+      "PHAT의 파워/근비대 5일 분할을 바탕으로 만든 6주 평일 변형 예시입니다. 원 PHAT은 고정된 6주 계획이나 4주차 회복 주간을 규정하지 않으므로 주차별 반복 목표와 4주차 회복 계획은 이 프리셋의 가이드입니다. 파워 TOP은 3–5회 이중 진행을 참고해 모든 세트에서 5회를 좋은 자세로 달성한 뒤 가능한 최소 중량을 올리고 반복 목표를 낮추세요. BACKOFF와 근비대 운동은 목표 반복을 달성하지 못하면 중량을 유지하고, 모든 세트에서 범위 상단을 달성한 뒤 최소 단위로 올리세요. 4주차는 각 그룹의 세트 수를 절반(올림)으로, 반복 목표를 80%로 낮춘 회복 주간입니다. 개인별 중량 정보가 없어 목표 중량은 0으로 두었으니 본인 기록에 맞게 입력하세요.",
     duration_weeks: 6,
     days_per_week: 5,
     weight_unit: "kg",
@@ -875,20 +1106,27 @@ export function AiWorkoutProgram_buildPhatSeedJson(): string {
         rest_seconds: exercise.rest_seconds,
         weekly_progression: Array.from({ length: 6 }, (_, weekIndex) => {
           const week = weekIndex + 1;
+          const isRecoveryWeek = week === 4;
+          const progressionLevel = week <= 3 ? week - 1 : week - 3;
           let setNo = 0;
           return {
             week,
-            sets: exercise.sets.flatMap((group) =>
-              Array.from({ length: group.count }, () => {
+            sets: exercise.sets.flatMap((group) => {
+              const setCount = isRecoveryWeek ? Math.max(1, Math.ceil(group.count / 2)) : group.count;
+              const maxReps = group.type === "TOP" ? 5 : group.type === "BACKOFF" ? 10 : 20;
+              const targetReps = isRecoveryWeek
+                ? Math.max(1, Math.round(group.reps * 0.8))
+                : Math.min(maxReps, group.reps + progressionLevel);
+              return Array.from({ length: setCount }, () => {
                 setNo += 1;
                 return {
                   set_no: setNo,
                   type: group.type,
                   target_weight: 0,
-                  target_reps: week === 4 ? Math.max(1, Math.round(group.reps * 0.8)) : group.reps,
+                  target_reps: targetReps,
                 };
-              })
-            ),
+              });
+            }),
           };
         }),
       })),

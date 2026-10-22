@@ -97,4 +97,11 @@ describe("History_totalEntryWeight with volume multiplier", () => {
     // 30 * (10 left + 10 right) * 2 dumbbells
     expect(History_totalEntryWeight(entry, settings).value).to.eql(1200);
   });
+
+  it("excludes completed warmup sets from workout volume", () => {
+    const entry = buildEntry({ id: "benchPress", equipment: "barbell" }, [buildSet(50, 5)]);
+    entry.warmupSets = [buildSet(90, 10)];
+
+    expect(History_totalEntryWeight(entry, settings).value).to.eql(250);
+  });
 });

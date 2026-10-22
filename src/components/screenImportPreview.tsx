@@ -13,7 +13,6 @@ import { IImportRowError, ImportUtils_customExercisesForRecords, ImportUtils_sum
 import { HistoryRecordView } from "./historyRecord";
 import { LinkButton } from "./linkButton";
 import { DateUtils_format } from "../utils/date";
-import { StringUtils_pluralize } from "../utils/string";
 import { CollectionUtils_sortBy } from "../utils/collection";
 import { Button } from "./button";
 
@@ -31,7 +30,7 @@ function ExpandableSection(props: { title: string; items: string[] }): JSX.Eleme
       <Text className="text-sm text-text-secondary">
         ⚠ {props.title}{" "}
         <LinkButton className="text-sm" onPress={() => setIsExpanded(!isExpanded)} name="expand-section-import-preview">
-          {isExpanded ? "Hide" : "Show"}
+          {isExpanded ? "숨기기" : "자세히"}
         </LinkButton>
       </Text>
       {isExpanded && (
@@ -48,7 +47,7 @@ function ExpandableSection(props: { title: string; items: string[] }): JSX.Eleme
 }
 
 function formatRowError(error: IImportRowError): string {
-  return `Row ${error.row}: ${error.message}`;
+  return `${error.row}행: ${error.message}`;
 }
 
 export function ScreenImportPreview(props: IProps): JSX.Element {
@@ -95,11 +94,11 @@ export function ScreenImportPreview(props: IProps): JSX.Element {
     props.dispatch(Thunk_applyImport(recordsToImport, customExercises, source));
     updateState(props.dispatch, [lb<IState>().p("importPreview").record(undefined)], "Close import preview");
     props.dispatch(Thunk_pushScreen("main", undefined, { tab: "home" }));
-    Dialog_alert(`Successfully imported ${count} ${StringUtils_pluralize("workout", count)}.`);
+    Dialog_alert(`운동 기록 ${count}개를 가져왔습니다.`);
   };
 
   useNavOptions({
-    navTitle: "Import Preview",
+    navTitle: "가져오기 미리보기",
     navRightButtons: [
       <Button
         kind="purple"
@@ -109,7 +108,7 @@ export function ScreenImportPreview(props: IProps): JSX.Element {
         disabled={recordsToImport.length === 0}
         onClick={onImport}
       >
-        Import
+        가져오기
       </Button>,
     ],
   });
@@ -134,9 +133,7 @@ export function ScreenImportPreview(props: IProps): JSX.Element {
         )}
         ListHeaderComponent={
           <View className="px-gutter pb-4">
-            <Text className="text-base font-semibold">
-              Import {importSummary.workoutCount} {StringUtils_pluralize("workout", importSummary.workoutCount)}
-            </Text>
+            <Text className="text-base font-semibold">가져올 운동 기록 {importSummary.workoutCount}개</Text>
             {importSummary.minStartTime != null && importSummary.maxStartTime != null && (
               <Text className="text-sm text-text-secondary">
                 {DateUtils_format(importSummary.minStartTime)} - {DateUtils_format(importSummary.maxStartTime)}
@@ -144,27 +141,19 @@ export function ScreenImportPreview(props: IProps): JSX.Element {
             )}
             {importSummary.customExerciseNames.length > 0 && (
               <ExpandableSection
-                title={`${importSummary.customExerciseNames.length} ${StringUtils_pluralize(
-                  "exercise",
-                  importSummary.customExerciseNames.length
-                )} will be created as custom`}
+                title={`사용자 지정 운동으로 추가할 종목 ${importSummary.customExerciseNames.length}개`}
                 items={importSummary.customExerciseNames}
               />
             )}
             {result.errors.length > 0 && (
               <ExpandableSection
-                title={`${result.errors.length} ${StringUtils_pluralize(
-                  "row",
-                  result.errors.length
-                )} skipped because they couldn't be parsed`}
+                title={`해석할 수 없어 건너뛴 행 ${result.errors.length}개`}
                 items={result.errors.map(formatRowError)}
               />
             )}
             {result.warnings.length > 0 && (
               <ExpandableSection
-                title={`${result.warnings.length} ${
-                  result.warnings.length === 1 ? "value looks" : "values look"
-                } suspicious`}
+                title={`확인이 필요한 값 ${result.warnings.length}개`}
                 items={result.warnings.map(formatRowError)}
               />
             )}
@@ -172,14 +161,13 @@ export function ScreenImportPreview(props: IProps): JSX.Element {
               <View className="pt-1">
                 <Pressable>
                   <Text className="text-sm text-text-secondary">
-                    ⚠ {summary.duplicateIds.size} {summary.duplicateIds.size === 1 ? "workout looks" : "workouts look"}{" "}
-                    like duplicates of existing history{" "}
+                    ⚠ 기존 운동 기록과 중복될 수 있는 기록 {summary.duplicateIds.size}개{" "}
                     <LinkButton
                       name="toggle-duplicate-import-preview"
                       className="text-sm"
                       onPress={() => setShouldSkipDuplicates(!shouldSkipDuplicates)}
                     >
-                      {shouldSkipDuplicates ? "Skipped - Include?" : "Included - Skip?"}
+                      {shouldSkipDuplicates ? "건너뜀 · 포함하기" : "포함됨 · 건너뛰기"}
                     </LinkButton>
                   </Text>
                 </Pressable>

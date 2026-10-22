@@ -60,6 +60,7 @@ export function NavScreenSettings(): JSX.Element {
         user={user}
         currentProgramName={currentProgram?.name || ""}
         settings={settings}
+        programs={state.storage.programs}
         importSessions={state.storage.importSessions}
       />
     </NavScreenContent>

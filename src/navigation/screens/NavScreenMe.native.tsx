@@ -63,6 +63,7 @@ export function NavScreenSettings(): React.JSX.Element {
           user={user}
           currentProgramName={currentProgram?.name || ""}
           settings={settings}
+          programs={untrack(state.storage.programs)}
           importSessions={untrack(state.storage.importSessions)}
         />
       </NavScreenContent>

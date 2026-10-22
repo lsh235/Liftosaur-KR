@@ -42,6 +42,13 @@ describe("completing one set", () => {
     expect(screen.getAllByTestId("set-nonstarted")).toHaveLength(before - 1);
   });
 
+  it("shows the estimated 1RM after the set's actual repetitions and weight are recorded", async () => {
+    await app.completeSet(0);
+
+    const children = screen.getByTestId("workout-set-e1rm").props.children;
+    expect(Array.isArray(children) ? children.join("") : children).toBe("e1RM 110.83 lb");
+  });
+
   it("commits the completed row and the row that becomes next, each once, and no other row", async () => {
     const trace = await app.record(async () => {
       await app.completeSet(0);

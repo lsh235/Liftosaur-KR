@@ -25,7 +25,7 @@ export function ActionMenu(props: IActionMenuProps): JSX.Element {
   const open = useCallback(() => {
     if (Platform.OS === "ios") {
       const actions = props.actions;
-      const labels = actions.map((a) => a.label).concat("Cancel");
+      const labels = actions.map((a) => a.label).concat("취소");
       const destructiveIndex = actions.findIndex((a) => a.destructive);
       ActionSheetIOS.showActionSheetWithOptions(
         {
@@ -108,7 +108,7 @@ export function ActionMenu(props: IActionMenuProps): JSX.Element {
                 </Pressable>
               ))}
               <Pressable className="px-4 py-4" onPress={close}>
-                <Text className="text-base text-center text-text-secondary">Cancel</Text>
+                <Text className="text-base text-center text-text-secondary">취소</Text>
               </Pressable>
             </Pressable>
           </Pressable>

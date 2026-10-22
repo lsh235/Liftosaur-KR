@@ -11,12 +11,12 @@ import { Thunk_pushScreen } from "../ducks/thunks";
 import { Button } from "./button";
 import { EquipmentList, equipmentToIcon } from "./equipmentList";
 import { Equipment_getCurrentGym, Equipment_getEquipmentData, Equipment_getEquipmentOfGym } from "../models/equipment";
-import { equipmentName } from "../models/exercise";
 import { lb } from "lens-shmens";
 import { ObjectUtils_keys } from "../utils/object";
 import { ImagePreloader_uri } from "../utils/imagePreloader";
 import { Tailwind_colors, Tailwind_semantic } from "../utils/tailwindConfig";
 import { navigateToModal } from "../navigation/navigationService";
+import { ExercisePickerUtils_getEquipmentName } from "./exercisePicker/exercisePickerUtils";
 
 function getFooterShadowStyle(): Record<string, unknown> {
   const semantic = Tailwind_semantic();
@@ -60,17 +60,18 @@ export function ScreenSetupEquipment(props: IScreenSetupEquipmentProps): JSX.Ele
           />
         </View>
         <View className="px-2 -mt-1">
-          <Text className="mb-2 text-xl font-bold text-center text-text-primary">What equipment do you have?</Text>
+          <Text className="mb-2 text-xl font-bold text-center text-text-primary">
+            사용할 수 있는 운동 기구를 선택하세요.
+          </Text>
           <Text className="mb-4 text-sm text-center text-text-secondary">
-            Toggle on the equipment available at your gym. This helps the app round weights to what you can actually
-            load.
+            운동할 때 사용할 수 있는 기구를 켜세요. 설정한 기구와 원판에 맞춰 실제로 들 수 있는 중량을 계산합니다.
           </Text>
 
           <View style={{ gap: 8 }}>
             {ObjectUtils_keys(allEquipment).map((eqid) => {
               const equipmentData = Equipment_getEquipmentData(props.settings, eqid);
               const isEnabled = equipmentData && !equipmentData.isDeleted;
-              const name = equipmentName(eqid, allEquipment);
+              const name = equipmentData?.name?.trim() || ExercisePickerUtils_getEquipmentName(eqid);
               const icon = equipmentToIcon[eqid] ? equipmentToIcon[eqid]() : null;
               return (
                 <Pressable
@@ -140,7 +141,7 @@ export function ScreenSetupEquipment(props: IScreenSetupEquipmentProps): JSX.Ele
             testID="setup-equipment-skip"
             onClick={() => props.dispatch(Thunk_pushScreen("hearaboutus"))}
           >
-            Skip
+            건너뛰기
           </Button>
           <Button
             className="flex-1 ls-onboarding-equipment-setup"
@@ -151,7 +152,7 @@ export function ScreenSetupEquipment(props: IScreenSetupEquipmentProps): JSX.Ele
             testID="setup-equipment-continue"
             onClick={() => props.dispatch(Thunk_pushScreen("setupplates"))}
           >
-            Set up plates
+            원판 설정
           </Button>
         </View>
       </View>
@@ -170,7 +171,7 @@ export function ScreenSetupPlates(props: IScreenSetupPlatesProps): JSX.Element {
   const currentGym = Equipment_getCurrentGym(props.settings);
   const insets = useSafeAreaInsets();
 
-  useNavOptions({ navTitle: "Set Up Plates" });
+  useNavOptions({ navTitle: "원판 설정" });
 
   return (
     <View className="flex flex-col flex-1 bg-background-default" style={{ paddingTop: insets.top }}>
@@ -189,11 +190,10 @@ export function ScreenSetupPlates(props: IScreenSetupPlatesProps): JSX.Element {
           />
         </View>
         <View className="px-gutter pb-4">
-          <Text className="mb-2 text-xl font-bold text-center text-text-primary">Set up your plates</Text>
+          <Text className="mb-2 text-xl font-bold text-center text-text-primary">바와 원판을 설정하세요.</Text>
           <Text className="text-sm text-center text-text-secondary">
-            Tap an equipment to set up its <Text className="text-sm font-bold text-text-secondary">bar</Text> and{" "}
-            <Text className="text-sm font-bold text-text-secondary">plates</Text>, or its weight stack. The app uses
-            this to round program weights to what you can actually load.
+            기구를 눌러 <Text className="text-sm font-bold text-text-secondary">바와 원판</Text> 또는 중량 스택을
+            설정하세요. 설정한 기구로 실제 장착할 수 있는 중량을 계산합니다.
           </Text>
         </View>
         <EquipmentList
@@ -220,7 +220,7 @@ export function ScreenSetupPlates(props: IScreenSetupPlatesProps): JSX.Element {
           data-testid="setup-plates-continue"
           testID="setup-plates-continue"
         >
-          Continue
+          계속
         </Button>
       </View>
     </View>

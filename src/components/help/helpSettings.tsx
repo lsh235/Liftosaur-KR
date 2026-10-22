@@ -5,33 +5,25 @@ import { Text } from "../primitives/text";
 export function HelpSettings(): JSX.Element {
   return (
     <View>
-      <Text className="pb-2 text-xl font-semibold">Settings</Text>
+      <Text className="pb-2 text-xl font-semibold">설정</Text>
       <Text className="pb-2 text-sm">
-        This is the main settings screen. The settings are grouped by a common theme (Account, Workout, etc). Some
-        settings are only visible if you're logged in.
+        설정은 계정, 운동 등 주제별로 나뉘어 있습니다. 일부 항목은 로그인한 뒤 사용할 수 있습니다.
       </Text>
       <Text className="pb-2 text-sm">
-        Under <Text className="text-sm font-bold">Account</Text> section, you can go to the account screen, and log in
-        there. For now, we only support <Text className="text-sm font-bold">login via Google</Text>. After you log in,
-        your data will be synced to the cloud, so even if you lose your phone, your progress won't be lost.
+        <Text className="text-sm font-bold">계정</Text>에서 로그인하면 여러 기기 간 데이터를 동기화할 수 있습니다.
       </Text>
       <Text className="pb-2 text-sm">
-        Make sure to set your <Text className="text-sm font-bold">Available Equipment</Text>. The plates you specify
-        there would be used when calculating weight for exercises, and the weight would be round up so that you can get
-        it with your available equipment. Like if you have only <Text className="text-sm font-bold">4x45lb</Text> plates
-        and a barbell, you won't be able to get <Text className="text-sm font-bold">150lb</Text>, so the app would
-        convert it to <Text className="text-sm font-bold">135lb (bar + 2x45lb plates)</Text> - the weight you can
-        actually get with your available plates.
+        <Text className="text-sm font-bold">보유 기구</Text>를 설정하세요. 원판 계산기가 보유한 기구로 만들 수 있는
+        중량을 계산합니다. 예를 들어 <Text className="text-sm font-bold">45lb 원판 4장</Text>과 바만 있다면 150lb를
+        만들 수 없으므로 실제로 만들 수 있는 중량 조합을 안내합니다.
       </Text>
       <Text className="pb-2 text-sm">
-        In <Text className="text-sm font-bold">Import / Export</Text> section, you can import and export all your stored
-        app data to a JSON file. You can use it to backup your data, or to transfer it to another device (e.g. if you
-        don't want to create an account and sync data to the cloud). You can also import programs there (which you
-        previously exported on the "Edit Program" screen).
+        <Text className="text-sm font-bold">가져오기 / 내보내기</Text>에서 앱 데이터를 JSON 파일로 백업하거나 다른
+        기기에 옮길 수 있습니다. 외부 AI가 만든 운동 루틴 JSON 또는 CSV 파일은 프로그램 선택 화면의{" "}
+        <Text className="text-sm font-bold">AI 운동 루틴 파일 가져오기</Text>에서 불러옵니다.
       </Text>
       <Text className="pb-2 text-sm">
-        You can also export your history to CSV file, and then open it e.g. in Excel, if you want to analyze your data
-        there.
+        운동 기록은 CSV 파일로 내보내 스프레드시트 앱에서 분석할 수 있습니다.
       </Text>
     </View>
   );

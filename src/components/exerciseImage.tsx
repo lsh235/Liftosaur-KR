@@ -24,6 +24,7 @@ interface IProps {
   className?: string;
   customClassName?: string;
   width?: number;
+  accessibilityLabel?: string;
 }
 
 function areExerciseImagePropsEqual(prev: IProps, next: IProps): boolean {
@@ -34,6 +35,7 @@ function areExerciseImagePropsEqual(prev: IProps, next: IProps): boolean {
     prev.suppressCustom === next.suppressCustom &&
     prev.className === next.className &&
     prev.customClassName === next.customClassName &&
+    prev.accessibilityLabel === next.accessibilityLabel &&
     prev.width === next.width &&
     prev.exerciseType.id === next.exerciseType.id &&
     prev.exerciseType.equipment === next.exerciseType.equipment &&
@@ -49,6 +51,7 @@ export const ExerciseImage = memo(function ExerciseImage(props: IProps): JSX.Ele
     id: props.exerciseType.id,
     equipment: props.exerciseType.equipment || exercise.defaultEquipment,
   };
+  const accessibilityLabel = props.accessibilityLabel ?? Exercise_nameWithEquipment(exercise, props.settings);
 
   const rawSrc = ExerciseImageUtils_url(exerciseType, size, props.settings);
   const remoteSrc = rawSrc ? HostConfig_resolveUrl(rawSrc) : undefined;
@@ -105,7 +108,7 @@ export const ExerciseImage = memo(function ExerciseImage(props: IProps): JSX.Ele
             style={imgStyle}
             onLoad={onCachedLoad}
             onError={onCachedError}
-            accessibilityLabel={Exercise_nameWithEquipment(exercise, props.settings)}
+            accessibilityLabel={accessibilityLabel}
           />
         )}
         {(isError || !doesExist) &&
@@ -146,7 +149,7 @@ export const ExerciseImage = memo(function ExerciseImage(props: IProps): JSX.Ele
             }
           }}
           onError={onCachedError}
-          accessibilityLabel={Exercise_nameWithEquipment(exercise, props.settings)}
+          accessibilityLabel={accessibilityLabel}
         />
         <ExerciseImageAuxiliary size={props.size} isError={isError} isLoading={isLoading} />
       </>

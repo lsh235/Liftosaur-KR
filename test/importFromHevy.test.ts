@@ -188,7 +188,7 @@ describe("ImportFromHevy", () => {
   it("throws a generic error for non-Hevy garbage", () => {
     expect(() => ImportFromHevy_convertHevyCsvToHistoryRecords("a,b,c\n1,2,3", buildSettings())).to.throw(
       ImportFileError,
-      /doesn't look like a Hevy/
+      /올바른 Hevy 운동 기록 내보내기 CSV/
     );
   });
 
@@ -198,7 +198,7 @@ describe("ImportFromHevy", () => {
         buildCsv(row({ start_time: "x", end_time: "x" }), row({ start_time: "y", end_time: "y" }), row()),
         buildSettings()
       )
-    ).to.throw(ImportFileError, /failed to parse/);
+    ).to.throw(ImportFileError, /행 중.*읽지 못했습니다/);
   });
 
   it("warns about implausible weights and reps but still imports", () => {
@@ -209,5 +209,6 @@ describe("ImportFromHevy", () => {
     expect(result.errors).to.eql([]);
     expect(result.historyRecords).to.have.length(1);
     expect(result.warnings.map((w) => w.column)).to.include.members(["weight_lbs", "reps"]);
+    expect(result.warnings.some((warning) => warning.message.includes("비정상적일 수 있습니다"))).to.equal(true);
   });
 });

@@ -38,12 +38,12 @@ export function ExercisePickerSettings(props: IProps): JSX.Element {
         >
           <IconBack />
         </Pressable>
-        <Text className="flex-1 pr-12 font-bold text-center">Settings</Text>
+        <Text className="flex-1 pr-12 font-bold text-center">설정</Text>
       </View>
       <View className="px-4">
         <MenuItemEditable
           type="boolean"
-          name="Keep existing program exercise logic when pick adhoc exercise"
+          name="종목 변경 후에도 기존 프로그램 진행 규칙 유지"
           value={props.settings.workoutSettings.shouldKeepProgramExerciseId ? "true" : "false"}
           onChange={(v) => {
             props.onChange({

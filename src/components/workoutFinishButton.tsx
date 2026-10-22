@@ -44,7 +44,7 @@ function WorkoutFinishButtonInner(props: IWorkoutFinishButtonProps): JSX.Element
           if (typeof Rollbar !== "undefined" && Rollbar != null) {
             Rollbar.error(error instanceof Error ? error : new Error(String(error)));
           }
-          Dialog_alert("Something went wrong finishing your workout. Please try again.");
+          Dialog_alert("운동을 종료하는 중 문제가 발생했습니다. 다시 시도하세요.");
         });
       }}
     >
@@ -53,9 +53,9 @@ function WorkoutFinishButtonInner(props: IWorkoutFinishButtonProps): JSX.Element
           <IconSpinner width={20} height={20} color={Tailwind_colors().white} />
         </View>
       ) : isCurrent ? (
-        "Finish"
+        "운동 종료"
       ) : (
-        "Save"
+        "저장"
       )}
     </Button>
   );

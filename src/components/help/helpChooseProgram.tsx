@@ -6,30 +6,28 @@ import { Link } from "../link";
 export function HelpChooseProgram(): JSX.Element {
   return (
     <View>
-      <Text className="pb-2 text-xl font-semibold">Choose a program to clone</Text>
+      <Text className="pb-2 text-xl font-semibold">프로그램 선택 및 복제</Text>
       <Text className="pb-2 text-sm">
-        This screen lists your programs, as well as the available pre-built programs, so you can{" "}
-        <Text className="text-sm font-bold">clone</Text> them.
+        이 화면에서 내 프로그램을 선택하거나 미리 만든 프로그램을 <Text className="text-sm font-bold">복제</Text>할 수
+        있습니다.
       </Text>
       <Text className="pb-2 text-sm">
-        Tapping on one of your programs selects it for the next workout. If you want to{" "}
-        <Text className="text-sm font-bold">edit</Text> it or <Text className="text-sm font-bold">remove</Text> it,
-        press the <Text className="text-sm font-bold">"Edit"</Text> button on the right.
+        내 프로그램을 누르면 다음 운동에 사용할 프로그램으로 선택됩니다. 프로그램을{" "}
+        <Text className="text-sm font-bold">수정</Text>하거나 <Text className="text-sm font-bold">삭제</Text>하려면
+        오른쪽의 편집 버튼을 누르세요.
       </Text>
       <Text className="pb-2 text-sm">
-        <Text className="text-sm font-bold">Cloning</Text> a pre-built means you copy the program to the list of your
-        programs.
+        미리 만든 프로그램을 <Text className="text-sm font-bold">복제</Text>하면 내 프로그램 목록에 사본이 추가됩니다.
       </Text>
       <Text className="pb-2 text-sm">
-        A program defines the list of workout days and the exercises for each day. It also defines the logic for
-        increasing or decreasing reps and weights over time, depending on your workout performance.
+        프로그램에는 운동일별 종목과 세트, 수행 결과에 따라 중량이나 반복 횟수를 조정하는 진행 규칙이 포함됩니다.
       </Text>
       <Text className="pb-2 text-sm">
-        After you clone a program, you can modify it in any way you want. The app is very flexible, you can change the
-        reps/weights logic, using a special scripting language called{" "}
+        복제한 프로그램은 원하는 대로 수정할 수 있습니다.{" "}
         <Link className="text-sm" href="/doc">
           Liftoscript
         </Link>
+        를 사용하면 중량과 반복 횟수의 진행 규칙도 바꿀 수 있습니다.
       </Text>
     </View>
   );

@@ -141,7 +141,7 @@ export function AppView(props: IProps): JSX.Element | null {
       }
     });
     return () => appStateSubscription.remove();
-  }, [timerBridge, scheduledProgram?.id, scheduledProgram?.schedule]);
+  }, [timerBridge, scheduledProgram]);
   const stateRef = useRef<IState>(state);
   useEffect(() => {
     stateRef.current = state;

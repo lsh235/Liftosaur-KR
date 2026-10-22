@@ -1,5 +1,6 @@
 import type { JSX } from "react";
-import { View, Pressable } from "react-native";
+import { useState } from "react";
+import { View, Pressable, Modal as NativeModal } from "react-native";
 import { Text } from "./primitives/text";
 import { ISettings, ISet, IExerciseType } from "../types";
 import { n } from "../utils/math";
@@ -13,14 +14,41 @@ import {
   Weight_eq,
   Weight_rpeMultiplier,
   Weight_multiply,
-  Weight_realizeLoad,
   Weight_isPct,
   Weight_getOneRepMax,
+  Weight_convertTo,
+  Weight_display,
 } from "../models/weight";
 import { Exercise_onerm } from "../models/exercise";
-import { EquipmentLoadText_line } from "../models/equipmentLoadText";
+import { WorkoutMetrics_epleyForSet } from "../utils/workoutMetrics";
+import { WorkoutSetPlates_line } from "../utils/workoutSetPlates";
+import { EquipmentLoadPicture } from "./equipmentLoadPicture";
 
 export type IWorkoutSetType = "program" | "warmup" | "adhoc";
+
+const workoutSetLabelStyles: Record<string, { background: string; text: string }> = {
+  WARMUP: { background: "bg-background-subtlecardpurple", text: "text-text-purple" },
+  TOP: { background: "bg-background-lighterror", text: "text-text-error" },
+  BACKOFF: { background: "bg-background-cardyellow", text: "text-text-cardyellow" },
+  STRAIGHT: { background: "bg-background-success", text: "text-text-success" },
+  DROP: { background: "bg-button-orangebackground", text: "text-text-alwayswhite" },
+};
+
+function WorkoutExerciseSetLabel(props: { label: string; displayLabel?: string }): JSX.Element {
+  const style = workoutSetLabelStyles[props.label.toUpperCase()] ?? {
+    background: "bg-background-neutral",
+    text: "text-text-secondary",
+  };
+  return (
+    <View
+      className={`self-start rounded-full px-2 py-0.5 ${style.background}`}
+      testID="workout-set-label"
+      accessibilityLabel={`세트 유형 ${props.displayLabel ?? props.label}`}
+    >
+      <Text className={`text-xs font-semibold ${style.text}`}>{props.displayLabel ?? props.label}</Text>
+    </View>
+  );
+}
 
 interface IWorkoutExerciseSetTargetProps {
   setType: IWorkoutSetType;
@@ -49,7 +77,7 @@ export function WorkoutExerciseSetTarget(props: IWorkoutExerciseSetTargetProps):
       const built = builder.build();
       return (
         <View>
-          <Text className="text-xs text-text-secondary">Warmup</Text>
+          <WorkoutExerciseSetLabel label="WARMUP" displayLabel="워밍업" />
           <FastText text={built.text} fragments={built.fragments} {...cls(`${sizeClass} text-text-primary`)} />
         </View>
       );
@@ -111,12 +139,12 @@ export function WorkoutExerciseSetTarget(props: IWorkoutExerciseSetTargetProps):
       const built = builder.build();
       return (
         <View>
-          {aSet.label ? <Text className="text-xs text-text-secondary">{aSet.label}</Text> : null}
-          {props.setType === "adhoc" && <Text className="text-xs text-text-secondary">Ad-hoc</Text>}
+          {aSet.label ? <WorkoutExerciseSetLabel label={aSet.label} /> : null}
+          {props.setType === "adhoc" && <Text className="text-xs text-text-secondary">자유 운동</Text>}
           {hasTarget ? (
             <FastText text={built.text} fragments={built.fragments} {...cls(`${sizeClass} text-text-primary`)} />
           ) : (
-            <Text className={sizeClass}>None</Text>
+            <Text className={sizeClass}>미지정</Text>
           )}
         </View>
       );
@@ -133,7 +161,7 @@ export function WorkoutExerciseLastSet(props: IWorkoutExerciseLastSetProps): JSX
   const cls = StyledText_cls(useRem());
   const set = props.set;
   if (set == null) {
-    return <Text className="text-xs text-text-secondary">No last set</Text>;
+    return <Text className="text-xs text-text-secondary">이전 기록 없음</Text>;
   }
   const statusColor = WorkoutExerciseUtils_setsStatusToTextColorValue(Reps_setsStatus([set]));
   const semibold = { ...cls("font-semibold"), color: statusColor };
@@ -153,7 +181,7 @@ export function WorkoutExerciseLastSet(props: IWorkoutExerciseLastSetProps): JSX
   const built = builder.build();
   return (
     <View>
-      {set.label ? <Text className="text-xs text-text-secondary">{set.label}</Text> : null}
+      {set.label ? <WorkoutExerciseSetLabel label={set.label} /> : null}
       <FastText
         text={built.text}
         fragments={built.fragments}
@@ -323,6 +351,19 @@ export function WorkoutExerciseSetTargetField(props: IWorkoutExerciseSetTargetFi
   return <View />;
 }
 
+export function WorkoutExerciseSetE1RMHint(props: { set: ISet; settings: ISettings }): JSX.Element | null {
+  const e1rm = WorkoutMetrics_epleyForSet(props.set);
+  if (e1rm == null) {
+    return null;
+  }
+  const displayWeight = Weight_convertTo(e1rm, props.settings.units);
+  return (
+    <Text className="text-xs text-text-secondary" testID="workout-set-e1rm">
+      e1RM {n(displayWeight.value)} {displayWeight.unit}
+    </Text>
+  );
+}
+
 interface IWorkoutExercisePlatesCalculatorProps {
   set: ISet;
   settings: ISettings;
@@ -333,20 +374,64 @@ interface IWorkoutExercisePlatesCalculatorProps {
 
 function WorkoutExercisePlatesCalculator(props: IWorkoutExercisePlatesCalculatorProps): JSX.Element {
   const sizeClass = props.sizeClass ?? "text-sm";
-  const setWeight = props.set.weight;
-  const load =
-    setWeight != null
-      ? Weight_realizeLoad(props.set.completedWeight ?? setWeight, props.settings, props.exerciseType, props.isWarmup)
-      : undefined;
-  const text = EquipmentLoadText_line(load);
+  const [isOpen, setIsOpen] = useState(false);
+  const load = WorkoutSetPlates_line(props.set, props.settings, props.exerciseType, props.isWarmup);
+  const text = load?.text ?? "";
+  const weight = props.set.completedWeight ?? props.set.weight;
+  const close = (): void => setIsOpen(false);
   return (
-    <Text
-      className={`${sizeClass} font-semibold ${text === "" || load?.exact ? "text-text-primary" : "text-text-error"}`}
-      data-testid="plates-list"
-      testID="plates-list"
-    >
-      {text !== "" ? text : "None"}
-    </Text>
+    <>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="원판 조합 보기"
+        disabled={load == null}
+        onPress={(event) => {
+          event.stopPropagation();
+          setIsOpen(true);
+        }}
+      >
+        <Text
+          className={`${sizeClass} font-semibold ${text === "" || load?.exact ? "text-text-primary" : "text-text-error"}`}
+          data-testid="plates-list"
+          testID="plates-list"
+        >
+          {text !== "" ? text : "미지정"}
+        </Text>
+      </Pressable>
+      {isOpen && load != null && (
+        <NativeModal transparent visible animationType="fade" onRequestClose={close}>
+          <View className="flex-1 justify-center px-6">
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="원판 계산기 닫기"
+              className="absolute inset-0"
+              style={{ backgroundColor: "rgba(0,0,0,0.48)" }}
+              onPress={close}
+            />
+            <View className="rounded-2xl bg-background-default p-6">
+              <Text className="pb-2 text-lg font-bold">원판 계산기</Text>
+              {weight != null && (
+                <Text className="pb-3 text-sm text-text-secondary">
+                  {props.set.completedWeight != null ? "실제 중량" : "목표 중량"}: {Weight_display(weight)}
+                </Text>
+              )}
+              <Text className="pb-2 text-sm text-text-secondary">
+                {load.bars != null ? "한쪽에 끼울 원판 조합" : "기구 설정에 맞는 중량"}
+              </Text>
+              <EquipmentLoadPicture picture={load} size="xl" testID="plate-calculator-result" highlightMismatch />
+              {load.bars != null && <Text className="pt-3 text-xs text-text-secondary">표시는 한쪽 기준입니다.</Text>}
+              <Pressable
+                accessibilityRole="button"
+                className="mt-5 items-center rounded-lg bg-button-primarybackground px-4 py-3"
+                onPress={close}
+              >
+                <Text className="font-semibold text-button-primarytext">닫기</Text>
+              </Pressable>
+            </View>
+          </View>
+        </NativeModal>
+      )}
+    </>
   );
 }
 
@@ -366,7 +451,7 @@ function WorkoutExerciseE1RMSet(props: IWorkoutExerciseE1RMSetProps): JSX.Elemen
   const reps = Reps_avgUnilateralCompletedReps(set) ?? set.reps;
   const rpe = set.completedRpe ?? set.rpe ?? 10;
   if (weight == null || Weight_isPct(weight) || reps == null) {
-    return <Text className={sizeClass}>Unknown</Text>;
+    return <Text className={sizeClass}>계산 불가</Text>;
   }
   const e1RM = Weight_getOneRepMax(weight, reps, rpe);
   const built = new StyledText().add(n(e1RM.value), cls("font-semibold")).add(e1RM.unit, cls("text-xs")).build();

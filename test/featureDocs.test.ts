@@ -5,8 +5,8 @@ import * as path from "path";
 import { parseDocMarkdown } from "../src/utils/docUtils";
 import { FeatureCategories_order } from "../src/pages/features/featureCategories";
 
-const featuresDir = path.resolve(__dirname, "../docs/features");
-const flowsDir = path.resolve(__dirname, "../screenshots/flows");
+const featuresDir = path.resolve(process.cwd(), "docs/features");
+const flowsDir = path.resolve(process.cwd(), "screenshots/flows");
 const categories = FeatureCategories_order;
 
 function flowScreenshotNames(id: string): string[] {

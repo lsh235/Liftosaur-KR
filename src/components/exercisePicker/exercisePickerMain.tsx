@@ -57,7 +57,7 @@ import {
 } from "./exercisePickerUtils";
 import { CollectionUtils_compact } from "../../utils/collection";
 import { ObjectUtils_values, ObjectUtils_clone, ObjectUtils_keys } from "../../utils/object";
-import { StringUtils_dashcase, StringUtils_pluralize } from "../../utils/string";
+import { StringUtils_dashcase } from "../../utils/string";
 import { ExercisePickerCurrentExercise } from "./exercisePickerCurrentExercise";
 import { ExercisePickerTemplate } from "./exercisePickerTemplate";
 import { ExercisePickerExerciseItem } from "./exercisePickerExerciseItem";
@@ -141,23 +141,23 @@ export function ExercisePickerMain(props: IProps): JSX.Element {
   const title =
     mode === "workout"
       ? exerciseType
-        ? "Swap Exercise"
-        : "Add Exercises"
+        ? "종목 바꾸기"
+        : "운동 추가"
       : exerciseType || templateName
-        ? "Edit Exercise"
-        : "Add Exercise";
+        ? "운동 수정"
+        : "운동 추가";
 
   const tabs = useMemo<ITabDef[]>(() => {
     if (mode === "workout") {
-      const result: ITabDef[] = [{ label: "Ad-hoc Exercise", index: 0 }];
+      const result: ITabDef[] = [{ label: "일반 운동", index: 0 }];
       if (evaluatedProgram) {
-        result.push({ label: "From Program", index: 1 });
+        result.push({ label: "프로그램에서", index: 1 });
       }
       return result;
     }
-    const result: ITabDef[] = [{ label: "Exercise", index: 0 }];
+    const result: ITabDef[] = [{ label: "운동", index: 0 }];
     if (!hideTemplate) {
-      result.push({ label: "Template", index: 1 });
+      result.push({ label: "템플릿", index: 1 });
     }
     return result;
   }, [mode, evaluatedProgram, hideTemplate]);
@@ -453,9 +453,9 @@ export function ExercisePickerMain(props: IProps): JSX.Element {
 
     if (isFromProgramTab) {
       if (weeks.length === 0) {
-        result.push({ kind: "programEmpty", message: "No weeks available in the program." });
+        result.push({ kind: "programEmpty", message: "프로그램에 주차가 없습니다." });
       } else if (programGroups.length === 0) {
-        result.push({ kind: "programEmpty", message: "No exercises match your search." });
+        result.push({ kind: "programEmpty", message: "검색 결과가 없습니다." });
       } else {
         for (const g of programGroups) {
           result.push({ kind: "programGroup", group: g });
@@ -680,13 +680,13 @@ export function ExercisePickerMain(props: IProps): JSX.Element {
           return (
             <View className="px-4 pb-1" onLayout={onLabelLayout}>
               <Input
-                label="Label"
+                label="이름"
                 defaultValue={state.label}
                 isLabelOutside={true}
                 changeType={"oninput"}
                 inputSize="sm"
                 pattern="^[^\/\{\}\(\)\t\n\r#\[\]]+$"
-                patternMessage="Label cannot contain special characters: '/{}()#[]'"
+                patternMessage="이름에는 다음 특수문자를 사용할 수 없습니다: '/{}()#[]'"
                 labelSize="xs"
                 changeHandler={onLabelChange}
               />
@@ -727,7 +727,7 @@ export function ExercisePickerMain(props: IProps): JSX.Element {
                   style={[{ height: 18, justifyContent: "flex-end" }, stickyLabelStyle]}
                 >
                   <Text numberOfLines={1} className="px-4 text-xs text-center text-text-secondary">
-                    <Text className="text-xs text-text-secondary">Current Exercise: </Text>
+                    <Text className="text-xs text-text-secondary">현재 종목: </Text>
                     <Text className="text-xs font-bold">{currentExerciseName}</Text>
                   </Text>
                 </Animated.View>
@@ -754,7 +754,7 @@ export function ExercisePickerMain(props: IProps): JSX.Element {
                   style={[{ height: 18, justifyContent: "flex-end" }, stickyLabelStyle]}
                 >
                   <Text numberOfLines={1} className="px-4 text-xs text-center text-text-secondary">
-                    <Text className="text-xs text-text-secondary">Current Exercise: </Text>
+                    <Text className="text-xs text-text-secondary">현재 종목: </Text>
                     <Text className="text-xs font-bold">{currentExerciseName}</Text>
                   </Text>
                 </Animated.View>
@@ -788,7 +788,7 @@ export function ExercisePickerMain(props: IProps): JSX.Element {
                 isExpanded={!isRecentCollapsed}
                 onToggle={() => setIsRecentCollapsed((v) => !v)}
                 leftExpandIcon={true}
-                name="Recent"
+                name="최근 사용"
                 headerClassName="mx-4"
               />
             </View>
@@ -800,7 +800,7 @@ export function ExercisePickerMain(props: IProps): JSX.Element {
                 isExpanded={!isCustomCollapsed}
                 onToggle={() => setIsCustomCollapsed((v) => !v)}
                 leftExpandIcon={true}
-                name="Custom Exercises"
+                name="사용자 운동"
                 headerClassName="mx-4"
                 rightAddOn={
                   <LinkButton
@@ -810,7 +810,7 @@ export function ExercisePickerMain(props: IProps): JSX.Element {
                     name="create-custom-exercise"
                     onPress={onCreateCustom}
                   >
-                    Create
+                    만들기
                   </LinkButton>
                 }
               />
@@ -843,7 +843,7 @@ export function ExercisePickerMain(props: IProps): JSX.Element {
                 isExpanded={!isBuiltinCollapsed}
                 onToggle={() => setIsBuiltinCollapsed((v) => !v)}
                 leftExpandIcon={true}
-                name="Built-in Exercises"
+                name="기본 운동"
                 headerClassName="mx-4"
               />
             </View>
@@ -1134,7 +1134,7 @@ const SearchInput = memo(function SearchInput(props: {
     <View className="flex-row items-center flex-1 gap-2 p-2 rounded-lg bg-background-neutral">
       <IconMagnifyingGlass size={18} color={Tailwind_colors().lightgray[600]} />
       <TextInput
-        placeholder="Search by name"
+        placeholder="이름으로 검색"
         placeholderTextColor={Tailwind_semantic().text.secondarysubtle}
         className="flex-1 text-sm text-text-secondary"
         style={{ paddingVertical: 0, includeFontPadding: false }}
@@ -1190,11 +1190,11 @@ const SearchAndFilter = memo(function SearchAndFilter(props: ISearchAndFilterPro
       </View>
       <View className="mx-4">
         <Text className="text-xs text-text-secondary">
-          <Text className="text-xs text-text-secondary">Sorted by: </Text>
+          <Text className="text-xs text-text-secondary">정렬 기준: </Text>
           <Text className="text-xs font-bold text-text-secondary">{exercisePickerSortNames[sort]}</Text>
           {filterNames.length > 0 && (
             <Text className="text-xs text-text-secondary">
-              {", Filters: "}
+              {", 필터: "}
               {filterNames.map((f, i) => (
                 <Fragment key={i}>
                   {i > 0 ? ", " : ""}
@@ -1206,7 +1206,7 @@ const SearchAndFilter = memo(function SearchAndFilter(props: ISearchAndFilterPro
         </Text>
         {filterNames.length > 0 && (
           <LinkButton name="clear-filters" className="text-xs" onPress={onClearFilters}>
-            Clear
+            필터 초기화
           </LinkButton>
         )}
       </View>
@@ -1363,7 +1363,7 @@ const ProgramExerciseRow = memo(function ProgramExerciseRow(props: IProgramExerc
 
   const dayContent = (
     <View>
-      <Text className="px-1 pb-1 text-xs text-text-secondary">Day {exercise.dayData.dayInWeek}</Text>
+      <Text className="px-1 pb-1 text-xs text-text-secondary">{exercise.dayData.dayInWeek}일차</Text>
       {displayGroups.map((g, gi) => (
         <HistoryRecordSet key={gi} sets={g} isNext={true} units={settings.units} />
       ))}
@@ -1444,21 +1444,19 @@ function BottomButton(props: IBottomButtonProps): JSX.Element {
       >
         {state.mode === "workout"
           ? state.exerciseType
-            ? "Swap Exercise"
+            ? "종목 바꾸기"
             : selectedExercises.length > 0
-              ? `Add to this workout${selectedExercises.length > 0 ? ` (${selectedExercises.length})` : ""}`
-              : "Close"
+              ? `이 운동에 추가${selectedExercises.length > 0 ? ` (${selectedExercises.length})` : ""}`
+              : "닫기"
           : state.exerciseType || state.templateName
-            ? `Save ${state.selectedTab === 1 ? "Template" : "Exercise"}`
+            ? `${state.selectedTab === 1 ? "템플릿" : "운동"} 저장`
             : selectedExercises.length > 0
               ? state.selectedTab === 1
-                ? "Add Template"
+                ? "템플릿 추가"
                 : // Counted, because adding to a program is multi-select too now and the button is
                   // the only place that says how many are about to land in the day.
-                  `Add ${StringUtils_pluralize("Exercise", selectedExercises.length)}${
-                    selectedExercises.length > 1 ? ` (${selectedExercises.length})` : ""
-                  }`
-              : "Close"}
+                  `운동 ${selectedExercises.length}개 추가${selectedExercises.length > 1 ? ` (${selectedExercises.length})` : ""}`
+              : "닫기"}
       </Button>
       {!(state.mode === "program" && state.selectedTab === 1) && selectedExercises.length > 0 && (
         <Text className="text-xs text-text-secondary">

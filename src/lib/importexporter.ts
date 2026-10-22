@@ -15,6 +15,11 @@ import { IExportedPlannerProgram } from "../pages/planner/models/types";
 import { PlannerProgram_convertExportedPlannerToProgram } from "../pages/planner/models/plannerProgram";
 import { Settings_build } from "../models/settings";
 import { AiWorkoutProgram_tryImport } from "../utils/aiWorkoutProgram";
+import {
+  FILE_IMPORT_PROGRAM_MAX_SIZE_BYTES,
+  FileImportLimits_isContentTooLarge,
+  FileImportLimits_sizeError,
+} from "../utils/fileImportLimits";
 
 export function ImportExporter_exportStorage(storage: IStorage): void {
   Exporter_toFile(`liftosaur-${DateUtils_formatYYYYMMDD(Date.now())}.json`, JSON.stringify(storage, null, 2));
@@ -29,6 +34,9 @@ export async function ImportExporter_getExportedProgram(
   maybeProgram: string,
   settings?: ISettings
 ): Promise<IEither<IExportedProgram, string[]>> {
+  if (FileImportLimits_isContentTooLarge(maybeProgram, FILE_IMPORT_PROGRAM_MAX_SIZE_BYTES)) {
+    return { success: false, error: [FileImportLimits_sizeError(FILE_IMPORT_PROGRAM_MAX_SIZE_BYTES)] };
+  }
   const aiProgram = AiWorkoutProgram_tryImport(maybeProgram, settings);
   if (aiProgram?.success === false) {
     return aiProgram;

@@ -57,7 +57,7 @@ interface IProps {
 }
 
 export function ScreenFinishDay(props: IProps): JSX.Element {
-  useNavOptions({ navTitle: "Congratulations!" });
+  useNavOptions({ navTitle: "운동 완료" });
 
   const recordById =
     props.historyRecordId != null ? props.history.find((h) => h.id === props.historyRecordId) : undefined;
@@ -107,24 +107,24 @@ export function ScreenFinishDay(props: IProps): JSX.Element {
           <Text className="text-base">{record.dayName}</Text>
         </View>
         <View className="px-4 pt-2 pb-3 rounded-lg bg-background-purpledark" testID="totals-summary">
-          <GroupHeader name="Totals" />
+          <GroupHeader name="운동 요약" />
           <View className="flex-row gap-2">
             <View className="flex-1">
               <Text className="text-sm">
-                <Text className="mr-1">🕐</Text> Time:{" "}
+                <Text className="mr-1">🕐</Text> 운동 시간:{" "}
                 <Text className="font-bold">{TimeUtils_formatHHMM(History_workoutTime(record))} h</Text>
               </Text>
               <Text className="text-sm">
-                <Text className="mr-1">🏋</Text> Volume:{" "}
+                <Text className="mr-1">🏋</Text> 총 볼륨:{" "}
                 <Text className="font-bold">{Weight_display(totalWeight)}</Text>
               </Text>
             </View>
             <View className="flex-1">
               <Text className="text-sm">
-                <Text className="mr-1">💪</Text> Sets: <Text className="font-bold">{totalSets}</Text>
+                <Text className="mr-1">💪</Text> 세트: <Text className="font-bold">{totalSets}</Text>
               </Text>
               <Text className="text-sm">
-                <Text className="mr-1">🔄</Text> Reps: <Text className="font-bold">{totalReps}</Text>
+                <Text className="mr-1">🔄</Text> 반복: <Text className="font-bold">{totalReps}</Text>
               </Text>
             </View>
           </View>
@@ -132,7 +132,7 @@ export function ScreenFinishDay(props: IProps): JSX.Element {
 
         {startedEntries.length > 0 && (
           <View className="px-4 py-2 mt-2 rounded-lg bg-background-purpledark" testID="completed-exercises">
-            <GroupHeader name="Exercises" />
+            <GroupHeader name="운동 종목" />
             {startedEntries.map((entry, i) => {
               return (
                 <HistoryEntryView
@@ -149,7 +149,7 @@ export function ScreenFinishDay(props: IProps): JSX.Element {
         )}
 
         <View className="px-4 py-2 mt-2 rounded-lg bg-background-purpledark" testID="sets-per-muscle-group">
-          <GroupHeader name="Sets per muscle group" />
+          <GroupHeader name="근육별 세트 수" />
           <View className="flex-row gap-4">
             {muscleGroupsGrouped.map((group, gi) => {
               return (
@@ -178,7 +178,9 @@ export function ScreenFinishDay(props: IProps): JSX.Element {
         )}
 
         {eligibleForCreateProgramDay && (
-          <Text className="mx-2 my-1 text-xs text-text-secondary">You can create a program day from this workout</Text>
+          <Text className="mx-2 my-1 text-xs text-text-secondary">
+            이 운동 기록으로 프로그램 운동일을 만들 수 있어요.
+          </Text>
         )}
 
         <View className="flex-row w-full gap-4 pt-4">
@@ -194,7 +196,7 @@ export function ScreenFinishDay(props: IProps): JSX.Element {
                   navigateToModal("dayFromAdhocModal", { historyRecordId: record.id });
                 }}
               >
-                Create Program Day
+                운동일로 저장
               </Button>
             </View>
           )}
@@ -210,7 +212,7 @@ export function ScreenFinishDay(props: IProps): JSX.Element {
                 props.dispatch(Thunk_maybeRequestSignup());
               }}
             >
-              Continue
+              계속하기
             </Button>
           </View>
         </View>
@@ -231,7 +233,7 @@ function MobileShare(props: IMobileShareProps): JSX.Element {
   const historyRecordId = props.record.id;
   return (
     <View className="px-gutter py-4">
-      <GroupHeader name="Share it!" />
+      <GroupHeader name="운동 기록 공유" />
       <View className="flex-row justify-between gap-4">
         <View className="items-center">
           <Pressable
@@ -241,7 +243,7 @@ function MobileShare(props: IMobileShareProps): JSX.Element {
           >
             <IconInstagram />
           </Pressable>
-          <Text className="text-xs text-text-secondary">IG Story</Text>
+          <Text className="text-xs text-text-secondary">스토리</Text>
         </View>
         <View className="items-center">
           <Pressable
@@ -251,7 +253,7 @@ function MobileShare(props: IMobileShareProps): JSX.Element {
           >
             <IconInstagram />
           </Pressable>
-          <Text className="text-xs text-text-secondary">IG Feed</Text>
+          <Text className="text-xs text-text-secondary">피드</Text>
         </View>
         <View className="items-center">
           <Pressable
@@ -261,7 +263,7 @@ function MobileShare(props: IMobileShareProps): JSX.Element {
           >
             <IconTiktok />
           </Pressable>
-          <Text className="text-xs text-text-secondary">Tiktok</Text>
+          <Text className="text-xs text-text-secondary">틱톡</Text>
         </View>
         <View className="items-center">
           <Pressable
@@ -270,12 +272,12 @@ function MobileShare(props: IMobileShareProps): JSX.Element {
             onPress={() => {
               const text = LiftohistorySerializer_serialize(props.record, props.settings);
               ClipboardUtils_copy(text);
-              Dialog_alert("Copied!");
+              Dialog_alert("복사했습니다.");
             }}
           >
             <IconDoc />
           </Pressable>
-          <Text className="text-xs text-text-secondary">Text</Text>
+          <Text className="text-xs text-text-secondary">텍스트</Text>
         </View>
         <View className="items-center">
           <WorkoutShareButton
@@ -284,7 +286,7 @@ function MobileShare(props: IMobileShareProps): JSX.Element {
             settings={props.settings}
             icon={<IconKebab />}
           />
-          <Text className="text-xs text-text-secondary">More</Text>
+          <Text className="text-xs text-text-secondary">더 보기</Text>
         </View>
       </View>
       <View className="items-center mt-1">
@@ -294,13 +296,13 @@ function MobileShare(props: IMobileShareProps): JSX.Element {
             if (props.userId) {
               const link = Share_generateLink(props.userId, props.record.id);
               ClipboardUtils_copy(link);
-              Dialog_alert("Copied!");
+              Dialog_alert("복사했습니다.");
             } else {
-              Dialog_alert("You should be logged in to copy link to a workout");
+              Dialog_alert("운동 기록 링크를 복사하려면 로그인해야 합니다.");
             }
           }}
         >
-          or just copy a link
+          링크만 복사하기
         </LinkButton>
       </View>
     </View>
@@ -320,7 +322,7 @@ function WebappShare(props: IWebappShareProps): JSX.Element {
 
   return (
     <View className="px-gutter py-4">
-      <GroupHeader name="Share it!" />
+      <GroupHeader name="운동 기록 공유" />
       <View className="flex-row justify-between gap-4">
         <View className="items-center">
           <WorkoutShareButton
@@ -329,7 +331,7 @@ function WebappShare(props: IWebappShareProps): JSX.Element {
             settings={props.settings}
             icon={<IconPicture />}
           />
-          <Text className="text-xs text-text-secondary">Image</Text>
+          <Text className="text-xs text-text-secondary">이미지</Text>
         </View>
         <View className="items-center">
           <Pressable
@@ -338,12 +340,12 @@ function WebappShare(props: IWebappShareProps): JSX.Element {
             onPress={() => {
               const text = LiftohistorySerializer_serialize(props.record, props.settings);
               ClipboardUtils_copy(text);
-              Dialog_alert("Copied!");
+              Dialog_alert("복사했습니다.");
             }}
           >
             <IconDoc />
           </Pressable>
-          <Text className="text-xs text-text-secondary">Text</Text>
+          <Text className="text-xs text-text-secondary">텍스트</Text>
         </View>
         <View className="items-center">
           <Pressable
@@ -354,7 +356,7 @@ function WebappShare(props: IWebappShareProps): JSX.Element {
                 ClipboardUtils_copy(link);
                 setCopiedLink(link);
               } else {
-                Dialog_alert("You should be logged in to copy link to a workout");
+                Dialog_alert("운동 기록 링크를 복사하려면 로그인해야 합니다.");
               }
             }}
           >
@@ -362,13 +364,13 @@ function WebappShare(props: IWebappShareProps): JSX.Element {
           </Pressable>
           {copiedLink ? (
             <View className="flex-row">
-              <Text className="text-xs text-text-secondary">Copied: </Text>
+              <Text className="text-xs text-text-secondary">복사됨: </Text>
               <InternalLink name="shared-workout-link" href={copiedLink} className="font-bold underline text-text-link">
-                Link
+                링크
               </InternalLink>
             </View>
           ) : (
-            <Text className="text-xs text-text-secondary">Copy Link</Text>
+            <Text className="text-xs text-text-secondary">링크 복사</Text>
           )}
         </View>
       </View>

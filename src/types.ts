@@ -1201,6 +1201,8 @@ export interface IProgramSchedule {
 export interface IWorkoutScheduleReminder {
   id: number;
   timestamp: number;
+  localDate: string;
+  localTime: string;
   title: string;
   body: string;
 }

@@ -19,6 +19,7 @@ import android.provider.Settings
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.facebook.react.bridge.Arguments
+import com.facebook.react.bridge.LifecycleEventListener
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReadableMap
@@ -76,6 +77,56 @@ class LiftosaurTimerModule(reactContext: ReactApplicationContext) :
             nm.createNotificationChannel(channel)
         }
         channelsCreated = true
+    }
+
+    private fun requestSettingsPermission(
+        promise: Promise,
+        intent: Intent,
+        hasPermission: () -> Boolean,
+        onGranted: () -> Unit = {}
+    ) {
+        if (hasPermission()) {
+            promise.resolve("granted")
+            return
+        }
+        val activity = currentActivity
+        if (activity == null) {
+            promise.resolve("denied")
+            return
+        }
+
+        var leftHost = false
+        var finished = false
+        lateinit var listener: LifecycleEventListener
+        fun finish() {
+            if (finished) return
+            finished = true
+            reactApplicationContext.removeLifecycleEventListener(listener)
+            val granted = hasPermission()
+            if (granted) onGranted()
+            promise.resolve(if (granted) "granted" else "denied")
+        }
+        listener = object : LifecycleEventListener {
+            override fun onHostResume() {
+                if (leftHost) finish()
+            }
+
+            override fun onHostPause() {
+                leftHost = true
+            }
+
+            override fun onHostDestroy() {
+                finish()
+            }
+        }
+        reactApplicationContext.addLifecycleEventListener(listener)
+        try {
+            activity.startActivity(intent)
+        } catch (e: Exception) {
+            finished = true
+            reactApplicationContext.removeLifecycleEventListener(listener)
+            promise.reject("permission_settings_failed", e.message, e)
+        }
     }
 
     override fun startTimer(params: ReadableMap, promise: Promise) {
@@ -186,7 +237,7 @@ class LiftosaurTimerModule(reactContext: ReactApplicationContext) :
                 val reminder = reminders.getJSONObject(index)
                 val scheduleId = reminder.optInt("id", index)
                 if (scheduleId !in 0 until Notification.WORKOUT_REMINDER_ID_LIMIT) continue
-                val timestamp = reminder.optLong("timestamp", 0L)
+                val timestamp = Notification.workoutReminderTimestamp(reminder)
                 if (timestamp <= now) continue
                 val delaySeconds = ceil((timestamp - now) / 1000.0).toLong()
                 missingPermission = notification.send(
@@ -291,7 +342,8 @@ class LiftosaurTimerModule(reactContext: ReactApplicationContext) :
 
     override fun requestNotificationPermission(promise: Promise) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-            promise.resolve("granted")
+            val enabled = NotificationManagerCompat.from(reactApplicationContext).areNotificationsEnabled()
+            promise.resolve(if (enabled) "granted" else "denied")
             return
         }
         val activity = currentActivity as? PermissionAwareActivity
@@ -312,6 +364,7 @@ class LiftosaurTimerModule(reactContext: ReactApplicationContext) :
             PermissionListener { code, _, results ->
                 if (code != requestCode) return@PermissionListener false
                 val ok = results.isNotEmpty() && results[0] == PackageManager.PERMISSION_GRANTED
+                if (ok) Notification.restoreWorkoutReminders(reactApplicationContext)
                 promise.resolve(if (ok) "granted" else "denied")
                 true
             }
@@ -332,17 +385,14 @@ class LiftosaurTimerModule(reactContext: ReactApplicationContext) :
             promise.resolve("granted")
             return
         }
-        val activity = currentActivity
-        if (activity == null) {
-            promise.resolve("denied")
-            return
-        }
         val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
+            data = Uri.parse("package:${reactApplicationContext.packageName}")
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         }
-        activity.startActivity(intent)
         val am = reactApplicationContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        promise.resolve(if (am.canScheduleExactAlarms()) "granted" else "denied")
+        requestSettingsPermission(promise, intent, { am.canScheduleExactAlarms() }) {
+            Notification.restoreWorkoutReminders(reactApplicationContext)
+        }
     }
 
     override fun getDndAccessPermission(promise: Promise) {
@@ -351,17 +401,11 @@ class LiftosaurTimerModule(reactContext: ReactApplicationContext) :
     }
 
     override fun requestDndAccessPermission(promise: Promise) {
-        val activity = currentActivity
-        if (activity == null) {
-            promise.resolve("denied")
-            return
-        }
         val intent = Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS).apply {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         }
-        activity.startActivity(intent)
         val nm = reactApplicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        promise.resolve(if (nm.isNotificationPolicyAccessGranted) "granted" else "denied")
+        requestSettingsPermission(promise, intent, { nm.isNotificationPolicyAccessGranted })
     }
 
     companion object {

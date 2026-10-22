@@ -43,6 +43,8 @@ export interface IEditDetailsModalData {
   namePlaceholder: string;
   descriptionPlaceholder: string;
   submitLabel: string;
+  cancelLabel?: string;
+  requiredMessage?: string;
   dataCyPrefix: string;
   name: string;
   description?: string;

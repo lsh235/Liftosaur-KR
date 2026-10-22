@@ -133,7 +133,9 @@ const getWeekDays = (
   startWeekFromMonday?: boolean
 ): IWeekDay[] => {
   const days = [];
-  const dayNames = startWeekFromMonday ? ["M", "T", "W", "T", "F", "S", "S"] : ["S", "M", "T", "W", "T", "F", "S"];
+  const dayNames = startWeekFromMonday
+    ? ["월", "화", "수", "목", "금", "토", "일"]
+    : ["일", "월", "화", "수", "목", "금", "토"];
   for (let i = 0; i < 7; i++) {
     const date = new Date(startDate);
     date.setDate(date.getDate() + i);

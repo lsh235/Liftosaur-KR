@@ -83,13 +83,13 @@ export function ProgressStateChangesView(props: IViewProps): JSX.Element | null 
   return (
     <View
       data-help-id="progress-state-changes"
-      data-help="This shows how state variables of the exercise are going to change after finishing this workout day. It usually indicates progression or deload, so next time you'd do more/less reps, or lift more/less weight."
+      data-help="오늘 운동을 마치면 적용될 종목 변수와 프로그램 상태 변수 변경을 보여줍니다. 보통 점진적 과부하나 디로드를 나타내며, 다음 운동의 중량 또는 반복 횟수가 늘거나 줄 수 있습니다."
     >
       <View>
         {hasDiffVars && <ExerciseChanges diffVars={diffVars} isSuppressed={props.isSuppressed} />}
         {hasDiffState && <StateVariablesChanges diffState={diffState} isSuppressed={props.isSuppressed} />}
-        {prints.length > 0 && <Prints title="Progress Prints" prints={prints} />}
-        {updatePrints.length > 0 && <Prints title="Update Prints" prints={updatePrints} />}
+        {prints.length > 0 && <Prints title="진행 스크립트 결과" prints={prints} />}
+        {updatePrints.length > 0 && <Prints title="변경 스크립트 결과" prints={updatePrints} />}
       </View>
       {onSuppressProgress && (
         <View>
@@ -102,7 +102,7 @@ export function ProgressStateChangesView(props: IViewProps): JSX.Element | null 
               onSuppressProgress(!props.isSuppressed);
             }}
           >
-            {props.isSuppressed ? "Enable" : "Suppress"}
+            {props.isSuppressed ? "진행 변경 적용" : "진행 변경 무시"}
           </LinkButton>
         </View>
       )}
@@ -121,7 +121,7 @@ function ExerciseChanges({
     const strike = isSuppressed ? strikeThrough : undefined;
     return (
       <View>
-        <Text className="text-xs font-bold">Exercise Changes</Text>
+        <Text className="text-xs font-bold">운동 변수 변경</Text>
         <View data-testid="variable-changes" testID="variable-changes">
           {ObjectUtils_keys(diffVars).map((key) => (
             <View
@@ -164,7 +164,7 @@ function StateVariablesChanges({
     return (
       <View>
         <Text style={strike} className="text-xs font-bold">
-          State Variables changes
+          프로그램 상태 변수 변경
         </Text>
         <View data-testid="state-changes" testID="state-changes">
           {ObjectUtils_keys(diffState).map((key) => (

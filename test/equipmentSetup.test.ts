@@ -436,9 +436,11 @@ describe("EquipmentSetup", () => {
         builtin: [5, 10],
         pullRatio: 0.5,
       };
-      expect(EquipmentSetup_summary(setup)).to.equal("Weight stack · 10–200 by 10 · half · +5/10");
+      expect(EquipmentSetup_summary(setup)).to.equal(
+        "중량 스택 · 10~200 (간격 10) · 당기는 비율 ×0.5 · 추가 중량 5/10"
+      );
       expect(EquipmentSetup_summary({ ...setup, stackCount: 2, showPinNumbers: true })).to.equal(
-        "Weight stack · 10–200 by 10 · half · 2 stacks · pin numbers · +5/10"
+        "중량 스택 · 10~200 (간격 10) · 당기는 비율 ×0.5 · 스택 2개 · 핀 번호 표시 · 추가 중량 5/10"
       );
     });
 
@@ -453,9 +455,9 @@ describe("EquipmentSetup", () => {
 
     it("lists fixed weights without a plus when there are no ranges", () => {
       const setup: IEquipmentSetup = { type: "fixed", unit: "lb", ranges: [], values: [10, 15] };
-      expect(EquipmentSetup_summary(setup)).to.equal("Fixed weights · 10, 15");
+      expect(EquipmentSetup_summary(setup)).to.equal("고정 중량 · 중량 10, 15");
       const withRange: IEquipmentSetup = { ...setup, ranges: [{ from: 20, to: 50, step: 5 }] };
-      expect(EquipmentSetup_summary(withRange)).to.equal("Fixed weights · 20–50 by 5 · +10, 15");
+      expect(EquipmentSetup_summary(withRange)).to.equal("고정 중량 · 20~50 (간격 5) · 중량 10, 15");
     });
   });
 });

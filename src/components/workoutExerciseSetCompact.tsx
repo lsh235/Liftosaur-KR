@@ -12,6 +12,7 @@ import { WorkoutExerciseUtils_getBgColor50, WorkoutExerciseUtils_getIconColor } 
 import type { IWorkoutExerciseSetBodyProps } from "./workoutExerciseSet";
 import {
   RpeWeightHint,
+  WorkoutExerciseSetE1RMHint,
   WorkoutExerciseSetRpeTime,
   WorkoutExerciseSetTargetField,
   WorkoutExerciseSet_dataCy,
@@ -53,14 +54,17 @@ export function WorkoutExerciseSetCompact(props: IWorkoutExerciseSetBodyProps): 
             </View>
           </View>
           <View className="flex-1" data-testid="workout-set-target" testID="workout-set-target">
-            <WorkoutExerciseSetTargetField
-              set={set}
-              lastSet={props.lastSet}
-              setType={props.setType}
-              settings={props.settings}
-              exerciseType={props.exerciseType}
-              underlineRounded={props.isRoundedWeight}
-            />
+            <View>
+              <WorkoutExerciseSetTargetField
+                set={set}
+                lastSet={props.lastSet}
+                setType={props.setType}
+                settings={props.settings}
+                exerciseType={props.exerciseType}
+                underlineRounded={props.isRoundedWeight}
+              />
+              <WorkoutExerciseSetE1RMHint set={set} settings={props.settings} />
+            </View>
           </View>
         </Pressable>
 

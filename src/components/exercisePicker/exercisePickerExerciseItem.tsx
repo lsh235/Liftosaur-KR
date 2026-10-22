@@ -4,7 +4,6 @@ import { View, Pressable } from "react-native";
 import { FastText } from "../primitives/fastText";
 import {
   IExercise,
-  equipmentName,
   Exercise_toKey,
   Exercise_targetMuscles,
   Exercise_synergistMuscles,
@@ -12,15 +11,21 @@ import {
   Exercise_synergistMusclesGroups,
 } from "../../models/exercise";
 import { ISettings, IExerciseType } from "../../types";
-import { StringUtils_dashcase, StringUtils_capitalize } from "../../utils/string";
+import { StringUtils_dashcase } from "../../utils/string";
 import { Tailwind_semantic } from "../../utils/tailwindConfig";
 import { ExerciseImage } from "../exerciseImage";
 import { IconEdit2 } from "../icons/iconEdit2";
 import { IconStar } from "../icons/iconStar";
 import { IconCheckCircle } from "../icons/iconCheckCircle";
-import { Muscle_getMusclesFromScreenMuscle, Muscle_getMuscleGroupName } from "../../models/muscle";
+import { Muscle_getMusclesFromScreenMuscle } from "../../models/muscle";
 import { StyledText, StyledText_cls } from "../../utils/styledText";
 import { useRem } from "../../utils/useRem";
+import {
+  ExercisePickerUtils_getEquipmentName,
+  ExercisePickerUtils_getExerciseKindName,
+  ExercisePickerUtils_getMuscleGroupName,
+  ExercisePickerUtils_getMuscleName,
+} from "./exercisePickerUtils";
 
 interface IExerciseItemProps {
   exercise: IExercise;
@@ -56,6 +61,11 @@ export const ExercisePickerExerciseItem = memo(function ExercisePickerExerciseIt
             settings={props.settings}
             className="w-full"
             exerciseType={exerciseType}
+            accessibilityLabel={
+              exerciseType.equipment
+                ? `${e.name}, ${ExercisePickerUtils_getEquipmentName(exerciseType.equipment)}`
+                : e.name
+            }
             size="small"
           />
         </View>
@@ -140,7 +150,7 @@ function ExerciseNameLine(props: { name: string; equipment?: string }): JSX.Elem
   const builder = new StyledText();
   builder.add(props.name, cls("font-semibold"));
   if (props.equipment) {
-    builder.add(`, ${equipmentName(props.equipment)}`, cls("text-text-secondary"));
+    builder.add(`, ${ExercisePickerUtils_getEquipmentName(props.equipment)}`, cls("text-text-secondary"));
   }
   const built = builder.build();
   // Without flexShrink the name is measured at its natural width inside the row and runs under the
@@ -194,25 +204,25 @@ function MuscleView(props: {
   const targetMuscles = Exercise_targetMuscles(exercise, settings);
   const synergistMuscles = Exercise_synergistMuscles(exercise, settings).filter((m) => targetMuscles.indexOf(m) === -1);
 
-  const types = exercise.types.map((t) => StringUtils_capitalize(t));
+  const types = exercise.types.map((t) => ExercisePickerUtils_getExerciseKindName(t));
 
   return (
     <View>
-      {types.length > 0 && <LabeledItemsLine label="Type" items={[{ text: types.join(", ") }]} />}
+      {types.length > 0 && <LabeledItemsLine label="구분" items={[{ text: types.join(", ") }]} />}
       {targetMuscles.length > 0 && (
         <LabeledItemsLine
-          label="Target"
+          label="주동근"
           items={targetMuscles.map((m) => ({
-            text: m,
+            text: ExercisePickerUtils_getMuscleName(m),
             isMatch: tms.length === 0 ? undefined : tms.indexOf(m) !== -1,
           }))}
         />
       )}
       {synergistMuscles.length > 0 && (
         <LabeledItemsLine
-          label="Synergist"
+          label="협력근"
           items={synergistMuscles.map((m) => ({
-            text: m,
+            text: ExercisePickerUtils_getMuscleName(m),
             isMatch: sms.length === 0 ? undefined : sms.indexOf(m) !== -1,
           }))}
         />
@@ -234,18 +244,18 @@ export function MuscleGroupsView(props: {
     (m) => targetMuscleGroups.indexOf(m) === -1
   );
 
-  const types = exercise.types.map((t) => StringUtils_capitalize(t));
+  const types = exercise.types.map((t) => ExercisePickerUtils_getExerciseKindName(t));
 
   return (
     <View>
-      {types.length > 0 && <LabeledItemsLine label="Type" items={[{ text: types.join(", ") }]} />}
+      {types.length > 0 && <LabeledItemsLine label="구분" items={[{ text: types.join(", ") }]} />}
       {targetMuscleGroups.length > 0 && (
         <LabeledItemsLine
-          label="Target"
+          label="주동근"
           items={targetMuscleGroups.map((m) => {
             const muscles = Muscle_getMusclesFromScreenMuscle(m, props.settings);
             return {
-              text: Muscle_getMuscleGroupName(m, props.settings),
+              text: ExercisePickerUtils_getMuscleGroupName(m, props.settings),
               isMatch: !props.currentExerciseType ? undefined : muscles.some((muscle) => tms.includes(muscle)),
             };
           })}
@@ -253,11 +263,11 @@ export function MuscleGroupsView(props: {
       )}
       {synergistMuscleGroups.length > 0 && (
         <LabeledItemsLine
-          label="Synergist"
+          label="협력근"
           items={synergistMuscleGroups.map((m) => {
             const muscles = Muscle_getMusclesFromScreenMuscle(m, props.settings);
             return {
-              text: Muscle_getMuscleGroupName(m, props.settings),
+              text: ExercisePickerUtils_getMuscleGroupName(m, props.settings),
               isMatch: !props.currentExerciseType ? undefined : muscles.some((muscle) => sms.includes(muscle)),
             };
           })}
