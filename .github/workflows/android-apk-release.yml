@@ -74,7 +74,7 @@ jobs:
           DISABLE_OTA: "true"
         run: |
           cd android
-          ./gradlew --no-daemon testDebugUnitTest assembleRelease
+          ./gradlew --no-daemon :app:testDebugUnitTest :app:assembleRelease
 
       - name: Verify APK signature and metadata
         run: |
