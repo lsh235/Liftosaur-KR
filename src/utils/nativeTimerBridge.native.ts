@@ -1,4 +1,5 @@
 import NativeLiftosaurTimer from "../specs/NativeLiftosaurTimer";
+import { IWorkoutScheduleReminder } from "../types";
 import { INativeTimerStartParams, ITimerBridge } from "./timerBridge";
 
 export type { INativeTimerStartParams } from "./timerBridge";
@@ -40,5 +41,17 @@ export class TimerBridge implements ITimerBridge {
 
   public cancelReminder(): void {
     NativeLiftosaurTimer.cancelReminder().catch(() => {});
+  }
+
+  public scheduleWorkoutReminders(reminders: IWorkoutScheduleReminder[]): void {
+    NativeLiftosaurTimer.scheduleWorkoutReminders(JSON.stringify(reminders))
+      .then((result) => {
+        if (!result?.scheduled) {
+          console.warn("NativeLiftosaurTimer.scheduleWorkoutReminders was not scheduled", result?.missingPermission);
+        }
+      })
+      .catch((e) => {
+        console.warn("NativeLiftosaurTimer.scheduleWorkoutReminders failed", e);
+      });
   }
 }

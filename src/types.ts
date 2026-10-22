@@ -1196,12 +1196,20 @@ export interface IProgramSchedule {
   weekdays: number[];
   completedSessions: number;
   shiftCount: number;
+  reminderTime?: string;
+}
+export interface IWorkoutScheduleReminder {
+  id: number;
+  timestamp: number;
+  title: string;
+  body: string;
 }
 const _VProgramSchedule = v.object({
   startDate: v.string(),
   weekdays: v.array(v.number()),
   completedSessions: v.number(),
   shiftCount: v.number(),
+  reminderTime: v.optional(v.string()),
 });
 const _VProgramScheduleMatches: IEquals<v.InferOutput<typeof _VProgramSchedule>, IProgramSchedule> = true;
 void _VProgramScheduleMatches;

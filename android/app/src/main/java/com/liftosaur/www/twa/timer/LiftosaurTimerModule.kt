@@ -26,6 +26,8 @@ import com.facebook.react.modules.core.PermissionAwareActivity
 import com.facebook.react.modules.core.PermissionListener
 import com.liftosaur.www.twa.R
 import com.liftosaur.www.twa.specs.NativeLiftosaurTimerSpec
+import org.json.JSONArray
+import kotlin.math.ceil
 
 class LiftosaurTimerModule(reactContext: ReactApplicationContext) :
     NativeLiftosaurTimerSpec(reactContext) {
@@ -49,17 +51,27 @@ class LiftosaurTimerModule(reactContext: ReactApplicationContext) :
         listOf(
             Triple(CHANNEL_ID, name, false),
             Triple(CHANNEL_ID_DND, "$name (Bypass DND)", true),
+            Triple(Notification.CHANNEL_ID_WORKOUT, "운동 일정 알림", false),
         ).forEach { (id, label, bypass) ->
-            val channel = NotificationChannel(id, label, NotificationManager.IMPORTANCE_MAX).apply {
+            val isWorkoutReminder = id == Notification.CHANNEL_ID_WORKOUT
+            val channel = NotificationChannel(
+                id,
+                label,
+                if (isWorkoutReminder) NotificationManager.IMPORTANCE_DEFAULT else NotificationManager.IMPORTANCE_MAX
+            ).apply {
                 this.description = if (bypass) "$description - bypasses Do Not Disturb" else description
-                setSound(soundUri, attrs)
-                setBypassDnd(bypass)
+                if (!isWorkoutReminder) {
+                    setSound(soundUri, attrs)
+                    setBypassDnd(bypass)
+                }
                 lockscreenVisibility = android.app.Notification.VISIBILITY_PUBLIC
                 setShowBadge(true)
                 enableLights(true)
                 lightColor = Color.WHITE
                 enableVibration(true)
-                vibrationPattern = longArrayOf(0, 1000, 500, 1000, 500, 1000)
+                if (!isWorkoutReminder) {
+                    vibrationPattern = longArrayOf(0, 1000, 500, 1000, 500, 1000)
+                }
             }
             nm.createNotificationChannel(channel)
         }
@@ -154,6 +166,47 @@ class LiftosaurTimerModule(reactContext: ReactApplicationContext) :
             promise.resolve(null)
         } catch (e: Exception) {
             promise.reject("cancel_reminder_failed", e.message, e)
+        }
+    }
+
+    override fun scheduleWorkoutReminders(payload: String, promise: Promise) {
+        try {
+            val reminders = JSONArray(payload)
+            val notification = Notification(reactApplicationContext, currentActivity)
+            for (index in 0 until Notification.WORKOUT_REMINDER_ID_LIMIT) {
+                notification.cancel(Notification.WORKOUT_REMINDER_ID_START + index)
+            }
+            ensureChannels()
+            var missingPermission: String? = null
+            val now = System.currentTimeMillis()
+            for (index in 0 until reminders.length()) {
+                val reminder = reminders.getJSONObject(index)
+                val scheduleId = reminder.optInt("id", index)
+                if (scheduleId !in 0 until Notification.WORKOUT_REMINDER_ID_LIMIT) continue
+                val timestamp = reminder.optLong("timestamp", 0L)
+                if (timestamp <= now) continue
+                val delaySeconds = ceil((timestamp - now) / 1000.0).toLong()
+                missingPermission = notification.send(
+                    Notification.WORKOUT_REMINDER_ID_START + scheduleId,
+                    delaySeconds,
+                    false,
+                    false,
+                    "Liftosaur",
+                    reminder.optString("title", "오늘의 운동"),
+                    reminder.optString("body", "오늘의 루틴을 시작할 시간입니다."),
+                    0.0f,
+                    true
+                )
+                if (missingPermission != null) break
+            }
+            val result = Arguments.createMap().apply {
+                putBoolean("scheduled", missingPermission == null)
+                if (missingPermission != null) putString("missingPermission", missingPermission)
+            }
+            promise.resolve(result)
+        } catch (e: Exception) {
+            android.util.Log.e("LftTimer", "Android scheduleWorkoutReminders threw", e)
+            promise.reject("schedule_workout_reminders_failed", e.message, e)
         }
     }
 

@@ -44,6 +44,9 @@ class Notification(private val context: Context, private val activity: Activity?
     companion object {
         const val REST_TIMER_ID: Int = 1
         const val REMINDER_ID: Int = 2
+        const val WORKOUT_REMINDER_ID_START: Int = 1000
+        const val WORKOUT_REMINDER_ID_LIMIT: Int = 60
+        const val CHANNEL_ID_WORKOUT: String = "liftosaur_workout_reminders"
         private const val NOTIF_PERM_REQUEST_CODE: Int = 41001
         private const val PROMPTS_PREFS: String = "LftTimerPermissionPrompts"
         var startedIntents: MutableMap<Int, PendingIntent> = mutableMapOf()
@@ -73,7 +76,8 @@ class Notification(private val context: Context, private val activity: Activity?
         title: String?,
         subtitle: String?,
         body: String?,
-        volume: Float
+        volume: Float,
+        isWorkoutReminder: Boolean = false
     ): String? {
         cancel(id)
 
@@ -143,6 +147,7 @@ If you don't want that, disable 'Ignore Do Not Disturb' in Settings."""
             putExtra("vibration", vibration)
             putExtra("notificationId", id)
             putExtra("volume", volume)
+            putExtra("isWorkoutReminder", isWorkoutReminder)
         }
 
         val flags = PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE

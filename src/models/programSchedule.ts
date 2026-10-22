@@ -1,4 +1,4 @@
-import { IProgram, IProgramSchedule } from "../types";
+import { IProgram, IProgramSchedule, IWorkoutScheduleReminder } from "../types";
 
 function isValidDateString(value: string): boolean {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
@@ -9,6 +9,10 @@ function isValidDateString(value: string): boolean {
 }
 
 export function ProgramSchedule_isValid(schedule: IProgramSchedule): boolean {
+  const reminderTimeIsValid =
+    schedule.reminderTime == null ||
+    schedule.reminderTime === "" ||
+    /^(?:[01]\d|2[0-3]):[0-5]\d$/.test(schedule.reminderTime);
   return (
     isValidDateString(schedule.startDate) &&
     schedule.weekdays.length > 0 &&
@@ -17,7 +21,8 @@ export function ProgramSchedule_isValid(schedule: IProgramSchedule): boolean {
     Number.isInteger(schedule.completedSessions) &&
     schedule.completedSessions >= 0 &&
     Number.isInteger(schedule.shiftCount) &&
-    schedule.shiftCount >= 0
+    schedule.shiftCount >= 0 &&
+    reminderTimeIsValid
   );
 }
 
@@ -88,8 +93,11 @@ export function ProgramSchedule_getDueSessionCount(
   return due;
 }
 
-export function ProgramSchedule_completeSession(schedule: IProgramSchedule): IProgramSchedule {
-  return { ...schedule, completedSessions: schedule.completedSessions + 1 };
+export function ProgramSchedule_completeSession(schedule: IProgramSchedule, totalSessions?: number): IProgramSchedule {
+  return {
+    ...schedule,
+    completedSessions: Math.min(schedule.completedSessions + 1, totalSessions ?? Number.MAX_SAFE_INTEGER),
+  };
 }
 
 export function ProgramSchedule_skipSession(schedule: IProgramSchedule, totalSessions: number): IProgramSchedule {
@@ -119,7 +127,79 @@ export function ProgramSchedule_build(
   startDate: string,
   weekdays: number[],
   completedSessions: number = 0,
-  shiftCount: number = 0
+  shiftCount: number = 0,
+  reminderTime?: string
 ): IProgramSchedule {
-  return { startDate, weekdays: [...new Set(weekdays)].sort((a, b) => a - b), completedSessions, shiftCount };
+  return {
+    startDate,
+    weekdays: [...new Set(weekdays)].sort((a, b) => a - b),
+    completedSessions,
+    shiftCount,
+    reminderTime,
+  };
+}
+
+function sessionInfo(program: IProgram, sessionIndex: number): { week: string; day: string; exercise: string } {
+  let days = 0;
+  for (const week of program.planner?.weeks || []) {
+    for (const day of week.days) {
+      if (days === sessionIndex) {
+        const exerciseLine = day.exerciseText
+          .split("\n")
+          .map((line) => line.trim())
+          .find((line) => line && !line.startsWith("///"));
+        const exercise = exerciseLine?.split(" / ")[0]?.trim() || "운동";
+        return { week: week.name, day: day.name, exercise };
+      }
+      days += 1;
+    }
+  }
+  return { week: "운동", day: String(sessionIndex + 1) + "일차", exercise: "운동" };
+}
+
+function timestampAtLocalDateAndTime(date: string, time: string): number | undefined {
+  const dateParts = date.split("-").map(Number);
+  const timeParts = time.split(":").map(Number);
+  if (dateParts.length !== 3 || timeParts.length !== 2) {
+    return undefined;
+  }
+  const [year, month, day] = dateParts;
+  const [hour, minute] = timeParts;
+  const timestamp = new Date(year, month - 1, day, hour, minute, 0, 0).getTime();
+  return isNaN(timestamp) ? undefined : timestamp;
+}
+
+export function ProgramSchedule_buildReminderRequests(
+  program: IProgram,
+  now: number = Date.now()
+): IWorkoutScheduleReminder[] {
+  const schedule = program.schedule;
+  if (!schedule?.reminderTime || !ProgramSchedule_isValid(schedule)) {
+    return [];
+  }
+  const totalSessions = ProgramSchedule_sessionCount(program);
+  const plannerDays = program.planner?.weeks.flatMap((week) => week.days) || [];
+  const reminders: IWorkoutScheduleReminder[] = [];
+  for (let sessionIndex = schedule.completedSessions; sessionIndex < totalSessions; sessionIndex += 1) {
+    if (reminders.length >= 60) {
+      break;
+    }
+    const date = ProgramSchedule_getSessionDate(schedule, sessionIndex, totalSessions);
+    if (date == null) {
+      continue;
+    }
+    const timestamp = timestampAtLocalDateAndTime(date, schedule.reminderTime);
+    if (timestamp == null || timestamp <= now) {
+      continue;
+    }
+    const info = sessionInfo(program, sessionIndex);
+    const title = info.week + " · " + info.day;
+    const day = plannerDays[sessionIndex];
+    const exerciseCount =
+      day?.exerciseText.split("\n").filter((line) => line.trim() && !line.trim().startsWith("///")).length ?? 1;
+    const body =
+      info.exercise + (exerciseCount > 1 ? " 외 " + (exerciseCount - 1) + "종목" : "") + " 시작할 시간입니다!";
+    reminders.push({ id: reminders.length, timestamp, title, body });
+  }
+  return reminders;
 }

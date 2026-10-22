@@ -406,6 +406,90 @@ import UserNotifications
     center.removePendingNotificationRequests(withIdentifiers: [reminderIdentifier])
   }
 
+  @objc func scheduleWorkoutReminders(payload: String,
+                                      completion: @escaping (Bool, String?) -> Void) {
+    guard let data = payload.data(using: .utf8),
+          let reminders = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] else {
+      completion(false, nil)
+      return
+    }
+    center.getPendingNotificationRequests { requests in
+      let staleIds = requests.map(\.identifier).filter { $0.hasPrefix("workoutSchedule-") }
+      self.center.removePendingNotificationRequests(withIdentifiers: staleIds)
+      guard !reminders.isEmpty else {
+        completion(true, nil)
+        return
+      }
+      self.center.getNotificationSettings { settings in
+        switch settings.authorizationStatus {
+        case .authorized, .provisional, .ephemeral:
+          self.scheduleWorkoutRemindersInternal(reminders, completion: completion)
+        case .notDetermined:
+          self.center.requestAuthorization(options: [.alert, .badge, .sound]) { granted, _ in
+            if granted {
+              self.scheduleWorkoutRemindersInternal(reminders, completion: completion)
+            } else {
+              completion(false, "notifications")
+            }
+          }
+        case .denied:
+          completion(false, "notifications")
+        @unknown default:
+          completion(false, "notifications")
+        }
+      }
+    }
+  }
+
+  private func scheduleWorkoutRemindersInternal(_ reminders: [[String: Any]],
+                                                completion: @escaping (Bool, String?) -> Void) {
+    let group = DispatchGroup()
+    let lock = NSLock()
+    var firstError: Error?
+    let now = Date()
+    for reminder in reminders.prefix(60) {
+      guard let id = reminder["id"] as? Int,
+            let timestamp = reminder["timestamp"] as? Double,
+            timestamp > now.timeIntervalSince1970 * 1000 else {
+        continue
+      }
+      let content = UNMutableNotificationContent()
+      content.title = reminder["title"] as? String ?? "오늘의 운동"
+      content.body = reminder["body"] as? String ?? "오늘의 루틴을 시작할 시간입니다."
+      content.sound = UNNotificationSound(named: UNNotificationSoundName("notification.caf"))
+      var components = Calendar.current.dateComponents(
+        [.year, .month, .day, .hour, .minute],
+        from: Date(timeIntervalSince1970: timestamp / 1000)
+      )
+      components.calendar = Calendar.current
+      let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
+      let request = UNNotificationRequest(
+        identifier: "workoutSchedule-\(id)",
+        content: content,
+        trigger: trigger
+      )
+      group.enter()
+      center.add(request) { error in
+        if let error {
+          lock.lock()
+          if firstError == nil {
+            firstError = error
+          }
+          lock.unlock()
+        }
+        group.leave()
+      }
+    }
+    group.notify(queue: .main) {
+      if let error = firstError {
+        Logger.notifications.error("workout reminder schedule failed: \(error.localizedDescription)")
+        completion(false, "notifications")
+      } else {
+        completion(true, nil)
+      }
+    }
+  }
+
   @objc func playSound(volume: Double, vibration: Bool, sound: String) {
     DispatchQueue.main.async {
       guard UIApplication.shared.applicationState == .active else { return }

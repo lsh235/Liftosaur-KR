@@ -2,6 +2,7 @@ import { ILiveActivityState } from "../utils/liveActivityState";
 import { INativeTimerStartParams, ITimerBridge } from "../utils/timerBridge";
 import { INativeWorkoutBridgeLiveActivityAction, IWorkoutBridge } from "../utils/workoutBridge";
 import { WatchHost_send } from "../utils/watchHost";
+import { IWorkoutScheduleReminder } from "../types";
 
 export class WatchHostTimerBridge implements ITimerBridge {
   public startTimer(params: INativeTimerStartParams): void {
@@ -36,6 +37,8 @@ export class WatchHostTimerBridge implements ITimerBridge {
   public scheduleReminder(): void {}
 
   public cancelReminder(): void {}
+
+  public scheduleWorkoutReminders(_reminders: IWorkoutScheduleReminder[]): void {}
 }
 
 export class WatchHostWorkoutBridge implements IWorkoutBridge {

@@ -34,6 +34,7 @@ export interface Spec extends TurboModule {
 
   scheduleReminder(duration: number, title: string, body: string): Promise<LiftosaurTimerStartResult>;
   cancelReminder(): Promise<void>;
+  scheduleWorkoutReminders(payload: string): Promise<LiftosaurTimerStartResult>;
 
   playSound(volume: number, vibration: boolean, sound: string): Promise<void>;
 

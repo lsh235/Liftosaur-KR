@@ -1,5 +1,5 @@
 import { JSX, useEffect, useState } from "react";
-import { Pressable, View } from "react-native";
+import { Platform, Pressable, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Text } from "./primitives/text";
 import { IProgram, ISettings, IStats } from "../types";
@@ -20,6 +20,7 @@ import { Thunk_setProgramSchedule, Thunk_skipProgramSchedule, Thunk_startProgram
 import { navigateToModal } from "../navigation/navigationService";
 import { DatePicker } from "./datePicker";
 import { Button } from "./button";
+import { TextInput } from "./primitives/textInput";
 import {
   ProgramSchedule_getNextDate,
   ProgramSchedule_sessionCount,
@@ -36,6 +37,7 @@ const weekdays: [number, string][] = [
   [6, "토"],
   [7, "일"],
 ];
+const supportsWorkoutNotifications = Platform.OS === "ios" || Platform.OS === "android";
 
 export interface IBottomSheetNextWorkoutContentProps {
   currentProgram?: IProgram;
@@ -55,9 +57,11 @@ export function BottomSheetNextWorkoutContent(props: IBottomSheetNextWorkoutCont
   const [selectedWeekdays, setSelectedWeekdays] = useState<number[]>(
     props.currentProgram?.schedule?.weekdays ?? [1, 2, 3, 4, 5]
   );
+  const [reminderTime, setReminderTime] = useState(props.currentProgram?.schedule?.reminderTime ?? "19:00");
   useEffect(() => {
     setScheduleStartDate(props.currentProgram?.schedule?.startDate ?? ProgramSchedule_today());
     setSelectedWeekdays(props.currentProgram?.schedule?.weekdays ?? [1, 2, 3, 4, 5]);
+    setReminderTime(supportsWorkoutNotifications ? (props.currentProgram?.schedule?.reminderTime ?? "19:00") : "");
   }, [props.currentProgram?.id, props.currentProgram?.schedule]);
   const evaluatedProgram = props.currentProgram ? Program_evaluate(props.currentProgram, props.settings) : undefined;
 
@@ -87,7 +91,14 @@ export function BottomSheetNextWorkoutContent(props: IBottomSheetNextWorkoutCont
 
   const saveSchedule = (): void => {
     if (props.currentProgram) {
-      props.dispatch(Thunk_setProgramSchedule(props.currentProgram.id, scheduleStartDate, selectedWeekdays));
+      props.dispatch(
+        Thunk_setProgramSchedule(
+          props.currentProgram.id,
+          scheduleStartDate,
+          selectedWeekdays,
+          supportsWorkoutNotifications ? reminderTime : undefined
+        )
+      );
       setIsEditingSchedule(false);
     }
   };
@@ -122,7 +133,8 @@ export function BottomSheetNextWorkoutContent(props: IBottomSheetNextWorkoutCont
               </Text>
               <Text className="pt-1 text-xs text-text-secondary">
                 완료 {schedule.completedSessions}/{totalSessions}회 · 일정 미루기 {schedule.shiftCount}회 · 운동 요일{" "}
-                {schedule.weekdays.map((day) => weekdays.find(([number]) => number === day)?.[1]).join("·")}
+                {schedule.weekdays.map((day) => weekdays.find(([number]) => number === day)?.[1]).join("·")} · 알림{" "}
+                {schedule.reminderTime || "꺼짐"}
               </Text>
               <View className="mt-3 flex-row flex-wrap items-center gap-4">
                 <LinkButton name="edit-workout-schedule" onClick={() => setIsEditingSchedule((value) => !value)}>
@@ -186,6 +198,23 @@ export function BottomSheetNextWorkoutContent(props: IBottomSheetNextWorkoutCont
                   );
                 })}
               </View>
+              {supportsWorkoutNotifications && (
+                <>
+                  <Text className="pb-1 pt-3 text-sm text-text-secondary">운동 시간 알림 (iOS/Android)</Text>
+                  <TextInput
+                    accessibilityLabel="운동 알림 시간"
+                    className="rounded bg-background-default px-3 py-2 text-text-primary"
+                    value={reminderTime}
+                    onChangeText={setReminderTime}
+                    placeholder="19:00"
+                    keyboardType="numbers-and-punctuation"
+                    maxLength={5}
+                  />
+                  <Text className="pt-1 text-xs text-text-secondary">
+                    HH:MM 형식으로 입력하세요. 비우면 알림이 꺼집니다.
+                  </Text>
+                </>
+              )}
               <Button
                 name="save-workout-schedule"
                 kind="purple"

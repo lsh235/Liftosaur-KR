@@ -39,6 +39,7 @@ import { AsyncQueue } from "../utils/asyncQueue";
 import { useLoopCatcher } from "../utils/useLoopCatcher";
 import RB from "rollbar";
 import { exceptionIgnores } from "../utils/rollbar";
+import { ProgramSchedule_buildReminderRequests } from "../models/programSchedule";
 
 // typeof-guarded: Metro/webpack define __DEV__, but this module also runs under node (tests).
 declare let __DEV__: boolean | undefined;
@@ -48,6 +49,7 @@ import { AppContext } from "./appContext";
 import { TourConfigs_findTourId } from "./tour/tourConfigs";
 import { NavigationContainer, DefaultTheme, type NavigationState } from "@react-navigation/native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { AppState } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { navigationRef } from "../navigation/navigationRef";
 import { ScreenRemovalCleanup_subscribe } from "../navigation/screenRemovalCleanup";
@@ -125,6 +127,21 @@ export function AppView(props: IProps): JSX.Element | null {
   );
   const onActions = useMemo(() => defaultOnActions(env), [env]);
   const [state, dispatch] = useThunkReducer<IState, IAction, IEnv>(reducer, props.initialState, env, onActions);
+  const scheduledProgram = Program_getProgram(state, state.storage.currentProgramId);
+  useEffect(() => {
+    const scheduleWorkoutReminders = (): void => {
+      timerBridge.scheduleWorkoutReminders(
+        scheduledProgram ? ProgramSchedule_buildReminderRequests(scheduledProgram) : []
+      );
+    };
+    scheduleWorkoutReminders();
+    const appStateSubscription = AppState.addEventListener("change", (appState) => {
+      if (appState === "active") {
+        scheduleWorkoutReminders();
+      }
+    });
+    return () => appStateSubscription.remove();
+  }, [timerBridge, scheduledProgram?.id, scheduledProgram?.schedule]);
   const stateRef = useRef<IState>(state);
   useEffect(() => {
     stateRef.current = state;

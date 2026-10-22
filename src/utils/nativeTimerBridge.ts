@@ -1,4 +1,5 @@
 import { INativeTimerStartParams, ITimerBridge } from "./timerBridge";
+import { IWorkoutScheduleReminder } from "../types";
 
 export type { INativeTimerStartParams } from "./timerBridge";
 
@@ -18,4 +19,6 @@ export class TimerBridge implements ITimerBridge {
   public scheduleReminder(_duration: number, _title: string, _body: string): void {}
 
   public cancelReminder(): void {}
+
+  public scheduleWorkoutReminders(_reminders: IWorkoutScheduleReminder[]): void {}
 }

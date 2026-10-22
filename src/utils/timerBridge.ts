@@ -1,3 +1,5 @@
+import { IWorkoutScheduleReminder } from "../types";
+
 export type INativeTimerStartParams = {
   duration: number;
   title: string;
@@ -19,4 +21,5 @@ export interface ITimerBridge {
   subscribeOnScheduled(handler: () => void): () => void;
   scheduleReminder(duration: number, title: string, body: string): void;
   cancelReminder(): void;
+  scheduleWorkoutReminders(reminders: IWorkoutScheduleReminder[]): void;
 }

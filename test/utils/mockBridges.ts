@@ -1,5 +1,6 @@
 import { ILiveActivityState } from "../../src/utils/liveActivityState";
 import { INativeTimerStartParams, ITimerBridge } from "../../src/utils/timerBridge";
+import { IWorkoutScheduleReminder } from "../../src/types";
 import { INativeWatchAuth, INativeWatchEvent, IWatchBridge } from "../../src/utils/watchBridge";
 import { IAuthToken, IKeychain } from "../../src/utils/keychain";
 import { INativeWorkoutBridgeLiveActivityAction, IWorkoutBridge } from "../../src/utils/workoutBridge";
@@ -55,6 +56,10 @@ export class MockTimerBridge implements ITimerBridge {
 
   public cancelReminder(): void {
     this.log.record("timer", "cancelReminder");
+  }
+
+  public scheduleWorkoutReminders(reminders: IWorkoutScheduleReminder[]): void {
+    this.log.record("timer", "scheduleWorkoutReminders", reminders);
   }
 }
 

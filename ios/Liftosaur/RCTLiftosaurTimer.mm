@@ -65,6 +65,20 @@ RCT_EXPORT_MODULE(LiftosaurTimer)
   resolve(nil);
 }
 
+- (void)scheduleWorkoutReminders:(NSString *)payload
+                         resolve:(RCTPromiseResolveBlock)resolve
+                          reject:(RCTPromiseRejectBlock)reject {
+  [[LiftosaurTimerImpl shared] scheduleWorkoutRemindersWithPayload:payload
+                                                        completion:^(BOOL scheduled, NSString * _Nullable missingPermission) {
+    NSMutableDictionary *result = [NSMutableDictionary dictionary];
+    result[@"scheduled"] = @(scheduled);
+    if (missingPermission != nil) {
+      result[@"missingPermission"] = missingPermission;
+    }
+    resolve(result);
+  }];
+}
+
 - (void)playSound:(double)volume
         vibration:(BOOL)vibration
             sound:(NSString *)sound

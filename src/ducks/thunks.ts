@@ -1319,7 +1319,12 @@ export function Thunk_pushToEditProgram(): IThunk {
   };
 }
 
-export function Thunk_setProgramSchedule(programId: string, startDate: string, weekdays: number[]): IThunk {
+export function Thunk_setProgramSchedule(
+  programId: string,
+  startDate: string,
+  weekdays: number[],
+  reminderTime?: string
+): IThunk {
   return async (dispatch, getState) => {
     const program = Program_getProgram(getState(), programId);
     if (!program) {
@@ -1331,10 +1336,11 @@ export function Thunk_setProgramSchedule(programId: string, startDate: string, w
       startDate,
       weekdays,
       existingIsComplete ? 0 : (program.schedule?.completedSessions ?? 0),
-      existingIsComplete ? 0 : (program.schedule?.shiftCount ?? 0)
+      existingIsComplete ? 0 : (program.schedule?.shiftCount ?? 0),
+      reminderTime ?? program.schedule?.reminderTime
     );
     if (!ProgramSchedule_isValid(schedule) || totalSessions === 0) {
-      Dialog_alert("시작일과 운동 요일을 확인하세요. 운동일은 하나 이상 선택해야 합니다.");
+      Dialog_alert("시작일, 운동 요일, 알림 시간을 확인하세요. 알림 시간은 HH:MM 형식이어야 합니다.");
       return;
     }
     updateState(

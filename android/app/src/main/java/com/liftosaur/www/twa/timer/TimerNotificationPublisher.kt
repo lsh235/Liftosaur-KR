@@ -69,6 +69,23 @@ class TimerNotificationPublisher : BroadcastReceiver() {
         val title = intent.getStringExtra("title") ?: "Liftosaur"
         val subtitle = intent.getStringExtra("subtitle")
         val body = intent.getStringExtra("body")
+        val isWorkoutReminder = intent.getBooleanExtra("isWorkoutReminder", false)
+        if (isWorkoutReminder) {
+            val notification = NotificationCompat.Builder(context, Notification.CHANNEL_ID_WORKOUT)
+                .setContentTitle(subtitle ?: title)
+                .setContentText(body)
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setContentIntent(pendingIntent)
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                .setAutoCancel(true)
+                .setCategory(NotificationCompat.CATEGORY_REMINDER)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setDefaults(NotificationCompat.DEFAULT_ALL)
+                .build()
+            NotificationManagerCompat.from(context).notify(notificationId, notification)
+            wakeLock.release()
+            return
+        }
         val channelId = if (ignoreDoNotDisturb) LiftosaurTimerModule.CHANNEL_ID_DND else LiftosaurTimerModule.CHANNEL_ID
 
         val notification = NotificationCompat.Builder(context, channelId)
