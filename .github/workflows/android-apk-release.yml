@@ -49,6 +49,9 @@ jobs:
       - name: Create default native build configuration
         run: npm run ensure:localdomain
 
+      - name: Generate native bundle inputs
+        run: npm run build:markdown
+
       - name: Prepare release signing key
         env:
           ANDROID_RELEASE_KEYSTORE_BASE64: ${{ secrets.LIFTOSAUR_ANDROID_KEYSTORE_BASE64 }}
