@@ -20,20 +20,20 @@ export function ModalCreateProgramContent(props: Omit<IProps, "isHidden">): JSX.
 
   return (
     <View>
-      <Text className="pb-2 text-xl font-bold text-center">Create Program</Text>
+      <Text className="pb-2 text-xl font-bold text-center">프로그램 만들기</Text>
       <Input
         identifier="modal-create-program"
-        label="Program Name"
+        label="프로그램 이름"
         required={true}
-        requiredMessage="Please enter a program name"
-        placeholder="My Awesome Routine"
+        requiredMessage="프로그램 이름을 입력하세요"
+        placeholder="나만의 운동 루틴"
         changeType="oninput"
         changeHandler={setResult}
         handleRef={inputHandle}
       />
       <View className="flex-row justify-center mt-4" style={{ gap: 12 }}>
         <Button name="modal-create-program-cancel" kind="grayv2" onClick={props.onClose}>
-          Cancel
+          취소
         </Button>
         <Button
           name="modal-create-program-submit"
@@ -50,7 +50,7 @@ export function ModalCreateProgramContent(props: Omit<IProps, "isHidden">): JSX.
             }
           }}
         >
-          {props.isLoading ? <IconSpinner color="white" width={18} height={18} /> : "Create"}
+          {props.isLoading ? <IconSpinner color="white" width={18} height={18} /> : "만들기"}
         </Button>
       </View>
     </View>

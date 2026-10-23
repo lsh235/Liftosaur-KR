@@ -44,23 +44,23 @@ export function ModalCouponContent(props: IModalCouponContentProps): JSX.Element
 
   return (
     <View>
-      <Text className="pt-4 pb-2 text-lg font-bold">Redeem Code</Text>
+      <Text className="pt-4 pb-2 text-lg font-bold">쿠폰 코드 등록</Text>
       <Input
         identifier="modal-coupon-code"
-        label="Code"
+        label="코드"
         labelSize="xs"
         maxLength={8}
         autoCapitalize="characters"
         autoCorrect={false}
         required={true}
-        requiredMessage="Please enter a code"
+        requiredMessage="코드를 입력하세요"
         changeType="oninput"
         changeHandler={setResult}
         handleRef={inputHandle}
       />
       <View className="items-center mt-4">
         <Button name="redeem-coupon" kind="purple" disabled={isLoading} onClick={onSubmit}>
-          {isLoading ? <IconSpinner color="white" width={18} height={18} /> : "Redeem"}
+          {isLoading ? <IconSpinner color="white" width={18} height={18} /> : "등록"}
         </Button>
       </View>
     </View>

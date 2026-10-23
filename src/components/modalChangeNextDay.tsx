@@ -115,17 +115,17 @@ export function ModalChangeNextDayContent(props: IModalChangeNextDayProps): JSX.
 
   const header = (
     <View>
-      <Text className="mb-1 text-lg font-semibold text-center">Change Next Workout</Text>
+      <Text className="mb-1 text-lg font-semibold text-center">다음 운동 선택</Text>
       <View className="items-center">
         <LinkButton name="change-next-day-empty-program" className="mb-2 text-xs" onPress={handleEmptyProgram}>
-          Go without a program
+          프로그램 없이 시작
         </LinkButton>
       </View>
       {allPrograms.length > 1 && (
         <View className="mx-0">
           <MenuItemEditable
             type="select"
-            name="Program"
+            name="프로그램"
             value={currentProgram?.id ?? ""}
             values={programsValues}
             onChange={handleProgramChange}
@@ -140,7 +140,7 @@ export function ModalChangeNextDayContent(props: IModalChangeNextDayProps): JSX.
       <View className="flex-1">
         {header}
         <View className="mx-4">
-          <Text>No Programs</Text>
+          <Text>프로그램이 없습니다</Text>
         </View>
       </View>
     );

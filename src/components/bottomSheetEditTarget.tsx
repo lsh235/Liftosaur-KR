@@ -40,14 +40,14 @@ export function BottomSheetEditTargetContent(props: IBottomSheetEditTargetConten
 
   return (
     <View className="px-gutter pt-2 pb-4">
-      <Text className="py-2 text-base font-semibold text-center">Edit Set Target</Text>
+      <Text className="py-2 text-base font-semibold text-center">세트 목표 수정</Text>
       <MenuItemWrapper name="edit-set-target-reps">
         <View className="flex-row items-center py-2">
           <View className="flex-1">
-            <Text className="text-sm font-semibold">Reps</Text>
+            <Text className="text-sm font-semibold">반복 횟수</Text>
           </View>
           <View className="flex-row items-center gap-2">
-            <Text className="text-xs text-text-secondary">Min</Text>
+            <Text className="text-xs text-text-secondary">최소</Text>
             <View className="mr-2">
               <InputNumber2
                 width={2.5}
@@ -72,7 +72,7 @@ export function BottomSheetEditTargetContent(props: IBottomSheetEditTargetConten
                 step={1}
               />
             </View>
-            <Text className="text-xs text-text-secondary">Max</Text>
+            <Text className="text-xs text-text-secondary">최대</Text>
             <View className="mr-3">
               <InputNumber2
                 width={2.5}
@@ -98,7 +98,7 @@ export function BottomSheetEditTargetContent(props: IBottomSheetEditTargetConten
               />
             </View>
             <View className="flex-row items-center">
-              <Text className="mr-1 text-xs">AMRAP?</Text>
+              <Text className="mr-1 text-xs">최대 반복?</Text>
               <Switch
                 value={set.isAmrap}
                 testID="edit-target-amrap"
@@ -114,7 +114,7 @@ export function BottomSheetEditTargetContent(props: IBottomSheetEditTargetConten
       <MenuItemWrapper name="edit-set-target-weight">
         <View className="flex-row items-center py-2">
           <View className="flex-1">
-            <Text className="text-sm font-semibold">Weight</Text>
+            <Text className="text-sm font-semibold">중량</Text>
           </View>
           <View className="flex-row items-center gap-2">
             <View className="flex-row items-center mr-3">
@@ -156,7 +156,7 @@ export function BottomSheetEditTargetContent(props: IBottomSheetEditTargetConten
               </Text>
             </View>
             <View className="flex-row items-center">
-              <Text className="mr-1 text-xs">Ask?</Text>
+              <Text className="mr-1 text-xs">입력 요청?</Text>
               <Switch
                 value={set.askWeight}
                 testID="edit-target-ask-weight"
@@ -185,7 +185,7 @@ export function BottomSheetEditTargetContent(props: IBottomSheetEditTargetConten
         <MenuItemWrapper name="edit-set-target-rpe">
           <View className="flex-row items-center py-1">
             <View className="flex-1">
-              <Text className="text-sm font-semibold">RPE</Text>
+            <Text className="text-sm font-semibold">RPE</Text>
             </View>
             <View className="flex-row items-center gap-2">
               <View className="flex-row items-center mr-3">
@@ -214,7 +214,7 @@ export function BottomSheetEditTargetContent(props: IBottomSheetEditTargetConten
                 />
               </View>
               <View className="flex-row items-center">
-                <Text className="mr-1 text-xs">Log?</Text>
+                <Text className="mr-1 text-xs">기록?</Text>
                 <Switch
                   value={set.logRpe}
                   testID="edit-target-log-rpe"
@@ -259,7 +259,7 @@ export function BottomSheetEditTargetContent(props: IBottomSheetEditTargetConten
         <MenuItemWrapper name="edit-set-target-set-timer">
           <View className="flex-row items-center py-1">
             <View className="flex-1">
-              <Text className="text-sm font-semibold">Set Timer</Text>
+              <Text className="text-sm font-semibold">세트 타이머</Text>
             </View>
             <View className="flex-row items-center gap-2">
               <View className="flex-row items-center mr-3">
@@ -271,7 +271,7 @@ export function BottomSheetEditTargetContent(props: IBottomSheetEditTargetConten
                   }
                   keyboardAddon={
                     <View className="flex-row items-center py-2">
-                      <Text className="mr-2 text-sm font-semibold">Count up past target?</Text>
+                      <Text className="mr-2 text-sm font-semibold">목표 시간 이후에도 계속 세기</Text>
                       <Switch
                         value={!!set.isOverflowSetTimer}
                         testID="edit-target-overflow-set-timer"
@@ -305,7 +305,7 @@ export function BottomSheetEditTargetContent(props: IBottomSheetEditTargetConten
                   max={9999}
                   step={15}
                 />
-                <Text className="ml-1 text-xs text-text-secondary">s</Text>
+                <Text className="ml-1 text-xs text-text-secondary">초</Text>
               </View>
               <Pressable
                 className="p-2"
@@ -330,7 +330,7 @@ export function BottomSheetEditTargetContent(props: IBottomSheetEditTargetConten
           <MenuItemEditable
             size="sm"
             type="boolean"
-            name="Enable Custom Rest Timer?"
+            name="사용자 휴식 타이머 사용"
             value={set.timer ? "true" : "false"}
             onChange={() => {
               setEnableTimer(true);
@@ -341,7 +341,7 @@ export function BottomSheetEditTargetContent(props: IBottomSheetEditTargetConten
         <MenuItemWrapper name="edit-set-target-timer">
           <View className="flex-row items-center py-1">
             <View className="flex-1">
-              <Text className="text-sm font-semibold">Rest Timer</Text>
+              <Text className="text-sm font-semibold">휴식 타이머</Text>
             </View>
             <View className="flex-row items-center gap-2">
               <View className="flex-row items-center mr-3">
@@ -367,7 +367,7 @@ export function BottomSheetEditTargetContent(props: IBottomSheetEditTargetConten
                   max={600}
                   step={5}
                 />
-                <Text className="ml-1 text-xs text-text-secondary">s</Text>
+                <Text className="ml-1 text-xs text-text-secondary">초</Text>
               </View>
               <Pressable
                 className="p-2"

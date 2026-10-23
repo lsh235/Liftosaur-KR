@@ -135,7 +135,7 @@ export function SetTimerBannerContent(props: ISetTimerBannerContentProps): JSX.E
   const isLeft = setTimerModal.side === "left";
   const recordedThisSide = isLeft ? set.completedSetTimerLeft != null : set.completedSetTimer != null;
   const isCompleted = isLeft ? recordedThisSide : !!set.isCompleted;
-  const stopLabel = recordedThisSide && isLeft ? "Next side" : `Stop & record · ${elapsedLabel}`;
+  const stopLabel = recordedThisSide && isLeft ? "다음 쪽" : `중지하고 기록 · ${elapsedLabel}`;
 
   function onStartNow(): void {
     if (isPlayground) {
@@ -343,8 +343,8 @@ function GetReadyRing(props: { secondsLeft: number; total: number; target: numbe
           </TextRaw>
         </View>
       </Pressable>
-      <Text className="text-lg font-bold text-text-cardyellow">Get Ready</Text>
-      {target > 0 && <Text className="text-sm text-text-secondary">then {TimeUtils_formatMMSS(target * 1000)}</Text>}
+      <Text className="text-lg font-bold text-text-cardyellow">준비</Text>
+      {target > 0 && <Text className="text-sm text-text-secondary">시작까지 {TimeUtils_formatMMSS(target * 1000)}</Text>}
     </View>
   );
 }

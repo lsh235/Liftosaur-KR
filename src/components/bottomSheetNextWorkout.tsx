@@ -200,7 +200,7 @@ export function BottomSheetNextWorkoutContent(props: IBottomSheetNextWorkoutCont
               </View>
               {supportsWorkoutNotifications && (
                 <>
-                  <Text className="pb-1 pt-3 text-sm text-text-secondary">운동 시간 알림 (iOS/Android)</Text>
+                  <Text className="pb-1 pt-3 text-sm text-text-secondary">운동 시간 알림</Text>
                   <TextInput
                     accessibilityLabel="운동 알림 시간"
                     className="rounded bg-background-default px-3 py-2 text-text-primary"
@@ -211,7 +211,7 @@ export function BottomSheetNextWorkoutContent(props: IBottomSheetNextWorkoutCont
                     maxLength={5}
                   />
                   <Text className="pt-1 text-xs text-text-secondary">
-                    HH:MM 형식으로 입력하세요. 비우면 알림이 꺼집니다.
+                    24시간제 시:분으로 입력하세요. 비워 두면 알림이 꺼집니다.
                   </Text>
                 </>
               )}

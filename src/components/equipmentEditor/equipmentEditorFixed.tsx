@@ -20,29 +20,29 @@ export function EquipmentEditorFixed(props: IEquipmentEditorSectionProps<IFixedS
   const { setup, onChange } = props;
   return (
     <View>
-      <EquipmentEditorCard title={`Weights · ${setup.unit}`}>
+      <EquipmentEditorCard title={`중량 · ${setup.unit}`}>
         <EquipmentEditorRanges
           ranges={setup.ranges}
           unit={setup.unit}
           testID="equipment-fixed"
-          addLabel="Add another range"
+          addLabel="중량 범위 추가"
           allowEmpty={true}
           onChange={(ranges) => onChange({ ...setup, ranges })}
         />
       </EquipmentEditorCard>
-      <EquipmentEditorCard title="Single weights outside the ranges">
+      <EquipmentEditorCard title="범위에 포함되지 않는 개별 중량">
         <EquipmentEditorValues
           values={setup.values}
           unit={setup.unit}
           testID="equipment-single"
-          addLabel="Add a single weight"
+          addLabel="개별 중량 추가"
           onAdd={() => props.onAddWeight("values")}
           onChange={(values) => onChange({ ...setup, values })}
         />
       </EquipmentEditorCard>
       {setup.addOn != null && (
         <EquipmentEditorCard
-          title="Plates you add"
+          title="추가 원판"
           right={
             <EquipmentEditorClose
               testID="equipment-addon-remove"
@@ -54,7 +54,7 @@ export function EquipmentEditorFixed(props: IEquipmentEditorSectionProps<IFixedS
             plates={setup.addOn}
             unit={setup.unit}
             testID="equipment-addon"
-            addLabel="Add a size"
+            addLabel="원판 무게 추가"
             onAdd={() => props.onAddWeight("addOn")}
             onChange={(addOn) => onChange({ ...setup, addOn })}
           />
@@ -68,7 +68,7 @@ export function EquipmentEditorFixed(props: IEquipmentEditorSectionProps<IFixedS
             ? [
                 {
                   name: "equipment-add-addon",
-                  label: "Add plates you add (fractional plates)",
+                  label: "추가 원판 설정 (소수 단위 원판)",
                   onClick: () => onChange({ ...setup, addOn: [] }),
                 },
               ]
@@ -87,21 +87,21 @@ export function EquipmentEditorElectric(props: IEquipmentEditorSectionProps<IEle
     <View>
       <EquipmentEditorCard help={`Any weight from ${setup.min} to ${setup.max}, in ${setup.step} ${setup.unit} steps.`}>
         <EquipmentEditorNumberRow
-          label="Min"
+          label="최소"
           unit={setup.unit}
           value={setup.min}
           testID="equipment-min"
           onChange={(min) => onChange({ ...setup, min })}
         />
         <EquipmentEditorNumberRow
-          label="Max"
+          label="최대"
           unit={setup.unit}
           value={setup.max}
           testID="equipment-max"
           onChange={(max) => onChange({ ...setup, max })}
         />
         <EquipmentEditorNumberRow
-          label="Step"
+          label="간격"
           unit={setup.unit}
           isLast={true}
           value={setup.step}

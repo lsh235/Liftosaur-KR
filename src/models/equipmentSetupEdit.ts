@@ -38,11 +38,11 @@ const NEW_BAND_STEP_LB = 10;
 const NEW_BAND_STEP_KG = 5;
 
 export const EquipmentSetupEdit_types: { type: IEquipmentSetupType; label: string; description: string }[] = [
-  { type: "stack", label: "Weight stack", description: "Cable columns and stack machines" },
-  { type: "plates", label: "Plates", description: "Barbells, plate-loaded machines, dip belts" },
-  { type: "fixed", label: "Fixed weights", description: "Dumbbells, kettlebells, fixed barbells" },
-  { type: "electric", label: "Electric", description: "Voltra, Tonal" },
-  { type: "bands", label: "Bands", description: "Resistance bands, band-assisted pull-ups" },
+  { type: "stack", label: "중량 스택", description: "케이블 기둥 및 중량 스택 머신" },
+  { type: "plates", label: "원판", description: "바벨, 원판 장착 머신, 딥 벨트" },
+  { type: "fixed", label: "고정 중량", description: "덤벨, 케틀벨, 고정 중량 바벨" },
+  { type: "electric", label: "전자식 기구", description: "Voltra, Tonal" },
+  { type: "bands", label: "밴드", description: "저항 밴드, 밴드 보조 풀업" },
 ];
 
 export function EquipmentSetupEdit_typeName(type: IEquipmentSetupType): string {
@@ -235,8 +235,8 @@ export function EquipmentSetupEdit_pinNumbersExample(setup: IStackSetup): string
       }
     }
   }
-  const examples = pins.map((pin, i) => `#${i + 1} is ${pin} ${setup.unit}`).join(", ");
-  return examples !== "" ? `Counted from the lightest plate: ${examples}.` : "Counted from the lightest plate.";
+  const examples = pins.map((pin, i) => `${i + 1}번은 ${pin} ${setup.unit}`).join(", ");
+  return examples !== "" ? `가장 가벼운 원판부터 셉니다. ${examples}입니다.` : "가장 가벼운 원판부터 셉니다.";
 }
 
 export function EquipmentSetupEdit_bodyweightPercent(setup: IEquipmentSetup): number {
@@ -256,17 +256,17 @@ export function EquipmentSetupEdit_bodyweightHelp(
   const example = unit === "lb" ? EXAMPLE_LOAD_LB : EXAMPLE_LOAD_KG;
   const isAssisting = setup.direction === "assists";
   if (setup.bodyweight == null) {
-    return isAssisting ? `-${example} ${unit} in a program means ${example} ${unit} of assistance.` : "";
+    return isAssisting ? `프로그램에 -${example} ${unit}로 표시되면 ${example} ${unit} 보조 중량으로 계산합니다.` : "";
   }
   const total = roundForHelp(Weight_convertTo(bodyweight, unit).value);
   const counted = roundForHelp(total * (setup.bodyweight.share ?? 1));
   const intro = isBodyweightLogged
-    ? `Your bodyweight is ${total} ${unit}.`
-    : `No bodyweight logged, so it uses ${total} ${unit}.`;
-  const share = counted !== total ? ` ${EquipmentSetupEdit_bodyweightPercent(setup)}% of it counts.` : "";
+    ? `기록된 체중: ${total} ${unit}.`
+    : `체중 미기록: ${total} ${unit}을 기본값으로 사용.`;
+  const share = counted !== total ? ` 체중의 ${EquipmentSetupEdit_bodyweightPercent(setup)}% 반영.` : "";
   const programWeight = roundForHelp(isAssisting ? counted - example : counted + example);
-  const meaning = isAssisting ? `${example} ${unit} of assistance` : `${example} ${unit} added`;
-  return `${intro}${share} ${programWeight} ${unit} in a program means ${meaning}.`;
+  const meaning = isAssisting ? `${example} ${unit} 보조 중량` : `${example} ${unit} 추가 중량`;
+  return `${intro}${share} 프로그램 중량 ${programWeight} ${unit}인 경우 ${meaning}으로 계산합니다.`;
 }
 
 export function EquipmentSetupEdit_addValue(values: number[], value: number | undefined): number[] {

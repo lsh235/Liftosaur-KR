@@ -6,7 +6,6 @@ import { useNavOptions } from "../navigation/useNavOptions";
 import { Thunk_undoImport } from "../ducks/thunks";
 import { IImportSession } from "../types";
 import { DateUtils_format } from "../utils/date";
-import { StringUtils_pluralize } from "../utils/string";
 import { LinkButton } from "./linkButton";
 
 interface IProps {
@@ -15,13 +14,13 @@ interface IProps {
 }
 
 export function ScreenRecentImports(props: IProps): JSX.Element {
-  useNavOptions({ navTitle: "Recent Imports" });
+  useNavOptions({ navTitle: "최근 가져오기" });
   const importSessions = [...(props.importSessions ?? [])].reverse();
 
   return (
     <View className="px-gutter">
       {importSessions.length === 0 ? (
-        <Text className="py-8 text-center text-text-secondary">No recent imports</Text>
+        <Text className="py-8 text-center text-text-secondary">최근 가져온 기록이 없습니다</Text>
       ) : (
         importSessions.map((session) => (
           <View key={session.id} className="flex-row items-center py-3 border-b border-border-neutral">
@@ -30,17 +29,14 @@ export function ScreenRecentImports(props: IProps): JSX.Element {
                 {session.source === "hevy" ? "Hevy" : "CSV"} · {DateUtils_format(session.timestamp)}
               </Text>
               <Text className="text-sm text-text-secondary">
-                {session.workoutCount} {StringUtils_pluralize("workout", session.workoutCount)}
+                운동 {session.workoutCount}회
                 {session.customExerciseIds.length > 0
-                  ? `, ${session.customExerciseIds.length} new ${StringUtils_pluralize(
-                      "exercise",
-                      session.customExerciseIds.length
-                    )}`
+                  ? ` · 새 운동 ${session.customExerciseIds.length}개`
                   : ""}
               </Text>
             </View>
             <LinkButton name={`undo-import-${session.id}`} onClick={() => props.dispatch(Thunk_undoImport(session.id))}>
-              Undo
+              되돌리기
             </LinkButton>
           </View>
         ))

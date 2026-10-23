@@ -31,7 +31,7 @@ export function EquipmentEditorBands(props: IEquipmentEditorSectionProps<IBandsS
   };
   return (
     <View>
-      <EquipmentEditorCard title="Bands · what each counts as">
+      <EquipmentEditorCard title="밴드별 환산 중량">
         {setup.bands.map((band, index) => (
           <EquipmentEditorBandRow
             key={`${index}-${band.name}`}
@@ -54,13 +54,13 @@ export function EquipmentEditorBands(props: IEquipmentEditorSectionProps<IBandsS
         ))}
         <AddButton
           name="equipment-add-band"
-          label="Add a band"
+          label="밴드 추가"
           onClick={() => onChange({ ...setup, bands: EquipmentSetupEdit_addBand(setup.bands, setup.unit) })}
         />
       </EquipmentEditorCard>
-      <EquipmentEditorCard help="Use two or more bands together, e.g. Red + Blue.">
+      <EquipmentEditorCard help="빨강 + 파랑처럼 밴드를 두 개 이상 함께 사용할 수 있습니다.">
         <MenuItemEditable
-          name="Combine bands"
+          name="밴드 조합 사용"
           type="boolean"
           isBorderless={true}
           value={setup.combine ? "true" : "false"}
@@ -127,7 +127,7 @@ function EquipmentEditorBandRow(props: IBandRowProps): JSX.Element {
         </View>
       )}
       <View className="flex-row items-center mt-1" style={{ gap: 6 }}>
-        <Text className="text-sm text-text-secondary">counts as</Text>
+        <Text className="text-sm text-text-secondary">환산 중량</Text>
         <InputNumber2
           name={`equipment-band-weight-${index}`}
           testID={`equipment-band-weight-${index}`}

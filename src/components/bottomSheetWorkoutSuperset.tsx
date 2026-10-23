@@ -32,7 +32,7 @@ export function BottomSheetWorkoutSupersetContent(props: IBottomSheetWorkoutSupe
   return (
     <View className="flex-1 bg-background-default">
       <View className="pb-2">
-        <Text className="text-lg font-semibold text-center">Select Superset Group</Text>
+        <Text className="text-lg font-semibold text-center">슈퍼세트 그룹 선택</Text>
       </View>
       <View className="pb-4">
         <Pressable
@@ -45,7 +45,7 @@ export function BottomSheetWorkoutSupersetContent(props: IBottomSheetWorkoutSupe
             props.onClose();
           }}
         >
-          <Text className="font-bold">None</Text>
+          <Text className="font-bold">없음</Text>
         </Pressable>
         {ObjectUtils_entriesNonnull(supersetGroups).map(([name, entries]) => {
           const isSelected = props.entry.superset === name;
@@ -87,10 +87,10 @@ export function BottomSheetWorkoutSupersetContent(props: IBottomSheetWorkoutSupe
           buttonSize="lg"
           onClick={() => {
             openTextInput({
-              title: "Enter new group name",
-              inputLabel: "Name",
-              placeholder: "My Group Name",
-              submitLabel: "Add",
+              title: "새 그룹 이름 입력",
+              inputLabel: "이름",
+              placeholder: "예: 가슴 슈퍼세트",
+              submitLabel: "추가",
               dataCyPrefix: "modal-new-superset",
               pattern: PlannerNames_supersetNamePattern,
               patternMessage: PlannerNames_supersetNameMessage,
@@ -99,7 +99,7 @@ export function BottomSheetWorkoutSupersetContent(props: IBottomSheetWorkoutSupe
           data-testid="superset-create-group"
           testID="superset-create-group"
         >
-          Create New Group
+          새 그룹 만들기
         </Button>
       </View>
     </View>

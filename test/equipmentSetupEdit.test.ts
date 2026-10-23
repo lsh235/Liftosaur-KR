@@ -176,7 +176,7 @@ describe("EquipmentSetupEdit", () => {
     expect(EquipmentSetupEdit_parseType("plates")).to.equal("plates");
     expect(EquipmentSetupEdit_parseType("bands")).to.equal("bands");
     expect(EquipmentSetupEdit_parseType("chains")).to.equal(undefined);
-    expect(EquipmentSetupEdit_typeName("fixed")).to.equal("Fixed weights");
+    expect(EquipmentSetupEdit_typeName("fixed")).to.equal("고정 중량");
   });
 
   it("explains what a program weight means with bodyweight", () => {
@@ -184,22 +184,22 @@ describe("EquipmentSetupEdit", () => {
     const bodyweight = { value: 180, unit: "lb" as const };
     const adds = EquipmentSetupEdit_setBodyweight(plates, "adds", true);
     expect(EquipmentSetupEdit_bodyweightHelp(adds, bodyweight, true)).to.equal(
-      "Your bodyweight is 180 lb. 225 lb in a program means 45 lb added."
+      "기록된 체중: 180 lb. 프로그램 중량 225 lb인 경우 45 lb 추가 중량으로 계산합니다."
     );
     expect(EquipmentSetupEdit_bodyweightHelp({ ...adds, bodyweight: { share: 0.64 } }, bodyweight, false)).to.equal(
-      "No bodyweight logged, so it uses 180 lb. 64% of it counts. 160.2 lb in a program means 45 lb added."
+      "체중 미기록: 180 lb을 기본값으로 사용. 체중의 64% 반영. 프로그램 중량 160.2 lb인 경우 45 lb 추가 중량으로 계산합니다."
     );
     const assistedTotal = EquipmentSetupEdit_setBodyweight(plates, "assists", true);
     expect(EquipmentSetupEdit_bodyweightHelp(assistedTotal, bodyweight, true)).to.equal(
-      "Your bodyweight is 180 lb. 135 lb in a program means 45 lb of assistance."
+      "기록된 체중: 180 lb. 프로그램 중량 135 lb인 경우 45 lb 보조 중량으로 계산합니다."
     );
     const assistedLoad = EquipmentSetupEdit_setBodyweight(plates, "assists", false);
     expect(EquipmentSetupEdit_bodyweightHelp(assistedLoad, bodyweight, true)).to.equal(
-      "-45 lb in a program means 45 lb of assistance."
+      "프로그램에 -45 lb로 표시되면 45 lb 보조 중량으로 계산합니다."
     );
     const kg = EquipmentSetupEdit_setBodyweight(EquipmentSetupEdit_default("plates", "kg"), "adds", true);
     expect(EquipmentSetupEdit_bodyweightHelp(kg, bodyweight, true)).to.equal(
-      "Your bodyweight is 81.5 kg. 101.5 kg in a program means 20 kg added."
+      "기록된 체중: 81.5 kg. 프로그램 중량 101.5 kg인 경우 20 kg 추가 중량으로 계산합니다."
     );
   });
 
@@ -213,7 +213,7 @@ describe("EquipmentSetupEdit", () => {
       ],
     };
     expect(EquipmentSetupEdit_pinNumbersExample(stack)).to.equal(
-      "Counted from the lightest plate: #1 is 11 lb, #2 is 22 lb, #3 is 33 lb."
+      "가장 가벼운 원판부터 셉니다. 1번은 11 lb, 2번은 22 lb, 3번은 33 lb입니다."
     );
   });
 

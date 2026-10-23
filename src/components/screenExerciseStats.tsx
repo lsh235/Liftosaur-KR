@@ -104,7 +104,7 @@ export function ScreenExerciseStats(props: IProps): JSX.Element {
 
   const showPrs = maxWeight.value > 0 || max1RM.value > 0;
 
-  useNavOptions({ navTitle: "Exercise Stats", navHelpKey: "exerciseStats" });
+  useNavOptions({ navTitle: "운동 통계", navHelpKey: "exerciseStats" });
 
   const onOverrideMuscles = useCallback(() => {
     navigateToModal("musclesOverrideModal", { exerciseType });
@@ -115,7 +115,7 @@ export function ScreenExerciseStats(props: IProps): JSX.Element {
   }, [exerciseType.id]);
 
   const onDeleteCustomExercise = useCallback(async () => {
-    if (await Dialog_confirm("Are you sure you want to delete this exercise?")) {
+    if (await Dialog_confirm("이 운동을 삭제할까요?")) {
       updateSettings(
         dispatch,
         lb<ISettings>()
@@ -184,18 +184,18 @@ export function ScreenExerciseStats(props: IProps): JSX.Element {
               className="text-sm text-text-error"
               onClick={onDeleteCustomExercise}
             >
-              Delete Exercise
+              운동 삭제
             </LinkButton>
           </View>
         </View>
       )}
 
-      <GroupHeader name="Notes" />
+      <GroupHeader name="메모" />
       <View style={{ marginHorizontal: -4 }}>
         <MarkdownEditorBorderless
           debounceMs={500}
           value={notesValue}
-          placeholder={`Exercise notes in Markdown...`}
+          placeholder="운동 메모를 Markdown으로 입력하세요..."
           onChange={onNotesChange}
         />
       </View>
@@ -288,14 +288,14 @@ export const MuscleGroupsView = memo(function MuscleGroupsView(props: IMuscleGro
           className="text-xs"
           onClick={props.onOverride}
         >
-          Override Muscles
+          근육 직접 설정
         </LinkButton>
       </View>
       <Pressable onPress={onToggleMuscles}>
         {types.length > 0 && (
           <View>
             <Text className="text-xs">
-              <Text className="text-xs text-text-secondary">Type: </Text>
+              <Text className="text-xs text-text-secondary">종류: </Text>
               <Text className="text-xs font-bold">{types.join(", ")}</Text>
             </Text>
           </View>
@@ -303,7 +303,7 @@ export const MuscleGroupsView = memo(function MuscleGroupsView(props: IMuscleGro
         {targetMuscleGroups.length > 0 && (
           <View>
             <Text className="text-xs">
-              <Text className="text-xs text-text-secondary">Target: </Text>
+              <Text className="text-xs text-text-secondary">주동 근육: </Text>
               <Text className="text-xs font-bold">
                 {showMuscles ? targetMuscles.join(", ") : targetMuscleGroups.join(", ")}
               </Text>
@@ -313,7 +313,7 @@ export const MuscleGroupsView = memo(function MuscleGroupsView(props: IMuscleGro
         {synergistMuscleGroups.length > 0 && (
           <View>
             <Text className="text-xs">
-              <Text className="text-xs text-text-secondary">Synergist: </Text>
+              <Text className="text-xs text-text-secondary">협력 근육: </Text>
               <Text className="text-xs font-bold">
                 {showMuscles ? synergistMuscles.join(", ") : synergistMuscleGroups.join(", ")}
               </Text>

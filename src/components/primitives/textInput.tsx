@@ -15,7 +15,13 @@ export const TextInput = forwardRef(function TextInputInner(
   ref: Ref<RNTextInput>
 ): JSX.Element {
   const className = Text_hasSizeClass(props.className) ? props.className : `text-base ${props.className ?? ""}`.trim();
-  const fontFamily = Text_resolveFontFamily(className);
+  const fontText =
+    typeof props.value === "string" && props.value.length > 0
+      ? props.value
+      : typeof props.defaultValue === "string" && props.defaultValue.length > 0
+        ? props.defaultValue
+        : props.placeholder;
+  const fontFamily = Text_resolveFontFamily(className, fontText);
   return (
     <RNTextInput
       ref={ref}

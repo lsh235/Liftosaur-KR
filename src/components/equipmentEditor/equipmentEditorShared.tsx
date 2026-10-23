@@ -53,8 +53,8 @@ export function EquipmentEditorBodyweightActions<T extends IEquipmentSetup>(
 }
 
 const bodyweightActionLabels: Record<IEquipmentBodyweightMode, { name: string; label: string }> = {
-  adds: { name: "equipment-add-bodyweight", label: "Include bodyweight (dip belt, vest)" },
-  assists: { name: "equipment-add-assisting", label: "Helps you up (assisted machine)" },
+  adds: { name: "equipment-add-bodyweight", label: "체중 포함 (딥 벨트, 중량 조끼)" },
+  assists: { name: "equipment-add-assisting", label: "운동 보조 중량 추가 (어시스트 머신)" },
 };
 
 export function EquipmentEditorNumberRow(props: {

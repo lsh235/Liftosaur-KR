@@ -169,7 +169,7 @@ export function ExercisesList(props: IExercisesListProps): JSX.Element {
           defaultValue={filter}
           autoCapitalize="none"
           autoCorrect={false}
-          placeholder="Filter by name"
+          placeholder="이름으로 검색"
           placeholderTextColor={Tailwind_semantic().text.secondarysubtle}
           onChangeText={(t) => setFilter(t)}
           returnKeyType="search"
@@ -177,7 +177,7 @@ export function ExercisesList(props: IExercisesListProps): JSX.Element {
         <Multiselect
           id="filtertypes"
           label=""
-          placeholder="Filter by type"
+          placeholder="종류로 필터링"
           values={filterOptions}
           initialSelectedValues={new Set()}
           onChange={(ft) => setFilterTypes(Array.from(ft))}
@@ -185,20 +185,20 @@ export function ExercisesList(props: IExercisesListProps): JSX.Element {
       </View>
       <View className="items-end">
         <LinkButton name="create-custom-exercise" onClick={() => navigateToModal("customExerciseModal", {})}>
-          Create custom exercise
+          사용자 운동 추가
         </LinkButton>
       </View>
 
-      {visibleCustom.length > 0 && <GroupHeader name="Custom Exercises" topPadding={true} />}
+      {visibleCustom.length > 0 && <GroupHeader name="사용자 지정 운동" topPadding={true} />}
       {visibleCustom.map((exercise) => (
         <ExerciseItem key={Exercise_toKey(exercise)} dispatch={dispatch} settings={settings} exercise={exercise} />
       ))}
 
-      {visibleProgram.length > 0 && <GroupHeader name="Current program exercises" topPadding={true} />}
+      {visibleProgram.length > 0 && <GroupHeader name="현재 프로그램 운동" topPadding={true} />}
       {visibleProgram.map((exercise) => (
         <ExerciseItem key={Exercise_toKey(exercise)} dispatch={dispatch} settings={settings} exercise={exercise} />
       ))}
-      {visibleHistoryEx.length > 0 && <GroupHeader name="Exercises from history" topPadding={true} />}
+      {visibleHistoryEx.length > 0 && <GroupHeader name="운동 기록에 있는 운동" topPadding={true} />}
       {visibleHistoryEx.map((exercise) => (
         <ExerciseItem key={Exercise_toKey(exercise)} dispatch={dispatch} settings={settings} exercise={exercise} />
       ))}
@@ -259,11 +259,11 @@ const ExerciseItem = memo(function ExerciseItem(props: IExerciseItemProps): JSX.
             </Text>
             {props.exercise.equipmentName ? (
               <Text className="text-xs text-text-secondary">
-                <Text className="text-xs font-bold text-text-secondary">Equipment:</Text> {props.exercise.equipmentName}
+                <Text className="text-xs font-bold text-text-secondary">기구:</Text> {props.exercise.equipmentName}
               </Text>
             ) : (
               <Text className="text-xs text-text-secondary">
-                <Text className="text-xs font-bold text-text-secondary">Default rounding:</Text>{" "}
+                <Text className="text-xs font-bold text-text-secondary">기본 중량 단위:</Text>{" "}
                 {props.exercise.defaultRounding}
               </Text>
             )}

@@ -21,10 +21,10 @@ async function changeUnit(props: IProps, unit: IUnit): Promise<void> {
   if (unit === props.setup.unit) {
     return;
   }
-  const choice = await Dialog_choice(`Change to ${unit}`, "Convert the values, or keep the numbers?", [
-    `Convert (45 lb → 20 kg)`,
-    "Keep the numbers",
-    "Cancel",
+  const choice = await Dialog_choice(`${unit} 단위로 변경`, "중량 값을 변환할까요, 숫자를 그대로 둘까요?", [
+    `중량 변환 (45 lb → 20 kg)`,
+    "숫자 유지",
+    "취소",
   ]);
   const mode = EquipmentSetupEdit_unitChoice(choice);
   if (mode != null) {
@@ -44,7 +44,7 @@ export function useEquipmentEditorCommon(props: IProps): { cards: JSX.Element; a
     <View>
       {isRoundingShown && (
         <EquipmentEditorCard
-          title="Rounding"
+          title="반올림 설정"
           right={
             <EquipmentEditorClose
               testID="equipment-rounding-remove"
@@ -53,19 +53,19 @@ export function useEquipmentEditorCommon(props: IProps): { cards: JSX.Element; a
           }
         >
           <MenuItemEditable
-            name="Round to"
+            name="반올림 기준"
             type="select"
             isBorderless={true}
             value={setup.rounding}
             values={[
-              ["down", "Down"],
-              ["nearest", "Nearest"],
+              ["down", "내림"],
+              ["nearest", "가장 가까운 값"],
             ]}
             underName={
               <Text className="text-xs text-text-secondary">
                 {setup.rounding === "nearest"
-                  ? "The closest weight you can load"
-                  : "Never heavier than the program says"}
+                  ? "실제로 장착할 수 있는 가장 가까운 중량"
+                  : "프로그램 목표 중량보다 무겁게 반올림하지 않습니다"}
               </Text>
             }
             onChange={(value) => props.onUpdate(EquipmentSetupEdit_setRounding(setup, value))}
@@ -74,7 +74,7 @@ export function useEquipmentEditorCommon(props: IProps): { cards: JSX.Element; a
       )}
       {isUnitShown && (
         <EquipmentEditorCard
-          title="Unit"
+          title="중량 단위"
           right={
             <EquipmentEditorClose
               testID="equipment-unit-remove"
@@ -86,7 +86,7 @@ export function useEquipmentEditorCommon(props: IProps): { cards: JSX.Element; a
           }
         >
           <MenuItemEditable
-            name="Weights in"
+            name="중량 표시 단위"
             type="select"
             isBorderless={true}
             value={setup.unit}
@@ -94,7 +94,7 @@ export function useEquipmentEditorCommon(props: IProps): { cards: JSX.Element; a
               ["lb", "lb"],
               ["kg", "kg"],
             ]}
-            underName={<Text className="text-xs text-text-secondary">Your app setting is {props.appUnit}</Text>}
+            underName={<Text className="text-xs text-text-secondary">앱 기본 단위: {props.appUnit}</Text>}
             onChange={(value) => {
               if (value === "lb" || value === "kg") {
                 changeUnit(props, value);
@@ -105,7 +105,7 @@ export function useEquipmentEditorCommon(props: IProps): { cards: JSX.Element; a
       )}
       {isNotesShown && (
         <EquipmentEditorCard
-          title="Notes"
+          title="메모"
           right={
             <EquipmentEditorClose
               testID="equipment-notes-remove"
@@ -120,7 +120,7 @@ export function useEquipmentEditorCommon(props: IProps): { cards: JSX.Element; a
             <MarkdownEditorBorderless
               debounceMs={500}
               value={props.notes}
-              placeholder="Seat height, pin hole, hints…"
+              placeholder="좌석 높이, 핀 위치, 참고 사항…"
               onChange={props.onNotes}
             />
           </View>

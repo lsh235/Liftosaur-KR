@@ -38,8 +38,8 @@ export function EquipmentEditorPlates(props: IEquipmentEditorSectionProps<IPlate
     <View>
       <EquipmentEditorCard>
         <EquipmentEditorNumberRow
-          label="Base weight"
-          help="Bar, belt, vest or empty machine"
+          label="기본 중량"
+          help="바, 벨트, 조끼 또는 빈 머신의 중량"
           unit={setup.unit}
           value={setup.base}
           testID="equipment-base"
@@ -47,19 +47,19 @@ export function EquipmentEditorPlates(props: IEquipmentEditorSectionProps<IPlate
         />
         {setup.sides === 1 || setup.sides === 2 ? (
           <MenuItemEditable
-            name="Loading"
+            name="원판 장착 위치"
             type="select"
             isBorderless={true}
             value={`${setup.sides}`}
             values={[
-              ["2", "Both sides"],
-              ["1", "One side"],
+              ["2", "양쪽"],
+              ["1", "한쪽"],
             ]}
             onChange={(value) => onChange({ ...setup, sides: Number(value) })}
           />
         ) : (
           <EquipmentEditorNumberRow
-            label="Sides"
+            label="측면 수"
             isLast={true}
             value={setup.sides}
             testID="equipment-sides-count"
@@ -67,19 +67,19 @@ export function EquipmentEditorPlates(props: IEquipmentEditorSectionProps<IPlate
           />
         )}
       </EquipmentEditorCard>
-      <EquipmentEditorCard title="Plates you have · total count">
+      <EquipmentEditorCard title="보유 원판 · 전체 개수">
         <EquipmentEditorPlateCounts
           plates={setup.plates}
           unit={setup.unit}
           testID="equipment-plates"
-          addLabel="Add a plate size"
+          addLabel="원판 무게 추가"
           onAdd={() => props.onAddWeight("plates")}
           onChange={(plates) => onChange({ ...setup, plates })}
         />
       </EquipmentEditorCard>
       {horns.length > 0 && (
         <EquipmentEditorCard
-          title="Horns · plates are shared"
+          title="원판 걸이 · 원판 공유"
           right={
             <EquipmentEditorClose
               testID="equipment-horns-remove"
@@ -88,7 +88,7 @@ export function EquipmentEditorPlates(props: IEquipmentEditorSectionProps<IPlate
           }
           help={
             horns.length > 1
-              ? "The ratios set how the plates split between horns. Top 3 and Middle 1 puts three plates on Top for each one on Middle."
+              ? "비율에 따라 원판을 걸이별로 나눕니다. 위 3, 가운데 1이면 가운데 원판 하나마다 위쪽에 세 개를 둡니다."
               : undefined
           }
         >
@@ -106,7 +106,7 @@ export function EquipmentEditorPlates(props: IEquipmentEditorSectionProps<IPlate
           {EquipmentSetupEdit_canAddHorn(horns) && (
             <AddButton
               name="equipment-add-horn"
-              label="Add another horn"
+              label="원판 걸이 추가"
               onClick={() => onChange({ ...setup, horns: EquipmentSetupEdit_addHorn(horns) })}
             />
           )}
@@ -114,8 +114,8 @@ export function EquipmentEditorPlates(props: IEquipmentEditorSectionProps<IPlate
       )}
       {setup.warmupPlates != null && (
         <EquipmentEditorCard
-          title="Warmups use only"
-          help="Warmup sets load only these plate sizes, so you change fewer plates."
+          title="워밍업에 사용할 원판"
+          help="워밍업 세트에는 선택한 원판만 사용해 원판 교체를 줄입니다."
           right={
             <EquipmentEditorClose
               testID="equipment-warmup-remove"
@@ -148,7 +148,7 @@ export function EquipmentEditorPlates(props: IEquipmentEditorSectionProps<IPlate
             ? [
                 {
                   name: "equipment-add-horns",
-                  label: "Add horns (multi-horn plate-loaded machine)",
+                  label: "원판 걸이 추가 (다중 걸이 머신)",
                   onClick: () => onChange({ ...setup, horns: EquipmentSetupEdit_addHorn(horns) }),
                 },
               ]
@@ -157,7 +157,7 @@ export function EquipmentEditorPlates(props: IEquipmentEditorSectionProps<IPlate
             ? [
                 {
                   name: "equipment-add-warmup",
-                  label: "Use fewer plates for warmups",
+                  label: "워밍업 원판 수 줄이기",
                   onClick: () =>
                     onChange({ ...setup, warmupPlates: EquipmentSetupEdit_defaultWarmupPlates(setup.plates) }),
                 },

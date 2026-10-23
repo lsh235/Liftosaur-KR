@@ -24,21 +24,21 @@ export function ModalNewEquipmentContent(props: IProps): JSX.Element {
 
   return (
     <View>
-      <Text className="mb-4 text-lg font-bold">New equipment</Text>
+      <Text className="mb-4 text-lg font-bold">새 운동 기구</Text>
       <Input
         identifier="equipment-name"
-        label="Equipment name"
+        label="기구 이름"
         required={true}
-        requiredMessage="Please enter a name for the equipment"
+        requiredMessage="기구 이름을 입력하세요"
         type="text"
-        placeholder="Tummy Tormentor 3000"
+        placeholder="예: 파워랙"
         changeType="oninput"
         changeHandler={setResult}
         handleRef={inputHandle}
       />
       <View className="mt-2">
         <MenuItemEditable
-          name="Type"
+          name="종류"
           type="select"
           value={type}
           values={EquipmentSetupEdit_types.map<[string, string]>((t) => [t.type, t.label])}
@@ -48,7 +48,7 @@ export function ModalNewEquipmentContent(props: IProps): JSX.Element {
       </View>
       <View className="flex-row justify-between gap-3 mt-4">
         <Button name="add-equipment-cancel" kind="grayv2" onClick={props.onClose}>
-          Cancel
+          취소
         </Button>
         <Button
           name="add-equipment-submit"
@@ -61,7 +61,7 @@ export function ModalNewEquipmentContent(props: IProps): JSX.Element {
             }
           }}
         >
-          Add
+          추가
         </Button>
       </View>
     </View>

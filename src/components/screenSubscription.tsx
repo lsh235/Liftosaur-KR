@@ -71,52 +71,52 @@ function getFeatures(): IFeatureDef[] {
     {
       key: "plates",
       icon: <IconBarbell />,
-      title: "Plates Calculator",
-      description: "shows exactly which plates to load on the bar.",
+      title: "원판 계산기",
+      description: "바벨에 끼울 원판의 종류와 개수를 계산합니다.",
       infoType: "platesCalculator",
     },
     {
       key: "graphs",
       icon: <IconGraphs />,
-      title: "Graphs",
-      description: "visualize your progress over time.",
+      title: "운동 그래프",
+      description: "시간에 따른 운동 변화를 확인합니다.",
       infoType: "graphs",
     },
     {
       key: "notifications",
       icon: <IconBell />,
-      title: "Rest Timer Notifications",
-      description: "get push notifications when it's time for your next set.",
+      title: "휴식 타이머 알림",
+      description: "다음 세트를 시작할 시간이 되면 알림을 받습니다.",
       infoType: "notifications",
     },
     {
       key: "weekinsights",
       icon: <IconFire />,
-      title: "Week Insights",
-      description: "personalized performance stats.",
+      title: "주간 운동 분석",
+      description: "개인 운동 수행 정보를 확인합니다.",
       infoType: "weekInsights",
     },
     {
       key: "watch",
       icon: <IconWatch />,
-      title: "Apple Watch App",
-      description: "track workouts directly from your wrist",
+      title: "Apple Watch 앱",
+      description: "손목에서 바로 운동을 기록합니다.",
       infoType: "watch",
       iosOnly: true,
     },
     {
       key: "api",
       icon: <IconLink />,
-      title: "API & MCP",
+      title: "API 및 MCP",
       description:
-        "give Claude/ChatGPT/Gemini access to your workouts and programs. Or build your custom integrations.",
+        "Claude, ChatGPT, Gemini에서 운동 기록과 프로그램을 활용하거나 직접 연동 도구를 만들 수 있습니다.",
       infoType: "mcp",
     },
   ];
 }
 
 function planLabel(plan?: ISubscriptionPlanKind): string {
-  return plan === "yearly" ? "Yearly" : plan === "monthly" ? "Monthly" : "Premium";
+  return plan === "yearly" ? "연간" : plan === "monthly" ? "월간" : "프리미엄";
 }
 
 export function ScreenSubscription(props: IProps): JSX.Element {
@@ -186,7 +186,7 @@ export function ScreenSubscription(props: IProps): JSX.Element {
         <SubscriptionHero />
         <View className="flex-1 items-center justify-center px-gutter" style={{ paddingBottom: insets.bottom + 16 }}>
           <IconSpinner width={24} height={24} />
-          <Text className="mt-3 text-sm text-text-secondary">Checking your subscription…</Text>
+          <Text className="mt-3 text-sm text-text-secondary">구독 정보를 확인하고 있습니다…</Text>
         </View>
       </NavScreenContent>
     );
@@ -245,7 +245,7 @@ export function ScreenSubscription(props: IProps): JSX.Element {
                 }}
                 className="text-sm font-bold"
               >
-                Redeem coupon
+                쿠폰 등록
               </LinkButton>
             </View>
           ) : (
@@ -260,7 +260,7 @@ export function ScreenSubscription(props: IProps): JSX.Element {
                   props.dispatch(Thunk_restorePurchases({ interactive: true }));
                 }}
               >
-                Restore Subscription
+                구매 복원
               </LinkButton>
             ) : (
               <InternalLink
@@ -268,7 +268,7 @@ export function ScreenSubscription(props: IProps): JSX.Element {
                 href="/terms.html"
                 className="text-sm font-bold underline text-text-link"
               >
-                Terms of use
+                이용약관
               </InternalLink>
             )}
           </View>
@@ -276,12 +276,11 @@ export function ScreenSubscription(props: IProps): JSX.Element {
         {isPitch && (
           <>
             <Text className="mt-2 mb-4 text-xs text-text-secondary">
-              You can get monthly or yearly subscription (and you'll be charged for a month or year every month or year
-              {!hasOffer ? " after initial 14 days free trial period" : ""}) or lifetime - one-time payment, that gives
-              access to those features without recurring charges in the future.
+              월간 또는 연간 구독을 이용할 수 있습니다. 구독료는 매월 또는 매년 청구됩니다
+              {!hasOffer ? " (최초 14일 무료 체험 후)" : ""}. 평생 이용권은 한 번 결제하면 이후 추가 결제 없이 해당 기능을 계속 사용할 수 있습니다.
             </Text>
             <Text className="mb-4 text-xs text-text-secondary">
-              You can cancel subscriptions any time via {StoreRuntime_storeName()} subscriptions management.
+              구독은 언제든지 {StoreRuntime_storeName()}의 구독 관리에서 취소할 수 있습니다.
             </Text>
           </>
         )}
@@ -293,7 +292,7 @@ export function ScreenSubscription(props: IProps): JSX.Element {
                 href="/terms.html"
                 className="text-sm font-bold text-center underline text-text-link"
               >
-                Terms of use
+                이용약관
               </InternalLink>
             </View>
           </View>
@@ -321,7 +320,7 @@ function SubscriptionHero(): JSX.Element {
         source={{ uri: ImagePreloader_uri("/images/subscriptionhero.png") }}
         style={{ width: "80%", aspectRatio: 879 / 516 }}
         resizeMode="contain"
-        accessibilityLabel="Liftosaur Premium features"
+        accessibilityLabel="Liftosaur 프리미엄 기능"
       />
       <View className="absolute right-4 bottom-0">
         <IconDinoSunglasses width={102} height={136} />
@@ -333,7 +332,7 @@ function SubscriptionHero(): JSX.Element {
 function PitchHeader(): JSX.Element {
   return (
     <View className="py-4">
-      <Text className="text-lg font-semibold">Upgrade your workout routine with Liftosaur Premium:</Text>
+      <Text className="text-lg font-semibold">Liftosaur 프리미엄으로 운동 루틴을 더 체계적으로 관리하세요.</Text>
     </View>
   );
 }
@@ -345,28 +344,28 @@ function StatusHeader(props: { plan: IDerivedSubscriptionPlan }): JSX.Element {
   let title: string;
   let subtitle: string | undefined;
   if (plan.state === "lifetime") {
-    title = "🎉 Lifetime Premium";
-    subtitle = "All Premium features unlocked forever.";
+    title = "🎉 평생 프리미엄";
+    subtitle = "모든 프리미엄 기능을 계속 이용할 수 있습니다.";
   } else if (plan.state === "freeaccess") {
-    title = "Free access";
-    subtitle = "All Premium features unlocked.";
+    title = "무료 이용";
+    subtitle = "모든 프리미엄 기능을 이용할 수 있습니다.";
   } else if (plan.state === "cancelled") {
-    title = `${planLabel(plan.plan)} — won't renew`;
-    subtitle = dateStr ? `Your access ends on ${dateStr}.` : "Your access ends at the end of the current period.";
+    title = `${planLabel(plan.plan)} 구독 · 갱신 안 함`;
+    subtitle = dateStr ? `${dateStr}에 이용이 종료됩니다.` : "현재 결제 기간이 끝나면 이용이 종료됩니다.";
   } else if (plan.state === "subscriber") {
-    title = `✓ Premium — ${planLabel(plan.plan)}`;
-    subtitle = dateStr ? `Renews on ${dateStr}.` : undefined;
+    title = `✓ 프리미엄 · ${planLabel(plan.plan)} 구독`;
+    subtitle = dateStr ? `${dateStr}에 갱신됩니다.` : undefined;
   } else if (plan.state === "otherstore") {
-    title = "✓ Premium";
+    title = "✓ 프리미엄";
     subtitle =
       plan.managedOn === "apple"
-        ? "You bought this subscription on the App Store. Manage or cancel it from an Apple device."
+        ? "App Store에서 구매한 구독입니다. Apple 기기에서 관리하거나 취소하세요."
         : StoreRuntime_isIos()
-          ? "You bought this subscription on another device. Manage or cancel it from that device."
-          : "You bought this subscription on Google Play. Manage or cancel it from an Android device.";
+          ? "다른 기기에서 구매한 구독입니다. 구매한 기기에서 관리하거나 취소하세요."
+          : "Google Play에서 구매한 구독입니다. Android 기기에서 관리하거나 취소하세요.";
   } else {
-    title = "✓ Premium";
-    subtitle = "Manage your subscription from the mobile app.";
+    title = "✓ 프리미엄";
+    subtitle = "모바일 앱에서 구독을 관리할 수 있습니다.";
   }
 
   return (
@@ -404,7 +403,7 @@ function ClaimFreeAccess(props: { dispatch: IDispatch }): JSX.Element {
     <View className="flex-row items-center px-2">
       <View className="flex-1">
         <Text className="text-xs text-text-secondary">
-          You were granted the <Text className="font-bold">free access</Text> to Liftosaur!
+          Liftosaur <Text className="font-bold">무료 이용 권한</Text>을 받았습니다!
         </Text>
       </View>
       <View>
@@ -415,7 +414,7 @@ function ClaimFreeAccess(props: { dispatch: IDispatch }): JSX.Element {
           testID="button-subscription-free"
           buttonSize="lg"
         >
-          Get it!
+          받기
         </Button>
       </View>
     </View>
@@ -437,18 +436,18 @@ interface IPurchaseCardsProps {
 }
 
 function PurchaseCards(props: IPurchaseCardsProps): JSX.Element {
-  const trialNote = !props.hasOffer ? "Free 14-day trial" : undefined;
+  const trialNote = !props.hasOffer ? "14일 무료 체험" : undefined;
   return (
     <View>
       <PlanCard
         testID="button-subscription-yearly"
         highlighted={true}
-        title="Start with Yearly"
+        title="연간 구독 시작"
         subtitle={trialNote}
         price={props.yearlyOffer ? props.yearlyOffer.formattedPrice : props.yearlyPrice}
         oldPrice={props.yearlyOffer ? props.yearlyPrice : undefined}
-        period="/year"
-        badge="Save 33%"
+        period="/년"
+        badge="33% 할인"
         loading={!!props.subscriptionLoading?.yearly}
         onPress={() => {
           if (StoreRuntime_isNative()) {
@@ -463,11 +462,11 @@ function PurchaseCards(props: IPurchaseCardsProps): JSX.Element {
       />
       <PlanCard
         testID="button-subscription-monthly"
-        title="Start with Monthly"
+        title="월간 구독 시작"
         subtitle={trialNote}
         price={props.monthlyOffer ? props.monthlyOffer.formattedPrice : props.monthlyPrice}
         oldPrice={props.monthlyOffer ? props.monthlyPrice : undefined}
-        period="/month"
+        period="/월"
         loading={!!props.subscriptionLoading?.monthly}
         onPress={() => {
           if (StoreRuntime_isNative()) {
@@ -483,8 +482,8 @@ function PurchaseCards(props: IPurchaseCardsProps): JSX.Element {
       {props.supportsLifetime && (
         <PlanCard
           testID="button-subscription-lifetime"
-          title="Lifetime"
-          subtitle="One-time payment"
+          title="평생 이용권"
+          subtitle="1회 결제"
           price={props.lifetimePrice}
           loading={!!props.subscriptionLoading?.lifetime}
           onPress={() => {
@@ -498,7 +497,7 @@ function PurchaseCards(props: IPurchaseCardsProps): JSX.Element {
         />
       )}
       {props.hasOffer && (
-        <Text className="pt-1 text-xs text-center text-text-secondary">Discount applies for the first year</Text>
+        <Text className="pt-1 text-xs text-center text-text-secondary">할인은 첫해에 적용됩니다</Text>
       )}
     </View>
   );
@@ -521,7 +520,7 @@ function ManagementActions(props: IManagementActionsProps): JSX.Element {
     return (
       <View>
         <Text className="text-xs text-center text-text-secondary">
-          Manage your subscription from the Liftosaur mobile app, or your {StoreRuntime_storeName()} account.
+          Liftosaur 모바일 앱 또는 {StoreRuntime_storeName()} 계정에서 구독을 관리할 수 있습니다.
         </Text>
       </View>
     );
@@ -535,15 +534,15 @@ function ManagementActions(props: IManagementActionsProps): JSX.Element {
   const keepLoading = currentPlan ? props.subscriptionLoading?.[currentPlan] : undefined;
   const switchSubtext =
     targetPlan === "yearly"
-      ? "Starts at your next renewal."
-      : "You'll be credited for the time remaining on your yearly plan.";
+      ? "다음 갱신일부터 적용됩니다."
+      : "연간 구독의 남은 기간은 금액으로 반영됩니다.";
 
   const lifetimeDisabledReason =
     plan.state === "subscriber"
-      ? "Cancel your subscription first"
+      ? "먼저 현재 구독을 취소하세요"
       : plan.expirationDate
-        ? `Available after ${DateUtils_format(plan.expirationDate, true)}`
-        : "Available after your subscription expires";
+        ? `${DateUtils_format(plan.expirationDate, true)}부터 이용할 수 있습니다`
+        : "현재 구독이 만료된 뒤 이용할 수 있습니다";
 
   return (
     <View>
@@ -553,17 +552,17 @@ function ManagementActions(props: IManagementActionsProps): JSX.Element {
           style={{ borderRadius: 16 }}
           data-testid="subscription-pending-switch"
         >
-          <Text className="text-base font-bold text-text-primary">Switching to {planLabel(plan.pendingPlan)}</Text>
+          <Text className="text-base font-bold text-text-primary">{planLabel(plan.pendingPlan)} 요금제로 변경 예약됨</Text>
           <Text className="text-xs text-text-secondary">
             {plan.expirationDate
-              ? `Takes effect on ${DateUtils_format(plan.expirationDate, true)}.`
-              : "Takes effect at your next renewal."}
+              ? `${DateUtils_format(plan.expirationDate, true)}부터 적용됩니다.`
+              : "다음 갱신일부터 적용됩니다."}
           </Text>
           {isAndroid && (
             // Google Play has no API to cancel a queued deferred plan change, and re-purchasing the
             // current product is rejected as a no-op replacement. The only way to revert is from the
             // Play subscription manager.
-            <Text className="text-xs text-text-secondary">To cancel the switch, manage it in Google Play.</Text>
+            <Text className="text-xs text-text-secondary">변경 예약을 취소하려면 Google Play에서 구독을 관리하세요.</Text>
           )}
           {currentPlan && (
             <View className="pt-2">
@@ -583,7 +582,7 @@ function ManagementActions(props: IManagementActionsProps): JSX.Element {
                     }
                   }}
                 >
-                  {isAndroid ? "Manage in Google Play" : `Keep ${planLabel(currentPlan)}`}
+                  {isAndroid ? "Google Play에서 관리" : `${planLabel(currentPlan)} 구독 유지`}
                 </LinkButton>
               )}
             </View>
@@ -593,7 +592,7 @@ function ManagementActions(props: IManagementActionsProps): JSX.Element {
         <PlanCard
           testID={`button-switch-${targetPlan}`}
           highlighted={true}
-          title={`Switch to ${planLabel(targetPlan)}`}
+          title={`${planLabel(targetPlan)} 구독으로 변경`}
           subtitle={switchSubtext}
           loading={!!switchLoading}
           onPress={() => {
@@ -605,7 +604,7 @@ function ManagementActions(props: IManagementActionsProps): JSX.Element {
       {props.supportsLifetime && (
         <PlanCard
           testID="button-subscription-lifetime"
-          title="Lifetime"
+          title="평생 이용권"
           subtitle={lifetimeDisabledReason}
           price={props.lifetimePrice}
           disabled={true}
@@ -621,7 +620,7 @@ function ManagementActions(props: IManagementActionsProps): JSX.Element {
             testID="button-subscription-resubscribe"
             onPress={() => props.dispatch(Thunk_openManageSubscriptions())}
           >
-            Resubscribe
+            다시 구독
           </Button>
         </View>
       )}
@@ -633,7 +632,7 @@ function ManagementActions(props: IManagementActionsProps): JSX.Element {
             testID="button-cancel-subscription"
             onPress={() => props.dispatch(Thunk_openManageSubscriptions())}
           >
-            Cancel subscription
+            구독 취소
           </LinkButton>
         </View>
       )}
@@ -699,7 +698,7 @@ function PlanCard(props: IPlanCardProps): JSX.Element {
 
 function webAlert(): void {
   Dialog_alert(
-    "You can only subscribe from an iOS or Android Liftosaur app. Install Liftosaur from Google Play or App Store, subscribe there, then log in in Liftosaur, and use the same login method on the web. That will unlock the premium features on the web."
+    "구독은 iOS 또는 Android Liftosaur 앱에서만 할 수 있습니다. Google Play 또는 App Store에서 앱을 설치하고 구독한 다음, 웹에서도 같은 로그인 방식으로 로그인하면 프리미엄 기능을 이용할 수 있습니다."
   );
 }
 

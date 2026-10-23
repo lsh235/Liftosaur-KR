@@ -2,6 +2,7 @@ import { JSX } from "react";
 import { ColorValue, processColor } from "react-native";
 import FastTextNative from "../../specs/FastTextNativeComponent";
 import { IFastTextProps } from "../../utils/styledText";
+import { TextLocalization_hasKorean } from "../../utils/textLocalization";
 
 // Codegen auto-runs processColor on top-level ColorValue props (via the view config), but
 // NOT on nested struct/array fields, so fragment colors arrive at the native side as raw CSS
@@ -34,7 +35,7 @@ export function FastText(props: IFastTextProps): JSX.Element {
       backgroundColor={props.backgroundColor}
       fontWeight={props.fontWeight}
       fontStyle={props.fontStyle}
-      fontFamily={props.fontFamily}
+      fontFamily={props.fontFamily ?? (TextLocalization_hasKorean(props.text) ? "sans-serif" : undefined)}
       fontSize={props.fontSize}
       textPaddingHorizontal={props.paddingHorizontal}
       textLineHeight={props.lineHeight}

@@ -1,5 +1,6 @@
 import { Text as RNText, TextProps, Platform } from "react-native";
 import { JSX } from "react";
+import { TextLocalization_hasKorean } from "../../utils/textLocalization";
 
 const textColorPattern =
   /\btext-(icon|text|syntax|red|green|blue|yellow|purple|gray|slate|zinc|stone|neutral|orange|amber|lime|emerald|teal|cyan|sky|indigo|violet|fuchsia|pink|rose|white|black|transparent|inherit|current)\b/;
@@ -9,7 +10,10 @@ export function Text_hasSizeClass(className: string | undefined): boolean {
   return className != null && textSizePattern.test(className);
 }
 
-export function Text_resolveFontFamily(className: string | undefined): string {
+export function Text_resolveFontFamily(className: string | undefined, text?: unknown): string {
+  if (Platform.OS === "android" && TextLocalization_hasKorean(text)) {
+    return "sans-serif";
+  }
   return resolveFontFamily(className);
 }
 
@@ -61,7 +65,7 @@ export function Text({
   }
   const effectiveClassName =
     defaults.length > 0 ? (className ? `${defaults.join(" ")} ${className}` : defaults.join(" ")) : className;
-  const fontFamily = resolveFontFamily(effectiveClassName);
+  const fontFamily = Text_resolveFontFamily(effectiveClassName, props.children);
   const dataTestid = (props as { "data-testid"?: string })["data-testid"];
   const testID = props.testID || dataTestid;
   return (

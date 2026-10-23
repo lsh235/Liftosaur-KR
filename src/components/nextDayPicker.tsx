@@ -171,7 +171,7 @@ export function NextDayPicker(props: INextDayPickerProps): JSX.Element {
   if (!currentProgram || !evaluatedProgram) {
     return (
       <View className="mx-4">
-        <Text>No Programs</Text>
+        <Text>프로그램이 없습니다</Text>
       </View>
     );
   }

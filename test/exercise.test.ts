@@ -10,6 +10,7 @@ import {
   Exercise_findIdByName,
   Exercise_findByNameAndEquipment,
   Exercise_getWarmupSets,
+  Exercise_nameWithEquipment,
 } from "../src/models/exercise";
 import {
   IAllCustomExercises,
@@ -94,6 +95,33 @@ describe("Exercise — custom exercise wins over built-in on name collision", ()
 
   it("Exercise_findByNameAndEquipment falls back to the built-in when no custom collides", () => {
     expect(Exercise_findByNameAndEquipment("Squat", {})?.id).to.eql("squat");
+  });
+});
+
+describe("Exercise — Korean display names", () => {
+  const settings = Settings_build("kg");
+  const startingWeight = Weight_build(0, "kg");
+  const exercise = (id: string, name: string, equipment: "barbell" | "ezbar" | "cable") => ({
+    id,
+    name,
+    equipment,
+    types: [],
+    startingWeightLb: startingWeight,
+    startingWeightKg: startingWeight,
+  });
+
+  it("translates built-in equipment labels and avoids repeating equipment already in the exercise name", () => {
+    expect(Exercise_nameWithEquipment(exercise("custom-barbell-curl", "바벨 컬", "barbell"), settings)).to.equal("바벨 컬");
+    expect(Exercise_nameWithEquipment(exercise("imported-barbell-curl", "바벨 컬, Barbell", "barbell"), settings)).to.equal(
+      "바벨 컬"
+    );
+    expect(
+      Exercise_nameWithEquipment(exercise("custom-skullcrusher", "EZ 바 스컬크러셔", "ezbar"), settings)
+    ).to.equal("EZ 바 스컬크러셔");
+    expect(
+      Exercise_nameWithEquipment(exercise("imported-skullcrusher", "EZ 바 스컬크러셔, EZ Bar", "ezbar"), settings)
+    ).to.equal("EZ 바 스컬크러셔");
+    expect(Exercise_nameWithEquipment(exercise("custom-row", "시티드 로우", "cable"), settings)).to.equal("시티드 로우, 케이블");
   });
 });
 

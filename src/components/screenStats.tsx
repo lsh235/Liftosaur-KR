@@ -208,7 +208,7 @@ export function ScreenStats(props: IProps): JSX.Element {
   return (
     <View className="px-gutter">
       <Text className="py-2 text-sm text-text-secondary">
-        All fields are optional, input only the fields you want this time. Empty fields won't be added.
+        모든 항목은 선택 사항입니다. 이번 기록에 입력할 항목만 입력하세요. 비워 둔 항목은 저장되지 않습니다.
       </Text>
       <View className="items-center">
         <Button
@@ -222,18 +222,18 @@ export function ScreenStats(props: IProps): JSX.Element {
             setClearKey((k) => k + 1);
           }}
         >
-          Clear All Fields
+          모든 항목 지우기
         </Button>
       </View>
       <View className="flex-row items-center justify-center my-2">
-        <Text className="mr-2 text-xs text-text-secondary">Date</Text>
+        <Text className="mr-2 text-xs text-text-secondary">날짜</Text>
         <DatePicker testID="input-stats-add-date" value={pickedTimestamp ?? Date.now()} onChange={setPickedTimestamp} />
       </View>
       {statsEnabled.length.neck && (
         <SingleLine>
           <StatInput
             name="neck"
-            label="Neck"
+            label="목둘레"
             defaultValue={lastLengthStats.neck?.value}
             unit={lengthUnits}
             clearKey={clearKey}
@@ -245,7 +245,7 @@ export function ScreenStats(props: IProps): JSX.Element {
         <SingleLine>
           <StatInput
             name="weight"
-            label="Bodyweight"
+            label="체중"
             defaultValue={lastWeightStats.weight?.value}
             unit={units}
             clearKey={clearKey}
@@ -257,7 +257,7 @@ export function ScreenStats(props: IProps): JSX.Element {
         <SingleLine>
           <StatInput
             name="bodyfat"
-            label="Bodyfat"
+            label="체지방률"
             defaultValue={lastPercentageStats.bodyfat?.value}
             unit="%"
             clearKey={clearKey}
@@ -269,7 +269,7 @@ export function ScreenStats(props: IProps): JSX.Element {
         <SingleLine>
           <StatInput
             name="shoulders"
-            label="Shoulders"
+            label="어깨둘레"
             defaultValue={lastLengthStats.shoulders?.value}
             unit={lengthUnits}
             clearKey={clearKey}
@@ -283,7 +283,7 @@ export function ScreenStats(props: IProps): JSX.Element {
             statsEnabled.length.bicepLeft && (
               <StatInput
                 name="bicepLeft"
-                label="Bicep Left"
+                label="왼쪽 위팔"
                 defaultValue={lastLengthStats.bicepLeft?.value}
                 unit={lengthUnits}
                 clearKey={clearKey}
@@ -295,7 +295,7 @@ export function ScreenStats(props: IProps): JSX.Element {
             statsEnabled.length.bicepRight && (
               <StatInput
                 name="bicepRight"
-                label="Bicep Right"
+                label="오른쪽 위팔"
                 defaultValue={lastLengthStats.bicepRight?.value}
                 unit={lengthUnits}
                 clearKey={clearKey}
@@ -311,7 +311,7 @@ export function ScreenStats(props: IProps): JSX.Element {
             statsEnabled.length.forearmLeft && (
               <StatInput
                 name="forearmLeft"
-                label="Forearm Left"
+                label="왼쪽 아래팔"
                 defaultValue={lastLengthStats.forearmLeft?.value}
                 unit={lengthUnits}
                 clearKey={clearKey}
@@ -323,7 +323,7 @@ export function ScreenStats(props: IProps): JSX.Element {
             statsEnabled.length.forearmRight && (
               <StatInput
                 name="forearmRight"
-                label="Forearm Right"
+                label="오른쪽 아래팔"
                 defaultValue={lastLengthStats.forearmRight?.value}
                 unit={lengthUnits}
                 clearKey={clearKey}
@@ -337,7 +337,7 @@ export function ScreenStats(props: IProps): JSX.Element {
         <SingleLine>
           <StatInput
             name="chest"
-            label="Chest"
+            label="가슴둘레"
             defaultValue={lastLengthStats.chest?.value}
             unit={lengthUnits}
             clearKey={clearKey}
@@ -349,7 +349,7 @@ export function ScreenStats(props: IProps): JSX.Element {
         <SingleLine>
           <StatInput
             name="waist"
-            label="Waist"
+            label="허리둘레"
             defaultValue={lastLengthStats.waist?.value}
             unit={lengthUnits}
             clearKey={clearKey}
@@ -361,7 +361,7 @@ export function ScreenStats(props: IProps): JSX.Element {
         <SingleLine>
           <StatInput
             name="hips"
-            label="Hips"
+            label="엉덩이둘레"
             defaultValue={lastLengthStats.hips?.value}
             unit={lengthUnits}
             clearKey={clearKey}
@@ -375,7 +375,7 @@ export function ScreenStats(props: IProps): JSX.Element {
             statsEnabled.length.thighLeft && (
               <StatInput
                 name="thighLeft"
-                label="Thigh Left"
+                label="왼쪽 허벅지"
                 defaultValue={lastLengthStats.thighLeft?.value}
                 unit={lengthUnits}
                 clearKey={clearKey}
@@ -387,7 +387,7 @@ export function ScreenStats(props: IProps): JSX.Element {
             statsEnabled.length.thighRight && (
               <StatInput
                 name="thighRight"
-                label="Thigh Right"
+                label="오른쪽 허벅지"
                 defaultValue={lastLengthStats.thighRight?.value}
                 unit={lengthUnits}
                 clearKey={clearKey}
@@ -403,7 +403,7 @@ export function ScreenStats(props: IProps): JSX.Element {
             statsEnabled.length.calfLeft && (
               <StatInput
                 name="calfLeft"
-                label="Calf Left"
+                label="왼쪽 종아리"
                 defaultValue={lastLengthStats.calfLeft?.value}
                 unit={lengthUnits}
                 clearKey={clearKey}
@@ -415,7 +415,7 @@ export function ScreenStats(props: IProps): JSX.Element {
             statsEnabled.length.calfRight && (
               <StatInput
                 name="calfRight"
-                label="Calf Right"
+                label="오른쪽 종아리"
                 defaultValue={lastLengthStats.calfRight?.value}
                 unit={lengthUnits}
                 clearKey={clearKey}
@@ -428,7 +428,7 @@ export function ScreenStats(props: IProps): JSX.Element {
       {HealthSync_eligibleForAppleHealth() && (
         <View>
           <MenuItemEditable
-            name="Sync to Apple Health"
+            name="Apple 건강과 동기화"
             type="boolean"
             value={syncToAppleHealth ? "true" : "false"}
             onChange={(newValue?: string) => {
@@ -440,7 +440,7 @@ export function ScreenStats(props: IProps): JSX.Element {
       {HealthSync_eligibleForGoogleHealth() && (
         <View>
           <MenuItemEditable
-            name="Sync to Google Health Connect"
+            name="Health Connect와 동기화"
             type="boolean"
             value={syncToGoogleHealth ? "true" : "false"}
             onChange={(newValue?: string) => {
@@ -459,7 +459,7 @@ export function ScreenStats(props: IProps): JSX.Element {
           kind="purple"
           onClick={save}
         >
-          Done
+          완료
         </Button>
       </View>
     </View>
@@ -510,7 +510,7 @@ function StatInput(props: IStatInputProps): JSX.Element {
       labelSize="xs"
       defaultValue={props.defaultValue}
       type={"number"}
-      placeholder="e.g. 10"
+      placeholder="예: 10"
       min={0}
       step="0.01"
       changeType="oninput"

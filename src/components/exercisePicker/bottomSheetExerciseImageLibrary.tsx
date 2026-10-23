@@ -102,7 +102,7 @@ export function ExerciseImageLibraryContent(props: IExerciseImageLibraryContentP
     <>
       {(isLoading || filteredUploadedImages.length > 0) && (
         <>
-          <GroupHeader name="Uploaded Images" />
+          <GroupHeader name="업로드한 이미지" />
           {isLoading ? (
             <View className="items-center py-4">
               <IconSpinner width={18} height={18} />
@@ -142,7 +142,7 @@ export function ExerciseImageLibraryContent(props: IExerciseImageLibraryContentP
   const header = (
     <SheetDragHandle>
       <View collapsable={false} className="px-gutter pb-2">
-        <Text className="pt-1 pb-3 text-base font-semibold text-center">Pick Exercise Image</Text>
+        <Text className="pt-1 pb-3 text-base font-semibold text-center">운동 이미지 선택</Text>
         <View className="flex-row items-center gap-2 p-2 rounded-lg bg-background-neutral">
           <IconMagnifyingGlass size={18} color={Tailwind_colors().lightgray[600]} />
           <TextInput

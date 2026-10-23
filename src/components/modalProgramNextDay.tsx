@@ -18,7 +18,7 @@ export function ModalProgramNextDayContent(props: IModalProgramNextDayProps): JS
   return (
     <>
       <View className="mb-1 text-center">
-        <Text className="text-lg font-semibold text-center">Change Next Day</Text>
+        <Text className="text-lg font-semibold text-center">다음 운동일 변경</Text>
       </View>
       <NextDayPicker
         stats={props.stats}

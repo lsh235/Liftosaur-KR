@@ -82,11 +82,14 @@ jobs:
       - name: Verify APK signature and metadata
         run: |
           APK=android/app/build/outputs/apk/release/app-release.apk
+          EXPECTED_VERSION_CODE="$(sed -nE 's/^[[:space:]]*versionCode[[:space:]]+([0-9]+).*$/\1/p' android/app/build.gradle | head -n 1)"
+          EXPECTED_VERSION_NAME="$(sed -nE 's/^[[:space:]]*versionName[[:space:]]+"([^"]+)".*$/\1/p' android/app/build.gradle | head -n 1)"
+          VERSION="${GITHUB_REF_NAME#v}"
+          test "$GITHUB_REF_NAME" = "v${EXPECTED_VERSION_NAME}"
           test -s "$APK"
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose "$APK"
           apkanalyzer manifest application-id "$APK" | grep -Fx 'com.liftosaur.www.twa'
-          apkanalyzer manifest version-code "$APK" | grep -Fx '157'
-          VERSION="${GITHUB_REF_NAME#v}"
+          apkanalyzer manifest version-code "$APK" | grep -Fx "$EXPECTED_VERSION_CODE"
           cp "$APK" "Liftosaur-KR-${VERSION}.apk"
           sha256sum "Liftosaur-KR-${VERSION}.apk" > "Liftosaur-KR-${VERSION}.apk.sha256"
 

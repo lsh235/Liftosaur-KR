@@ -62,11 +62,11 @@ export function Account(props: IAccountProps): JSX.Element {
 }
 
 const changePasswordErrorMessages: Record<string, string> = {
-  invalid_credentials: "Current password is incorrect",
-  invalid_password: "Password must be at least 8 characters",
-  password_too_long: "Password must be at most 256 characters",
-  not_authorized: "You're not signed in",
-  network_error: "Network error, please try again",
+  invalid_credentials: "현재 비밀번호가 올바르지 않습니다",
+  invalid_password: "비밀번호는 8자 이상이어야 합니다",
+  password_too_long: "비밀번호는 256자를 넘을 수 없습니다",
+  not_authorized: "로그인되어 있지 않습니다",
+  network_error: "네트워크 오류입니다. 다시 시도하세요",
 };
 
 export function ChangePasswordForm(props: { service: Service; onDone: () => void }): JSX.Element {
@@ -84,14 +84,14 @@ export function ChangePasswordForm(props: { service: Service; onDone: () => void
       return;
     }
     if (newRef.current !== repeatRef.current) {
-      setError("Passwords don't match");
+      setError("새 비밀번호가 서로 일치하지 않습니다");
       return;
     }
     setIsSubmitting(true);
     const err = await props.service.changePassword(currentRef.current || undefined, newRef.current);
     setIsSubmitting(false);
     if (err) {
-      setError(changePasswordErrorMessages[err] || "Something went wrong, please try again");
+      setError(changePasswordErrorMessages[err] || "문제가 발생했습니다. 다시 시도하세요");
     } else {
       setDone(true);
     }
@@ -100,10 +100,10 @@ export function ChangePasswordForm(props: { service: Service; onDone: () => void
   if (done) {
     return (
       <View className="items-center py-4">
-        <Text className="text-center text-text-secondary">Your password has been updated.</Text>
+        <Text className="text-center text-text-secondary">비밀번호를 변경했습니다.</Text>
         <View className="items-center mt-4">
           <Button name="change-password-done" kind="purple" onClick={() => props.onDone()}>
-            Done
+            완료
           </Button>
         </View>
       </View>
@@ -113,7 +113,7 @@ export function ChangePasswordForm(props: { service: Service; onDone: () => void
   return (
     <View>
       <Input
-        label="Current password"
+        label="현재 비밀번호"
         identifier="change-password-current"
         type="password"
         changeType="oninput"
@@ -126,11 +126,11 @@ export function ChangePasswordForm(props: { service: Service; onDone: () => void
         }}
       />
       <Text className="mt-1 text-xs text-text-secondary">
-        Leave blank if you sign in with Google or Apple and haven't set a password yet.
+        Google 또는 Apple로 로그인하며 비밀번호를 설정한 적이 없다면 비워 두세요.
       </Text>
       <View className="mt-3">
         <Input
-          label="New password"
+          label="새 비밀번호"
           identifier="change-password-new"
           type="password"
           changeType="oninput"
@@ -145,7 +145,7 @@ export function ChangePasswordForm(props: { service: Service; onDone: () => void
       </View>
       <View className="mt-3">
         <Input
-          label="Repeat new password"
+          label="새 비밀번호 확인"
           identifier="change-password-repeat"
           type="password"
           changeType="oninput"
@@ -172,7 +172,7 @@ export function ChangePasswordForm(props: { service: Service; onDone: () => void
           {isSubmitting ? (
             <IconSpinner width={20} height={20} color={Tailwind_semantic().text.alwayswhite} />
           ) : (
-            "Change Password"
+            "비밀번호 변경"
           )}
         </Button>
       </View>
@@ -194,11 +194,11 @@ function AccountLoggedInView(props: IAccountLoggedInViewProps): JSX.Element {
   if (showChangePassword) {
     return (
       <View>
-        <Text className="mb-4 text-lg font-bold text-center">Change Password</Text>
+        <Text className="mb-4 text-lg font-bold text-center">비밀번호 변경</Text>
         <ChangePasswordForm service={service} onDone={() => setShowChangePassword(false)} />
         <View className="items-center mt-4">
           <LinkButton name="change-password-back" className="text-xs" onPress={() => setShowChangePassword(false)}>
-            Back
+            뒤로
           </LinkButton>
         </View>
       </View>
@@ -207,7 +207,7 @@ function AccountLoggedInView(props: IAccountLoggedInViewProps): JSX.Element {
 
   return (
     <View>
-      <Text className="mb-4 text-lg font-bold text-center">Current Account</Text>
+      <Text className="mb-4 text-lg font-bold text-center">현재 계정</Text>
       {isLoading ? (
         <View className="items-center my-4">
           <IconSpinner width={48} height={48} />
@@ -238,7 +238,7 @@ function AccountLoggedInView(props: IAccountLoggedInViewProps): JSX.Element {
           {account.name && <Text className="text-xs text-text-secondary">id: {account.id}</Text>}
           {account.email !== "noemail@example.com" && (
             <Text className="text-xs text-text-secondary">
-              Signed in as <Text className="text-xs font-bold text-text-secondary">{account.email}</Text>
+              로그인 계정: <Text className="text-xs font-bold text-text-secondary">{account.email}</Text>
             </Text>
           )}
           <View className="items-center mt-4">
@@ -301,7 +301,7 @@ function AccountLoggedOutView(props: IAccountLoggedOutViewProps): JSX.Element {
 
   return (
     <View>
-      <Text className="mb-4 text-lg font-bold text-center">Account</Text>
+      <Text className="mb-4 text-lg font-bold text-center">계정</Text>
       {isLoading ? (
         <View className="items-center my-4">
           <IconSpinner width={48} height={48} />
@@ -311,7 +311,7 @@ function AccountLoggedOutView(props: IAccountLoggedOutViewProps): JSX.Element {
           <EmailAuthForm service={props.service} redirectUrl={props.redirectUrl} onSignIn={props.onSignIn} />
           <View className="items-center mt-4">
             <LinkButton name="email-auth-back" className="text-xs" onPress={() => setShowEmailForm(false)}>
-              Back to sign in options
+              로그인 방식 선택으로 돌아가기
             </LinkButton>
           </View>
         </View>
@@ -357,7 +357,7 @@ function AccountLoggedOutView(props: IAccountLoggedOutViewProps): JSX.Element {
             <View>
               <IconGoogle />
             </View>
-            <Text className="flex-1 ml-2 text-base text-center">Sign in with Google</Text>
+            <Text className="flex-1 ml-2 text-base text-center">Google로 로그인</Text>
           </Pressable>
           <Pressable
             className="flex-row items-center w-full px-4 py-3 mt-2 bg-black rounded-lg nm-sign-in-with-apple"
@@ -390,7 +390,7 @@ function AccountLoggedOutView(props: IAccountLoggedOutViewProps): JSX.Element {
                   setIsLoading(false);
                 }
               } catch (e) {
-                Dialog_alert("Couldn't sign in with Apple. Please try again.");
+                Dialog_alert("Apple 로그인에 실패했습니다. 다시 시도하세요.");
                 setIsLoading(false);
               }
             }}
@@ -398,7 +398,7 @@ function AccountLoggedOutView(props: IAccountLoggedOutViewProps): JSX.Element {
             <View style={{ marginTop: -3 }}>
               <IconApple />
             </View>
-            <Text className="flex-1 ml-2 text-base text-center text-text-alwayswhite">Sign in with Apple</Text>
+            <Text className="flex-1 ml-2 text-base text-center text-text-alwayswhite">Apple로 로그인</Text>
           </Pressable>
           <EmailAuthButton onPress={props.onOpenEmailAuth || (() => setShowEmailForm(true))} />
         </View>
@@ -411,7 +411,7 @@ export function EmailAuthButton(props: { onPress: () => void }): JSX.Element {
   return (
     <View className="items-center mt-3">
       <LinkButton name="menu-item-login-email" className="text-xs" onPress={props.onPress}>
-        or use email login
+        또는 이메일로 로그인
       </LinkButton>
     </View>
   );
@@ -420,16 +420,16 @@ export function EmailAuthButton(props: { onPress: () => void }): JSX.Element {
 export type IEmailAuthMode = "signin" | "signup" | "forgot";
 
 const emailAuthErrorMessages: Record<string, string> = {
-  invalid_email: "Please enter a valid email address",
-  invalid_password: "Password must be at least 8 characters",
-  password_too_long: "Password must be at most 256 characters",
-  account_exists: "An account with this email already exists - sign in instead",
-  invalid_credentials: "Wrong email or password",
-  account_not_found: "No account exists with this email",
-  wrong_password: "Wrong password",
-  too_many_attempts: "Too many attempts, try again in 15 minutes",
-  email_send_failed: "Couldn't send the confirmation email, please try again later",
-  network_error: "Network error, please try again",
+  invalid_email: "올바른 이메일 주소를 입력하세요",
+  invalid_password: "비밀번호는 8자 이상이어야 합니다",
+  password_too_long: "비밀번호는 256자를 넘을 수 없습니다",
+  account_exists: "이 이메일로 만든 계정이 있습니다. 로그인해 주세요",
+  invalid_credentials: "이메일 또는 비밀번호가 올바르지 않습니다",
+  account_not_found: "이 이메일로 만든 계정을 찾을 수 없습니다",
+  wrong_password: "비밀번호가 올바르지 않습니다",
+  too_many_attempts: "시도 횟수가 너무 많습니다. 15분 뒤에 다시 시도하세요",
+  email_send_failed: "확인 이메일을 보내지 못했습니다. 잠시 후 다시 시도하세요",
+  network_error: "네트워크 오류입니다. 다시 시도하세요",
 };
 
 interface IEmailAuthFormProps {
@@ -460,12 +460,12 @@ export function EmailAuthForm(props: IEmailAuthFormProps): JSX.Element {
     setIsSubmitting(false);
     if (result.error === "use_oauth") {
       const providers = result.providers?.length ? result.providers : ["Google", "Apple"];
-      setError(`This email signs in with ${providers.join(" or ")}`);
+      setError(`이 이메일은 ${providers.join(" 또는 ")} 계정으로 로그인합니다`);
     } else if (result.error) {
-      setError(emailAuthErrorMessages[result.error] || "Something went wrong, please try again");
+      setError(emailAuthErrorMessages[result.error] || "문제가 발생했습니다. 다시 시도하세요");
     } else if (result.confirmationSent) {
       setInfo(
-        "This email already has a Liftosaur account. We've emailed you a link to set a password for it - check your email."
+        "이 이메일로 만든 Liftosaur 계정이 있습니다. 비밀번호 설정 링크를 이메일로 보냈습니다. 받은 편지함을 확인하세요."
       );
     }
   }
@@ -486,7 +486,7 @@ export function EmailAuthForm(props: IEmailAuthFormProps): JSX.Element {
           handleResult(result);
         } else {
           setIsSubmitting(false);
-          setInfo(`We've sent an email with instructions to ${email}.`);
+          setInfo(`${email} 주소로 안내 이메일을 보냈습니다.`);
         }
       };
       if (props.dispatch) {
@@ -540,7 +540,7 @@ export function EmailAuthForm(props: IEmailAuthFormProps): JSX.Element {
   return (
     <View className="mt-2">
       <Input
-        label="Email"
+        label="이메일"
         identifier="email-auth-email"
         type="email"
         changeType="oninput"
@@ -555,7 +555,7 @@ export function EmailAuthForm(props: IEmailAuthFormProps): JSX.Element {
       {mode !== "forgot" && (
         <View className="mt-2">
           <Input
-            label="Password"
+            label="비밀번호"
             identifier="email-auth-password"
             type="password"
             changeType="oninput"
@@ -584,28 +584,28 @@ export function EmailAuthForm(props: IEmailAuthFormProps): JSX.Element {
           {isSubmitting ? (
             <IconSpinner width={20} height={20} color={Tailwind_semantic().text.alwayswhite} />
           ) : mode === "signin" ? (
-            "Sign In"
+            "로그인"
           ) : mode === "signup" ? (
-            "Create Account"
+            "계정 만들기"
           ) : (
-            "Send Reset Link"
+            "재설정 링크 보내기"
           )}
         </Button>
       </View>
       <View className="flex-row justify-between mt-4 gap-4">
         {mode !== "signin" && (
           <LinkButton name="email-auth-mode-signin" className="text-sm" onPress={() => switchMode("signin")}>
-            Sign in
+            로그인
           </LinkButton>
         )}
         {mode !== "signup" && (
           <LinkButton name="email-auth-mode-signup" className="text-sm" onPress={() => switchMode("signup")}>
-            Create account
+            계정 만들기
           </LinkButton>
         )}
         {mode !== "forgot" && (
           <LinkButton name="email-auth-mode-forgot" className="text-sm" onPress={() => switchMode("forgot")}>
-            Forgot password?
+            비밀번호를 잊으셨나요?
           </LinkButton>
         )}
       </View>

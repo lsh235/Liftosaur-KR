@@ -20,13 +20,13 @@ export const ExercisePickerTemplate = memo(function ExercisePickerTemplate(props
     <View className="mx-4 mt-4 mb-4">
       <View className="mb-4">
         <Text className="text-sm font-bold">
-          Template Name<Text className="text-text-error"> *</Text>
+          템플릿 이름<Text className="text-text-error"> *</Text>
         </Text>
         <TextInput
           data-testid="exercise-template-name"
           testID="exercise-template-name"
           defaultValue={props.templateName ?? ""}
-          placeholder="My Awesome Template"
+          placeholder="나만의 운동 템플릿"
           placeholderTextColor={Tailwind_semantic().text.secondarysubtle}
           className="px-4 py-2 mt-1 text-base border rounded-lg min-h-scaled-10 bg-background-default border-border-prominent text-text-primary"
           onChangeText={(rawValue) => {
@@ -44,17 +44,17 @@ export const ExercisePickerTemplate = memo(function ExercisePickerTemplate(props
         {nameError && <Text className="mt-1 text-xs text-text-error">{nameError}</Text>}
       </View>
       <Text className="my-2 text-sm">
-        <Text className="text-sm">You can choose any name for the template, and it will be saved as </Text>
-        <Text className="text-sm font-bold">"non-used"</Text>
-        <Text className="text-sm"> (i.e. as a template). You can reuse </Text>
-        <Text className="text-sm font-bold">sets</Text>
+        <Text className="text-sm">템플릿 이름은 자유롭게 정할 수 있으며 실제 운동에는 사용되지 않는 </Text>
+        <Text className="text-sm font-bold">템플릿 운동</Text>
+        <Text className="text-sm">으로 저장됩니다. 이 템플릿의 </Text>
+        <Text className="text-sm font-bold">세트</Text>
         <Text className="text-sm">, </Text>
-        <Text className="text-sm font-bold">warmup</Text>
+        <Text className="text-sm font-bold">워밍업</Text>
         <Text className="text-sm">, </Text>
-        <Text className="text-sm font-bold">update</Text>
-        <Text className="text-sm"> or </Text>
-        <Text className="text-sm font-bold">progress</Text>
-        <Text className="text-sm"> from this template in your real exercises.</Text>
+        <Text className="text-sm font-bold">업데이트</Text>
+        <Text className="text-sm">, </Text>
+        <Text className="text-sm font-bold">진행 방식</Text>
+        <Text className="text-sm">을 실제 운동에 재사용할 수 있습니다.</Text>
       </Text>
     </View>
   );

@@ -754,6 +754,68 @@ const availableLargeImages = new Set([
   "shoulderpassthrough_band",
 ]);
 
+const localizedExerciseImageTypes: Record<string, IExerciseType> = {
+  "바벨 벤치프레스": { id: "benchPress", equipment: "barbell" },
+  "바벨 벤치 프레스": { id: "benchPress", equipment: "barbell" },
+  "바벨 벤트오버 로우": { id: "bentOverRow", equipment: "barbell" },
+  "바벨 벤트 오버 로우": { id: "bentOverRow", equipment: "barbell" },
+  "바벨 로우": { id: "bentOverRow", equipment: "barbell" },
+  "바벨 오버헤드 프레스": { id: "overheadPress", equipment: "barbell" },
+  "오버헤드 프레스": { id: "overheadPress", equipment: "barbell" },
+  "바벨 컬": { id: "bicepCurl", equipment: "barbell" },
+  "ez 바 스컬크러셔": { id: "skullcrusher", equipment: "ezbar" },
+  "스컬크러셔": { id: "skullcrusher", equipment: "ezbar" },
+  "바벨 스쿼트": { id: "squat", equipment: "barbell" },
+  "바벨 백 스쿼트": { id: "squat", equipment: "barbell" },
+  "바벨 루마니안 데드리프트": { id: "romanianDeadlift", equipment: "barbell" },
+  "루마니안 데드리프트": { id: "romanianDeadlift", equipment: "barbell" },
+  "레그 프레스": { id: "legPress", equipment: "leverageMachine" },
+  "라잉 레그 컬": { id: "lyingLegCurl", equipment: "leverageMachine" },
+  "스탠딩 카프 레이즈": { id: "standingCalfRaise", equipment: "leverageMachine" },
+  "케이블 랫풀다운": { id: "latPulldown", equipment: "cable" },
+  "와이드 랫풀다운": { id: "latPulldown", equipment: "cable" },
+  "와이드 랫풀다운 (고중량)": { id: "latPulldown", equipment: "cable" },
+  "시티드 케이블 로우": { id: "seatedRow", equipment: "cable" },
+  "리어 델트 리버스 플라이": { id: "reverseFly", equipment: "leverageMachine" },
+  "리어 델트 플라이": { id: "reverseFly", equipment: "leverageMachine" },
+  "인클라인 덤벨 컬": { id: "inclineCurl", equipment: "dumbbell" },
+  "덤벨 해머 컬": { id: "hammerCurl", equipment: "dumbbell" },
+  "인클라인 덤벨 벤치프레스": { id: "inclineBenchPress", equipment: "dumbbell" },
+  "인클라인 덤벨 프레스": { id: "inclineBenchPress", equipment: "dumbbell" },
+  "체스트 딥스": { id: "chestDip", equipment: "bodyweight" },
+  "체스트 플라이": { id: "chestFly", equipment: "leverageMachine" },
+  "펙 덱 플라이": { id: "chestFly", equipment: "leverageMachine" },
+  "덤벨 레터럴 레이즈": { id: "lateralRaise", equipment: "dumbbell" },
+  "사이드 레터럴 레이즈": { id: "lateralRaise", equipment: "dumbbell" },
+  "케이블 트라이셉스 푸시다운": { id: "tricepsPushdown", equipment: "cable" },
+  "케이블 푸쉬다운": { id: "tricepsPushdown", equipment: "cable" },
+  "케이블 트라이셉스 익스텐션": { id: "tricepsExtension", equipment: "cable" },
+  "오버헤드 삼두 익스텐션": { id: "tricepsExtension", equipment: "cable" },
+  "불가리안 스플릿 스쿼트": { id: "bulgarianSplitSquat", equipment: "dumbbell" },
+  "레그 익스텐션": { id: "legExtension", equipment: "leverageMachine" },
+  "시티드 레그 컬": { id: "seatedLegCurl", equipment: "leverageMachine" },
+  "시티드 카프 레이즈": { id: "seatedCalfRaise", equipment: "leverageMachine" },
+  "행잉 레그 레이즈": { id: "hangingLegRaise", equipment: "bodyweight" },
+};
+
+function localizedExerciseImageType(type: IExerciseType, settings?: ISettings): IExerciseType | undefined {
+  const customExercise = settings?.exercises?.[type.id];
+  if (!customExercise) {
+    return undefined;
+  }
+  const name = customExercise.name.trim().toLowerCase().replace(/[\s_-]+/g, " ");
+  return localizedExerciseImageTypes[name];
+}
+
+function builtinImageUrl(type: IExerciseType, size: "small" | "large"): string | undefined {
+  if (!ExerciseImageUtils_exists(type, size)) {
+    return undefined;
+  }
+  return size === "large"
+    ? `/externalimages/exercises/full/large/${ExerciseImageUtils_id(type)}_full_large.png`
+    : `/externalimages/exercises/single/small/${ExerciseImageUtils_id(type)}_single_small.png`;
+}
+
 export function ExerciseImageUtils_id(type: IExerciseType): string {
   const equipment = type.equipment || "bodyweight";
   return `${type.id.toLowerCase()}_${(equipment || "bodyweight").toLowerCase()}`;
@@ -774,7 +836,11 @@ export function ExerciseImageUtils_existsCustom(
   const customExercise = settings?.exercises?.[type.id];
   const imageUrl =
     size === "small" ? customExercise?.smallImageUrl : (customExercise?.largeImageUrl ?? customExercise?.smallImageUrl);
-  return checkDomain ? !!(imageUrl?.startsWith("/") || imageUrl?.includes("liftosaur.com")) : !!imageUrl;
+  if (imageUrl) {
+    return checkDomain ? !!(imageUrl.startsWith("/") || imageUrl.includes("liftosaur.com")) : true;
+  }
+  const localizedType = localizedExerciseImageType(type, settings);
+  return localizedType != null && ExerciseImageUtils_exists(localizedType, size);
 }
 
 export function ExerciseImageUtils_ogImageUrl(type: IExerciseType): string {
@@ -787,18 +853,19 @@ export function ExerciseImageUtils_url(
   size: "small" | "large",
   settings?: ISettings
 ): string | undefined {
-  if (ExerciseImageUtils_exists(type, size)) {
-    const src =
-      size === "large"
-        ? `/externalimages/exercises/full/large/${ExerciseImageUtils_id(type)}_full_large.png`
-        : `/externalimages/exercises/single/small/${ExerciseImageUtils_id(type)}_single_small.png`;
-    return src;
-  } else if (ExerciseImageUtils_existsCustom(type, size, false, settings)) {
+  const imageUrl = builtinImageUrl(type, size);
+  if (imageUrl) {
+    return imageUrl;
+  }
+  if (ExerciseImageUtils_existsCustom(type, size, false, settings)) {
     const customExercise = settings?.exercises?.[type.id];
-    return size === "large"
+    const customImageUrl = size === "large"
       ? (customExercise?.largeImageUrl ?? customExercise?.smallImageUrl)
       : customExercise?.smallImageUrl;
-  } else {
-    return undefined;
+    if (customImageUrl) {
+      return customImageUrl;
+    }
   }
+  const localizedType = localizedExerciseImageType(type, settings);
+  return localizedType ? builtinImageUrl(localizedType, size) : undefined;
 }

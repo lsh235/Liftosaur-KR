@@ -62,10 +62,10 @@ export function ModalEquipmentContent(props: IModalEquipmentContentProps): JSX.E
     <View data-testid="modal-equipment" testID="modal-equipment" className="px-4 pb-6">
       <MenuItemEditable
         type="select"
-        name="Equipment"
+        name="기구"
         value={equipmentId ?? ""}
         values={[
-          ["", "None"],
+          ["", "없음"],
           ...ObjectUtils_keys(availableEquipment).map<[string, string]>((k) => [
             k,
             equipmentName(k, availableEquipment),
@@ -96,7 +96,7 @@ export function ModalEquipmentContent(props: IModalEquipmentContentProps): JSX.E
               }
             }}
           >
-            Copy this one
+            이 기구 설정 복사
           </LinkButton>
         ) : (
           <View />
@@ -106,14 +106,14 @@ export function ModalEquipmentContent(props: IModalEquipmentContentProps): JSX.E
           name="equipment-new"
           onClick={() => navigateToModal("newEquipmentModal", { gymId, linkExercise: props.exercise })}
         >
-          New equipment
+          새 기구 추가
         </LinkButton>
       </View>
       <View className="mt-2">
         {equipmentId == null || data == null ? (
           <InputNumber
             type="number"
-            label="Default Rounding"
+            label="기본 중량 반올림 단위"
             min={0}
             step={0.5}
             max={100}

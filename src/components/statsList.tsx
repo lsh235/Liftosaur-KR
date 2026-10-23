@@ -108,7 +108,7 @@ export function StatsList(props: IProps): JSX.Element {
             <SvgXml xml={BundledImages_svgXml(ImagePreloader_dynoflex) ?? ""} width={180} height={232} />
           )}
         </View>
-        <Text className="pt-4 pb-6 text-sm text-center text-text-secondary">No measurements added yet</Text>
+        <Text className="pt-4 pb-6 text-sm text-center text-text-secondary">아직 측정 기록이 없습니다</Text>
         <View className="items-center">
           <Button
             name="add-measurements"
@@ -117,7 +117,7 @@ export function StatsList(props: IProps): JSX.Element {
             kind="purple"
             onClick={() => props.dispatch(Thunk_pushScreen("stats"))}
           >
-            Add measurements
+            측정 기록 추가
           </Button>
         </View>
       </View>
@@ -145,13 +145,13 @@ export function StatsList(props: IProps): JSX.Element {
           kind="purple"
           onClick={() => props.dispatch(Thunk_pushScreen("stats"))}
         >
-          Add measurements
+          측정 기록 추가
         </Button>
       </View>
-      <GroupHeader name="Selected Measurement Type" />
+      <GroupHeader name="측정 항목 선택" />
       <MenuItemEditable
         type="select"
-        name="Type"
+        name="항목"
         value={selectedKey}
         values={statsKeys.map((key) => [key, Stats_name(key)])}
         onChange={(value) => {

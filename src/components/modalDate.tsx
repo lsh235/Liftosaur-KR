@@ -29,10 +29,10 @@ export function ModalDateContent(props: IModalDateContentProps): JSX.Element {
 
   return (
     <View>
-      <Text className="pb-2 font-bold">Please enter new date</Text>
+      <Text className="pb-2 font-bold">새 날짜를 입력하세요</Text>
       <DatePicker testID="modal-date-picker" value={dateTimestamp} onChange={setDateTimestamp} />
-      <Text className="pt-2 font-bold">Please enter workout length</Text>
-      <Text className="pb-2 text-xs text-text-secondary">(in hh:mm)</Text>
+      <Text className="pt-2 font-bold">운동 시간을 입력하세요</Text>
+      <Text className="pb-2 text-xs text-text-secondary">(시:분)</Text>
       <View className="flex-row items-center">
         <View className="flex-1">
           <Input
@@ -78,7 +78,7 @@ export function ModalDateContent(props: IModalDateContentProps): JSX.Element {
             props.onDone?.();
           }}
         >
-          Cancel
+          취소
         </Button>
         <Button
           name="modal-date-submit"
@@ -99,7 +99,7 @@ export function ModalDateContent(props: IModalDateContentProps): JSX.Element {
             props.onDone?.();
           }}
         >
-          Save
+          저장
         </Button>
       </View>
     </View>

@@ -38,7 +38,7 @@ export function ScreenEquipment(props: IProps): JSX.Element {
     props.dispatch(Thunk_pushScreen("equipmentDetail", { gymId: selectedGym.id, equipmentId: expandedEquipment }));
   }, []);
 
-  useNavOptions({ navTitle: "Equipment Settings", navHelpKey: "plates" });
+  useNavOptions({ navTitle: "운동 기구 설정", navHelpKey: "plates" });
 
   return (
     <NavScreenContent avoidSystemKeyboard="reveal">
@@ -46,7 +46,7 @@ export function ScreenEquipment(props: IProps): JSX.Element {
         <View className="px-gutter pb-2">
           <MenuItemEditable
             type="text"
-            name="Gym Name"
+            name="운동 장소 이름"
             value={selectedGym.name}
             onChange={(name) => {
               if (name?.trim()) {
@@ -70,7 +70,7 @@ export function ScreenEquipment(props: IProps): JSX.Element {
       ) : (
         <View className="items-end px-2 mb-2">
           <LinkButton className="text-sm" name="add-new-gym" onClick={() => props.dispatch(Thunk_pushScreen("gyms"))}>
-            Manage Gyms
+            운동 장소 관리
           </LinkButton>
         </View>
       )}

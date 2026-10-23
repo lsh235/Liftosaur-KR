@@ -20,7 +20,7 @@ export function ScreenGoogleHealthSettings(props: IProps): JSX.Element {
   return (
     <View className="px-gutter">
       <MenuItemEditable
-        name="Sync Workouts"
+        name="운동 기록 동기화"
         type="boolean"
         value={props.settings.googleHealthSyncWorkout ? "true" : "false"}
         onChange={(newValue?: string) => {
@@ -37,7 +37,7 @@ export function ScreenGoogleHealthSettings(props: IProps): JSX.Element {
         }}
       />
       <MenuItemEditable
-        name="Confirm each workout sync?"
+        name="운동을 동기화할 때마다 확인"
         type="boolean"
         value={props.settings.healthConfirmation ? "true" : "false"}
         onChange={(newValue?: string) => {
@@ -51,7 +51,7 @@ export function ScreenGoogleHealthSettings(props: IProps): JSX.Element {
         }}
       />
       <MenuItemEditable
-        name="Sync Measurements"
+        name="신체 측정 기록 동기화"
         type="boolean"
         value={props.settings.googleHealthSyncMeasurements ? "true" : "false"}
         onChange={(newValue?: string) => {
@@ -68,7 +68,7 @@ export function ScreenGoogleHealthSettings(props: IProps): JSX.Element {
         }}
       />
       <MenuItemEditable
-        name="Sync Sleep & Nutrition"
+        name="수면·영양 기록 동기화"
         type="boolean"
         value={props.settings.googleHealthSyncSleepNutrition ? "true" : "false"}
         onChange={(newValue?: string) => {

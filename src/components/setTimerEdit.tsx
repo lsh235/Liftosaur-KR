@@ -122,8 +122,8 @@ export function SetTimerEditContent(props: ISetTimerEditContentProps): JSX.Eleme
 
   return (
     <View>
-      <Text className="pb-2 font-bold">Edit recorded time</Text>
-      <Text className="pb-2 text-xs text-text-secondary">(in mm:ss)</Text>
+      <Text className="pb-2 font-bold">기록 시간 수정</Text>
+      <Text className="pb-2 text-xs text-text-secondary">(분:초)</Text>
       {isUnilateral && (
         <View className="pb-2">
           {durationRow(
@@ -152,10 +152,10 @@ export function SetTimerEditContent(props: ISetTimerEditContentProps): JSX.Eleme
           className="mr-3"
           onClick={onClear}
         >
-          Clear
+          지우기
         </Button>
         <Button name="set-timer-edit-submit" data-testid="set-timer-edit-submit" kind="purple" onClick={onSave}>
-          Save
+          저장
         </Button>
       </View>
     </View>

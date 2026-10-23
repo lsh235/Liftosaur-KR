@@ -15,14 +15,13 @@ export function ModalNewGymContent(props: IProps): JSX.Element {
 
   return (
     <View>
-      <Text className="mb-2 text-lg font-bold">New Gym</Text>
+      <Text className="mb-2 text-lg font-bold">새 운동 장소</Text>
       <Text className="mb-4 text-xs text-text-secondary">
-        You can add a new gym with a set of exercises, and when you switch between gyms, the exercises will use the
-        equipment from the selected gym.
+        운동 장소를 추가하고 장소별 운동 기구를 설정할 수 있습니다. 장소를 바꾸면 해당 장소의 기구 설정이 운동에 적용됩니다.
       </Text>
       <TextInput
         autoFocus
-        placeholder="Home Gym"
+        placeholder="예: 집 운동방"
         placeholderTextColor={Tailwind_semantic().text.secondarysubtle}
         value={value}
         onChangeText={setValue}
@@ -30,7 +29,7 @@ export function ModalNewGymContent(props: IProps): JSX.Element {
       />
       <View className="flex-row justify-between gap-3 mt-4">
         <Button name="add-gym-cancel" kind="grayv2" onClick={props.onClose}>
-          Cancel
+          취소
         </Button>
         <Button
           name="add-gym-submit"
@@ -41,7 +40,7 @@ export function ModalNewGymContent(props: IProps): JSX.Element {
             }
           }}
         >
-          Add
+          추가
         </Button>
       </View>
     </View>

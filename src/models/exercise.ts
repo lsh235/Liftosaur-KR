@@ -4166,6 +4166,43 @@ export function equipmentName(equipment: IEquipment | undefined, equipmentSettin
   }
 }
 
+const localizedEquipmentNames: Partial<Record<IEquipment, string>> = {
+  barbell: "바벨",
+  cable: "케이블",
+  dumbbell: "덤벨",
+  smith: "스미스 머신",
+  band: "밴드",
+  kettlebell: "케틀벨",
+  bodyweight: "맨몸",
+  leverageMachine: "레버 머신",
+  medicineball: "메디신볼",
+  ezbar: "EZ바",
+  trapbar: "트랩바",
+};
+
+const equipmentNameTokens: Partial<Record<IEquipment, string[]>> = {
+  barbell: ["바벨", "barbell"],
+  cable: ["케이블", "cable"],
+  dumbbell: ["덤벨", "dumbbell"],
+  smith: ["스미스", "smith"],
+  band: ["밴드", "band"],
+  kettlebell: ["케틀벨", "kettlebell"],
+  bodyweight: ["맨몸", "체중", "bodyweight"],
+  leverageMachine: ["머신", "machine"],
+  medicineball: ["메디신볼", "medicine ball"],
+  ezbar: ["ez 바", "ez바", "ez bar", "ezbar"],
+  trapbar: ["트랩바", "트랩 바", "trap bar", "trapbar"],
+};
+
+function localizedEquipmentName(equipment: IEquipment, equipmentSettings?: IAllEquipment): string {
+  const configuredName = equipmentSettings?.[equipment]?.name?.trim();
+  const defaultName = equipmentName(equipment);
+  if (configuredName && configuredName !== defaultName) {
+    return configuredName;
+  }
+  return localizedEquipmentNames[equipment] ?? configuredName ?? defaultName;
+}
+
 export type IExerciseKind = "core" | "pull" | "push" | "legs" | "upper" | "lower";
 
 export type IExercise = {
@@ -4350,8 +4387,20 @@ export function Exercise_reverseName(exercise: IExercise, settings?: ISettings):
 
 export function Exercise_nameWithEquipment(exercise: IExercise, settings?: ISettings): string {
   if (exercise.equipment) {
+    const normalizedName = exercise.name.trim();
+    const equipmentTokens = equipmentNameTokens[exercise.equipment] ?? [];
+    for (const token of equipmentTokens) {
+      const escapedToken = token.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const withoutRepeatedSuffix = normalizedName.replace(new RegExp(`(?:,\\s*|\\s+)${escapedToken}\\s*$`, "i"), "").trim();
+      if (withoutRepeatedSuffix !== normalizedName && withoutRepeatedSuffix.length > 0) {
+        return withoutRepeatedSuffix;
+      }
+    }
+    if (equipmentTokens.some((token) => normalizedName.toLowerCase().includes(token.toLowerCase()))) {
+      return normalizedName;
+    }
     const allEquipment = settings ? Equipment_currentEquipment(settings) : {};
-    const equipment = equipmentName(exercise.equipment, allEquipment);
+    const equipment = localizedEquipmentName(exercise.equipment, allEquipment);
     return `${exercise.name}, ${equipment}`;
   } else {
     return exercise.name;

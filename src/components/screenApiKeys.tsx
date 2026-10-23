@@ -80,28 +80,28 @@ export function ScreenApiKeys(props: IProps): JSX.Element {
     setTimeout(() => setCopiedKey(undefined), 2000);
   };
 
-  useNavOptions({ navTitle: "API Keys" });
+  useNavOptions({ navTitle: "API 키" });
 
   return (
     <View className="px-gutter">
       {!isLoggedIn ? (
         <View className="py-8">
           <Text className="mb-4 text-center text-text-secondary">
-            API keys let you integrate Liftosaur with external tools, LLMs, and MCP servers. You can read and edit your
-            workout history and programs, and simulate workouts via the playground endpoint.
+            API 키를 사용하면 Liftosaur를 외부 도구, LLM, MCP 서버와 연동할 수 있습니다. 운동 기록과 프로그램을 조회·수정하고
+            플레이그라운드 API로 운동을 시뮬레이션할 수 있습니다.
           </Text>
-          <Text className="text-center text-text-secondary">You need to log in first to manage API keys.</Text>
+          <Text className="text-center text-text-secondary">API 키를 관리하려면 먼저 로그인하세요.</Text>
           <View className="items-center mt-4">
             <Button kind="purple" name="login-for-api" onClick={() => props.dispatch(Thunk_pushScreen("account"))}>
-              Log in
+              로그인
             </Button>
           </View>
         </View>
       ) : !isSubscribed ? (
         <View className="py-8">
           <Text className="mb-4 text-center text-text-secondary">
-            API keys let you integrate Liftosaur with external tools, LLMs, and MCP servers. You can read and edit your
-            workout history and programs, and simulate workouts via the playground endpoint.
+            API 키를 사용하면 Liftosaur를 외부 도구, LLM, MCP 서버와 연동할 수 있습니다. 운동 기록과 프로그램을 조회·수정하고
+            플레이그라운드 API로 운동을 시뮬레이션할 수 있습니다.
           </Text>
           <View className="items-center">
             <Button
@@ -109,19 +109,19 @@ export function ScreenApiKeys(props: IProps): JSX.Element {
               name="subscribe-for-api"
               onClick={() => props.dispatch(Thunk_pushScreen("subscription"))}
             >
-              Subscribe to unlock
+              구독하고 잠금 해제
             </Button>
           </View>
         </View>
       ) : (
         <>
-          <GroupHeader name="Create New Key" />
+          <GroupHeader name="새 키 만들기" />
           <View className="flex-row items-center gap-2 pb-2">
             <View className="flex-1">
               <Input
                 type="text"
                 inputSize="sm"
-                placeholder="Key name"
+                placeholder="키 이름"
                 changeHandler={(result) => {
                   if (result.success) {
                     newKeyNameRef.current = result.data;
@@ -133,19 +133,19 @@ export function ScreenApiKeys(props: IProps): JSX.Element {
               {isCreating ? (
                 <IconSpinner color="white" width={18} height={18} />
               ) : (
-                <Text className="text-text-alwayswhite font-semibold">Create</Text>
+                <Text className="text-text-alwayswhite font-semibold">만들기</Text>
               )}
             </Button>
           </View>
           {createError && <Text className="pb-2 text-xs text-text-error">{createError}</Text>}
 
-          <GroupHeader name="Your Keys" topPadding={true} />
+          <GroupHeader name="내 API 키" topPadding={true} />
           {isLoading ? (
             <View className="items-center py-4">
               <IconSpinner width={40} height={40} />
             </View>
           ) : keys.length === 0 ? (
-            <Text className="py-4 text-center text-text-secondary">No API keys yet</Text>
+            <Text className="py-4 text-center text-text-secondary">아직 API 키가 없습니다</Text>
           ) : (
             keys.map((apiKey) => (
               <View key={apiKey.key} className="py-2 border-b border-border-neutral">
@@ -154,13 +154,13 @@ export function ScreenApiKeys(props: IProps): JSX.Element {
                     <Text className="font-bold">{apiKey.name}</Text>
                     <Text className="text-xs text-text-secondary">{apiKey.key}</Text>
                     <Text className="text-xs text-text-secondary">
-                      Created {new Date(apiKey.createdAt).toLocaleDateString()}
+                      생성일 {new Date(apiKey.createdAt).toLocaleDateString("ko-KR")}
                     </Text>
                   </View>
                   <View className="flex-row gap-4 ml-2 shrink-0">
                     <Pressable testID="copy-api-key" data-testid="copy-api-key" onPress={() => handleCopy(apiKey.key)}>
                       <Text className="text-xs underline text-text-link">
-                        {copiedKey === apiKey.key ? "Copied!" : "Copy"}
+                        {copiedKey === apiKey.key ? "복사 완료" : "복사"}
                       </Text>
                     </Pressable>
                     <Pressable
@@ -168,7 +168,7 @@ export function ScreenApiKeys(props: IProps): JSX.Element {
                       data-testid="delete-api-key"
                       onPress={() => handleDelete(apiKey.key)}
                     >
-                      <Text className="text-xs underline text-text-error">Delete</Text>
+                      <Text className="text-xs underline text-text-error">삭제</Text>
                     </Pressable>
                   </View>
                 </View>

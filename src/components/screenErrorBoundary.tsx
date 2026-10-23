@@ -67,9 +67,9 @@ export class ScreenErrorBoundary extends Component<IProps, IState> {
       const canGoBack = this.safeCanGoBack();
       return (
         <View className="items-center justify-center flex-1 px-8 bg-background-default">
-          <Text className="pb-2 text-xl font-bold text-text-primary">Something went wrong</Text>
+          <Text className="pb-2 text-xl font-bold text-text-primary">오류가 발생했습니다</Text>
           <Text className="pb-6 text-sm text-center text-text-secondary">
-            This screen ran into an error. You can try again{canGoBack ? " or go back" : ""}.
+            화면을 표시하는 중 문제가 발생했습니다. 다시 시도해 주세요{canGoBack ? " 또는 이전 화면으로 돌아가세요" : ""}.
           </Text>
           <View className="flex-row items-center gap-3">
             <Pressable
@@ -77,7 +77,7 @@ export class ScreenErrorBoundary extends Component<IProps, IState> {
               onPress={this.onReset}
               className="px-6 py-3 rounded-lg bg-background-purpledark"
             >
-              <Text className="text-base text-text-primary">Try again</Text>
+              <Text className="text-base text-text-primary">다시 시도</Text>
             </Pressable>
             {canGoBack && (
               <Pressable
@@ -85,7 +85,7 @@ export class ScreenErrorBoundary extends Component<IProps, IState> {
                 onPress={this.onGoBack}
                 className="px-6 py-3 rounded-lg bg-background-subtle"
               >
-                <Text className="text-base text-text-primary">Go back</Text>
+                <Text className="text-base text-text-primary">이전 화면</Text>
               </Pressable>
             )}
           </View>

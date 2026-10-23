@@ -23,7 +23,7 @@ export function EquipmentEditorBodyweight(props: IProps): JSX.Element {
   const isAssisting = props.mode === "assists";
   return (
     <EquipmentEditorCard
-      title={isAssisting ? "Helps you up" : "Weights include your bodyweight"}
+      title={isAssisting ? "보조 중량 설정" : "체중 포함 중량 설정"}
       help={EquipmentSetupEdit_bodyweightHelp(props.setup, props.bodyweight, props.isBodyweightLogged)}
       right={
         <EquipmentEditorClose
@@ -34,13 +34,13 @@ export function EquipmentEditorBodyweight(props: IProps): JSX.Element {
     >
       {isAssisting ? (
         <MenuItemEditable
-          name="Program weights are"
+          name="프로그램 중량 기준"
           type="select"
           isBorderless={true}
           value={props.setup.bodyweight != null ? "total" : "load"}
           values={[
-            ["load", "Assistance, negative"],
-            ["total", "Bodyweight − assistance"],
+            ["load", "보조 중량만 표시 (음수)"],
+            ["total", "체중 − 보조 중량"],
           ]}
           onChange={(value) =>
             props.onChange(EquipmentSetupEdit_setBodyweight(props.setup, "assists", value === "total"))
@@ -48,8 +48,8 @@ export function EquipmentEditorBodyweight(props: IProps): JSX.Element {
         />
       ) : (
         <EquipmentEditorNumberRow
-          label="Share of bodyweight"
-          help="Below 100% for push-ups and other partial-bodyweight moves"
+          label="체중 반영 비율"
+          help="푸시업처럼 체중 일부만 사용하는 운동은 100%보다 낮게 설정하세요."
           unit="%"
           min={1}
           max={100}

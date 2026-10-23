@@ -135,7 +135,7 @@ export function ScreenAccount(props: IProps): JSX.Element {
 
   return (
     <View className="px-gutter">
-      <GroupHeader name="Current Account" />
+      <GroupHeader name="현재 계정" />
       <MenuItem
         isBorderless={true}
         expandName={true}
@@ -156,7 +156,7 @@ export function ScreenAccount(props: IProps): JSX.Element {
           <View>
             {AdminDebug_isDebugAccountId(currentAccount.id) ? (
               <Text className="-mt-1 text-xs font-bold text-text-error">
-                {props.nosync ? "DEBUG · sync off" : "DEBUG · sync ON (server)"}
+                {props.nosync ? "디버그 · 동기화 꺼짐" : "디버그 · 서버 동기화 켜짐"}
               </Text>
             ) : null}
             {currentAccount.name ? (
@@ -165,11 +165,11 @@ export function ScreenAccount(props: IProps): JSX.Element {
             {props.email ? (
               props.email === "noemail@example.com" ? null : (
                 <Text className="text-xs text-text-secondary">
-                  Signed in as <Text className="text-sm font-bold text-text-secondary">{props.email}</Text>
+                  로그인 계정: <Text className="text-sm font-bold text-text-secondary">{props.email}</Text>
                 </Text>
               )
             ) : (
-              <Text className="text-xs text-text-error">Not signed in to cloud</Text>
+              <Text className="text-xs text-text-error">클라우드 계정에 로그인하지 않았습니다</Text>
             )}
           </View>
         }
@@ -183,7 +183,7 @@ export function ScreenAccount(props: IProps): JSX.Element {
             className="ls-logout"
             onClick={() => props.dispatch(Thunk_logOut())}
           >
-            Sign Out
+            로그아웃
           </Button>
           <View className="mt-3">
             <LinkButton
@@ -191,7 +191,7 @@ export function ScreenAccount(props: IProps): JSX.Element {
               className="text-sm"
               onPress={() => navigateToModal("changePasswordModal")}
             >
-              Change password
+              비밀번호 변경
             </LinkButton>
           </View>
         </View>
@@ -207,7 +207,7 @@ export function ScreenAccount(props: IProps): JSX.Element {
             <View>
               <IconGoogle />
             </View>
-            <Text className="flex-1 ml-2 text-base text-center">Sign in with Google</Text>
+            <Text className="flex-1 ml-2 text-base text-center">Google로 로그인</Text>
           </Pressable>
           <Pressable
             className="flex-row items-center w-full px-4 py-3 mt-2 bg-black rounded-lg nm-sign-in-with-apple"
@@ -216,14 +216,14 @@ export function ScreenAccount(props: IProps): JSX.Element {
             <View style={{ marginTop: -3 }}>
               <IconApple />
             </View>
-            <Text className="flex-1 ml-2 text-base text-center text-text-alwayswhite">Sign in with Apple</Text>
+            <Text className="flex-1 ml-2 text-base text-center text-text-alwayswhite">Apple로 로그인</Text>
           </Pressable>
           <EmailAuthButton onPress={() => navigateToModal("emailAuthModal")} />
         </View>
       )}
-      <GroupHeader name="🌟 Liftosaur Premium" topPadding={true} />
+      <GroupHeader name="🌟 Liftosaur 프리미엄" topPadding={true} />
       {isLoadingSubscription ? (
-        <MenuItem name="Checking your subscription…" expandName={true} value={<IconSpinner width={18} height={18} />} />
+        <MenuItem name="구독 정보를 확인하고 있습니다…" expandName={true} value={<IconSpinner width={18} height={18} />} />
       ) : (
         <>
           <MenuItem
@@ -245,14 +245,14 @@ export function ScreenAccount(props: IProps): JSX.Element {
                 className="text-sm text-text-error"
                 onClick={() => props.dispatch(Thunk_openManageSubscriptions())}
               >
-                Cancel subscription
+                구독 취소
               </LinkButton>
             </View>
           )}
         </>
       )}
       <GroupHeader
-        name="Other local accounts"
+        name="다른 로컬 계정"
         topPadding={true}
         rightAddOn={
           otherAccounts.length > 0 ? (
@@ -262,7 +262,7 @@ export function ScreenAccount(props: IProps): JSX.Element {
                 setIsOtherAccountsEditMode(!isOtherAccountsEditMode);
               }}
             >
-              {isOtherAccountsEditMode ? "Finish Editing" : "Edit"}
+              {isOtherAccountsEditMode ? "편집 완료" : "편집"}
             </LinkButton>
           ) : undefined
         }
@@ -276,7 +276,7 @@ export function ScreenAccount(props: IProps): JSX.Element {
             if (
               !isOtherAccountsEditMode &&
               (await Dialog_confirm(
-                "Want to switch to this account? You WILL NOT lose your current account, you'll be able to switch back to it later."
+                "이 계정으로 전환할까요? 현재 계정은 삭제되지 않으며, 나중에 다시 전환할 수 있습니다."
               ))
             ) {
               props.dispatch(Thunk_switchAccount(account.id));
@@ -288,9 +288,9 @@ export function ScreenAccount(props: IProps): JSX.Element {
                 className="p-2 nm-account-delete-account"
                 onPress={async () => {
                   const answer = await Dialog_prompt(
-                    "Are you sure? All the local data for this account will be lost, and you won't be able to restore it unless you have a cloud account. Type 'delete' to confirm."
+                    "정말 삭제할까요? 이 계정의 모든 로컬 데이터가 삭제되며 클라우드 계정이 없으면 복구할 수 없습니다. 확인하려면 '삭제'를 입력하세요."
                   );
-                  if (answer?.toLocaleLowerCase() === "delete") {
+                  if (answer?.toLocaleLowerCase() === "delete" || answer === "삭제") {
                     props.dispatch(Thunk_deleteAccount(account.id, () => refetchAccounts()));
                   }
                 }}
@@ -314,12 +314,12 @@ export function ScreenAccount(props: IProps): JSX.Element {
           addons={
             <View>
               {AdminDebug_isDebugAccountId(account.id) ? (
-                <Text className="-mt-1 text-xs font-bold text-text-error">DEBUG · sync off</Text>
+                <Text className="-mt-1 text-xs font-bold text-text-error">디버그 · 동기화 꺼짐</Text>
               ) : null}
               {account.name ? <Text className="-mt-1 text-xs text-text-secondary">{`id: ${account.id}`}</Text> : null}
               {account.email && account.email !== "noemail@example.com" && (
                 <Text className="text-xs text-text-secondary">
-                  Was logged in as <Text className="text-sm font-bold text-text-secondary">{account.email}</Text>
+                  이전 로그인 계정: <Text className="text-sm font-bold text-text-secondary">{account.email}</Text>
                 </Text>
               )}
             </View>
@@ -331,16 +331,16 @@ export function ScreenAccount(props: IProps): JSX.Element {
         onClick={async () => {
           if (
             await Dialog_confirm(
-              "Want to create a new local account? You WILL NOT lose your current account, you'll be able to switch back to it later."
+              "새 로컬 계정을 만들까요? 현재 계정은 삭제되지 않으며, 나중에 다시 전환할 수 있습니다."
             )
           ) {
             props.dispatch(Thunk_createAccount());
           }
         }}
       >
-        Create New Local Account
+        새 로컬 계정 만들기
       </LinkButton>
-      <GroupHeader name="Delete current account" topPadding={true} />
+      <GroupHeader name="현재 계정 삭제" topPadding={true} />
       <View>
         <Button
           name="account-delete"
@@ -348,9 +348,9 @@ export function ScreenAccount(props: IProps): JSX.Element {
           className="mt-4 ls-delete-account"
           onClick={async () => {
             const answer = await Dialog_prompt(
-              "Are you sure? All the local data for this account will be lost, and you won't be able to restore it unless you have a cloud account. Type 'delete' to confirm."
+              "정말 삭제할까요? 이 계정의 모든 로컬 데이터가 삭제되며 클라우드 계정이 없으면 복구할 수 없습니다. 확인하려면 '삭제'를 입력하세요."
             );
-            if (answer?.toLocaleLowerCase() === "delete") {
+            if (answer?.toLocaleLowerCase() === "delete" || answer === "삭제") {
               props.dispatch(
                 Thunk_logOut(() => {
                   props.dispatch(Thunk_deleteAccount(currentAccount.id));
@@ -360,7 +360,7 @@ export function ScreenAccount(props: IProps): JSX.Element {
             }
           }}
         >
-          Delete Current Local Account
+          현재 로컬 계정 삭제
         </Button>
       </View>
       {props.email && (
@@ -371,16 +371,16 @@ export function ScreenAccount(props: IProps): JSX.Element {
             className="mt-4 ls-delete-account-remote"
             onClick={async () => {
               const answer = await Dialog_prompt(
-                "Are you sure? All the data for this account will be deleted from the cloud, and you won't be able to restore it unless you resignup and sync your data again. Type 'delete' to confirm."
+                "정말 삭제할까요? 이 계정의 클라우드 데이터가 모두 삭제되며 복구할 수 없습니다. 다시 가입하고 데이터를 동기화해야 합니다. 확인하려면 '삭제'를 입력하세요."
               );
-              if (answer?.toLocaleLowerCase() === "delete") {
+              if (answer?.toLocaleLowerCase() === "delete" || answer === "삭제") {
                 props.dispatch(
                   Thunk_deleteAccountRemote((result) => {
                     if (result) {
-                      Dialog_alert("Account deleted from cloud.");
+                      Dialog_alert("클라우드 계정을 삭제했습니다.");
                     } else {
                       Dialog_alert(
-                        "Couldn't delete the account from the cloud - error happened. Please send an email to info@liftosaur.com to delete it."
+                        "오류가 발생해 클라우드 계정을 삭제하지 못했습니다. 삭제를 요청하려면 info@liftosaur.com으로 이메일을 보내세요."
                       );
                     }
                   })
@@ -388,7 +388,7 @@ export function ScreenAccount(props: IProps): JSX.Element {
               }
             }}
           >
-            Delete Current Cloud Account
+            현재 클라우드 계정 삭제
           </Button>
         </View>
       )}
@@ -405,52 +405,52 @@ interface IPremiumCard {
 
 function buildPremiumCard(plan: IDerivedSubscriptionPlan): IPremiumCard {
   const planKindLabel = (k?: ISubscriptionPlanKind): string =>
-    k === "yearly" ? "Yearly" : k === "monthly" ? "Monthly" : "Premium";
+    k === "yearly" ? "연간 구독" : k === "monthly" ? "월간 구독" : "프리미엄";
   const dateStr = plan.expirationDate ? DateUtils_format(plan.expirationDate, true) : undefined;
   switch (plan.state) {
     case "subscriber":
       return {
-        title: `Premium — ${planKindLabel(plan.plan)}`,
-        subtitle: dateStr ? `Renews on ${dateStr}` : "Active subscription",
-        actionLabel: "Manage",
+        title: `프리미엄 · ${planKindLabel(plan.plan)}`,
+        subtitle: dateStr ? `${dateStr}에 갱신됩니다` : "구독 중",
+        actionLabel: "관리",
         showCancel: true,
       };
     case "cancelled":
       return {
-        title: `Premium — ${planKindLabel(plan.plan)}`,
-        subtitle: dateStr ? `Ends on ${dateStr}, won't renew` : "Won't renew",
-        actionLabel: "Manage",
+        title: `프리미엄 · ${planKindLabel(plan.plan)}`,
+        subtitle: dateStr ? `${dateStr}에 종료되며 갱신되지 않습니다` : "갱신되지 않습니다",
+        actionLabel: "관리",
         showCancel: false,
       };
     case "lifetime":
       return {
-        title: "Lifetime Premium",
-        subtitle: "All features unlocked forever",
-        actionLabel: "View",
+        title: "평생 프리미엄",
+        subtitle: "모든 기능을 계속 이용할 수 있습니다",
+        actionLabel: "보기",
         showCancel: false,
       };
     case "freeaccess":
       return {
-        title: "Free access",
-        subtitle: "All features unlocked",
-        actionLabel: "View",
+        title: "무료 이용",
+        subtitle: "모든 기능을 이용할 수 있습니다",
+        actionLabel: "보기",
         showCancel: false,
       };
     case "premium":
-      return { title: "Premium", subtitle: "Manage on the mobile app", actionLabel: "Manage", showCancel: false };
+      return { title: "프리미엄", subtitle: "모바일 앱에서 관리할 수 있습니다", actionLabel: "관리", showCancel: false };
     case "otherstore":
       return {
-        title: "Premium",
+        title: "프리미엄",
         subtitle:
           plan.managedOn === "apple"
-            ? "Bought on the App Store — manage it on an Apple device"
+            ? "App Store에서 구매했습니다. Apple 기기에서 관리하세요"
             : StoreRuntime_isIos()
-              ? "Bought on another device — manage it there"
-              : "Bought on Google Play — manage it on an Android device",
-        actionLabel: "View",
+              ? "다른 기기에서 구매했습니다. 구매한 기기에서 관리하세요"
+              : "Google Play에서 구매했습니다. Android 기기에서 관리하세요",
+        actionLabel: "보기",
         showCancel: false,
       };
     default:
-      return { title: "Free plan", actionLabel: "Get Premium", showCancel: false };
+      return { title: "무료 요금제", actionLabel: "프리미엄 이용하기", showCancel: false };
   }
 }
