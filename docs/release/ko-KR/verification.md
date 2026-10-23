@@ -36,7 +36,7 @@ Android 단위 검사에는 NotificationPermissionTest·TimerAlarmReschedulerTes
 | 생성된 웹 번들 실행 | PASS (정적 production dist) | 최초 smoke harness가 UTF-8 charset 없이 `text/javascript`를 제공해 Chromium이 `/app.js?version=bb90ce46` line 2, column 1,840,973에서 `SyntaxError: Invalid or unexpected token`을 냈음. HTML entry `/app/`와 JS 응답 모두 charset 미표시였고 HTML에도 charset meta가 없었음. 최초 JS 응답은 2,659,436 bytes/SHA-256 `2cbcb7e…a723bcf`. 같은 dist 바이트에 JS 응답만 `charset=utf-8`을 명시하고 HTML 응답은 계속 charset 없이 둔 비교에서 예외 없이 마운트돼, production bundle 결함이 아닌 최초 정적 harness의 인코딩 헤더 문제로 분류. 재현 helper는 dist를 변경하지 않고 모든 text response에 UTF-8 MIME을 제공하며 `/app/`, `vendors.js`, `app.js` 모두 200, `#app` child 1개/13,152 HTML bytes, CDP 예외 0건 확인. 외부 API·스크립트 요청은 차단하고 로그 endpoint만 204 mock했으므로 API/로그인 기능은 검증하지 않음. [실행 결과](evidence/production-web-runtime-smoke.json), [실패/원인 분리 근거](evidence/production-web-runtime-triage.json), helper: `scripts/qa/ko-release-web-runtime-smoke.mjs` |
 | 패키지 고지 생성 | PARTIAL | RN 번들 지도 부재로 캐시된 네이티브 패키지 목록 재사용; 캐시에 있던 미설치 패키지 2개 제외 경고. 새 RN 번들 기준 고지 검증은 NOT RUN |
 | Android APK/기기 흐름 | NOT RUN | 로컬 Java 11 및 Android SDK/adb 없음. 새 v159 서명 APK·실기기 흐름 증거 아님 |
-| v158→v159 CI 흐름 | 구현됨 / NOT RUN | 후보 workflow는 합성 2계정 legacy JSON을 첫 설치 v158에 주입하고 비행기 모드/Wi-Fi·데이터 off 상태에서 legacy→MMKV 읽기/계정 전환/진행 중 운동 화면을 확인한 뒤 signer SHA-256을 비교하고 v159를 `adb install -r`로 갱신하도록 변경. 각 계정의 체중과 완료 세트(2 × 8 × 20 kg)를 두 앱 버전 UI에서 확인하고, MMKV raw 스냅샷과 운동 화면 기본/글자 1.3/320dp 캡처를 아티팩트에 보관하도록 구성. 현재 CI 실행 전이며 사용자 생성 데이터의 완전한 의미 비교는 NOT RUN |
+| v158→v159 CI 흐름 | C1 FAIL (emulator boot; app UI NOT RUN) | [C1 run 40004012987](https://github.com/lsh235/Liftosaur-KR/actions/runs/40004012987)의 Android 단위 검사/APK build, metadata check, baseline download, fixture generation 단계는 성공했지만 emulator step이 실패했다. Job log의 KVM probe는 runner 권한 부족을 기록하고, emulator startup 중 반복된 `adb shell getprop sys.boot_completed`는 `device offline`을 반환한 뒤 `Timeout waiting for emulator to boot`로 끝났다. 따라서 `ko-release-emulator.sh`의 fixture migration, v158→v159 install/update, signer comparison 및 모든 앱 UI assertion은 실행되지 않았다. C2 workflow commit `1b6fb19c`와 현재 미커밋 QA 변경은 이 C1 run에 포함되지 않음; 사용자 생성 데이터의 완전한 의미 비교도 NOT RUN |
 | 배포 라이선스 고지 | PARTIAL | 설정에 앱 AGPL 코드 라이선스와 제삼자 패키지 고지를 별도 원격 링크로 노출. 링크는 인터넷 필요. 생성기 입력은 현재 캐시된 네이티브 패키지 목록이므로 최종 번들 기반 inventory 완전성 검증은 NOT RUN; 스토어 Gate에서 재생성·검토 필요 |
 | 브라우저 시각 QA | PASS (제한 범위) | Chromium에서 합성 프로그램 화면 320/360/430px 및 320px·글자 1.3 배율 캡처·검토. 해당 프로그램 미리보기 레이아웃의 가독성만 확인; 일반 앱 마운트 smoke 실패와 Android 네이티브·Play 적합성은 별도 NOT RUN |
 
@@ -55,9 +55,21 @@ Android 단위 검사에는 NotificationPermissionTest·TimerAlarmReschedulerTes
 | safe production build | PASS | `npm run build:prepare`: webpack compile 성공, 자산 및 entrypoint 크기 경고 2건. stale Browserslist data, Eleventy invalid `main`, webpack Compilation.assets deprecation 경고. 일반 `npm run build`의 업로드 단계는 실행하지 않음 |
 | 후속 production dist runtime | PASS (제한 범위) | 동일 후속 `dist`의 `/app/`, vendors, app 응답 200, UTF-8 MIME, `#app` child 1개/13,152 HTML bytes, CDP 예외 0. 해시와 blocked external host는 [별도 실행 결과](evidence/next-ui-production-web-runtime-smoke.json)에 보관. 이 결과는 정적 번들 mount 및 shell 초기화만 보이며 API/로그인 기능은 검증하지 않음 |
 | PHAT 예시 JSON 가져오기 검사 | PASS (모델 변환) | `examples/phat-6week-kr.json`을 `AiWorkoutProgram_tryImport`로 검사: 성공, 6주 × 주 5일 = 30 session slots. native file picker/실기기 가져오기 흐름은 NOT RUN |
-| Android native CI / APK 흐름 | NOT RUN (후속 worktree) | 현재 관찰 중인 CI run은 C1 `c1f49f6` 소스에 대한 것이며 후속 dirty UI/workflow 변경을 포함하지 않는다. C1 결과를 후속 후보에 승계하지 않음 |
-| Android unit 결과 업로드 workflow | 변경됨 / NOT RUN | 후속 C2에서 `always()` JUnit XML/HTML report artifact 단계를 추가. 이 workflow 수정 자체는 아직 Actions 실행으로 검증하지 않음; C1 실행에 이 artifact가 없으면 실행 개수는 CI 자료에서 독립 확인 불가 |
-| 실제 좁은 화면·큰 글자·네이티브 UI | NOT RUN | 후속 Compact/Expanded 변경 후 320px/system large-text/실기기 시각 proof 없음. focused render는 모의 화면 계약에 한정 |
+| Android native CI / APK 흐름 | C1 FAIL before app UI; C2/현재 QA NOT RUN | C1 `c1f49f6` run `40004012987`의 emulator step은 KVM 권한 경고, 반복된 ADB `device offline`, 최종 boot timeout으로 종료되어 앱 UI 스크립트를 시작하지 못했다 ([run logs](https://github.com/lsh235/Liftosaur-KR/actions/runs/40004012987)). C2 commit `1b6fb19c`와 현재 미커밋 QA 변경은 이 run에 포함되지 않으며 C1 결과를 승계하지 않음 |
+| Android unit 결과 업로드 workflow | 변경됨 / NOT RUN | C2 commit `1b6fb19c`에서 `always()` JUnit XML/HTML report artifact 단계를 추가. 이 workflow 수정 자체는 아직 Actions 실행으로 검증하지 않음; C1 실행에 이 artifact가 없으면 실행 개수는 CI 자료에서 독립 확인 불가 |
+| 실제 좁은 화면·큰 글자·네이티브 UI | NOT RUN | 후속 Compact/Expanded 변경 후 320dp/system large-text/실기기 시각 proof 없음. `ko-release-emulator.sh`는 설정 변경 뒤 workout 전용 `day-name` test ID와 fixture marker를 검사하고 필요 시 운동 탭으로 재진입한 뒤 1.3/2.0 및 320dp·1.0/2.0 조합을 캡처하도록 확장했지만 아직 실행되지 않았다. 캡처는 진단용이며 가독성·조작성 PASS가 아님. focused render는 모의 화면 계약에 한정 |
 | 라이선스 package inventory | PARTIAL | 이번 `build:prepare`도 캐시된 native package list를 재사용했고 두 미설치 패키지를 제외함. 최종 Android shipped bundle 기준 완전성은 NOT RUN |
 
 이번 build가 새로 변경한 추적 생성 파일 `scripts/licenses/shipped-packages.json`, `src/licenses.html`, `src/sitemap.xml`은 build 전 상태와 비교해 복원했다. 이 후속 검사 결과는 C1 native workflow evidence와 구분하며, 공개/스토어 준비 승인으로 해석하지 않는다.
+
+## 환경 수정 및 백업 검사 후보 (HEAD 1b6fb19c + 미커밋 QA, 2026-10-24)
+
+이 시점의 제품 코드는 C2 commit `1b6fb19c`와 동일하다. 이후 변경은 QA helper, workflow, focused test와 검증 문서에 한정되며 제품 구현은 바뀌지 않았다. 아래 결과는 이 공유 작업 트리 시점의 검사로, 이전 C1/C2 표의 수치와 번들 근거를 대체하지 않는다.
+
+| 검사 | 결과 | 범위 / 제한 |
+| --- | --- | --- |
+| 백업 JSON serializer/import round trip | PASS (focused contract) | `koBackupRoundTrip.test.tsx`: 2 tests. 실제 `ImportExporter_exportStorage` 직렬화와 `Thunk_importStorage`/production reducer 복원 경로로 합성 PHAT 계정의 프로그램 전체 동등성 및 원본 소수 목표, 완료·진행 중 기록의 소수 중량/반복/메모, schedule `completedSessionDates`와 `shiftCount`를 확인. 손상 JSON, null/배열/문자열/숫자/불충분 object, 완료 반복수가 잘못된 전체 storage payload는 기존 storage 객체를 유지하고 Korean 실패 alert 경로를 탔다. 파일 저장/공유, file picker, 사용자 UI 및 실제 Android 복원은 mock/미검증 경계. parseable invalid 입력에서 `Storage_get`이 출력하는 migration 진단은 test에서 억제한다. |
+| 전체 render suite | PASS | `npm run test:render -- --runInBand`: 22 suites passed, 1 skipped; 98 passed, 16 skipped; exit 0. Jest가 완료 후 열린 핸들 경고를 출력했다. |
+| 최신 타입 검사 | PASS | 백업 회귀 보강 뒤 `npm run check` exit 0. |
+| Android emulator / app UI 재실행 | NOT RUN | C1 run 40004012987은 emulator boot/KVM 단계에서 실패했고 app UI는 시작되지 않았다. 이번 QA/workflow 후보에 대한 재실행은 하지 않았다. C1 결과를 새 후보 PASS로 승계하지 않는다. |
+| diff 검사 | PASS | 변경 시점의 `git diff --check` 통과. Git commit/push 및 CI 실행은 하지 않았다. |

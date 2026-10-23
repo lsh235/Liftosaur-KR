@@ -13,7 +13,7 @@ codebase-memory Verify 도구를 사용할 수 없어 지정 화면의 소스와
 
 | 우선순위 | 동선 및 재현 경로 | 소스 근거와 관찰 | 최소 변경 방향 | 다음 검증 |
 | --- | --- | --- | --- | --- |
-| P1 | **운동 중 세트 입력**: 운동 시작 → 확장 세트 행; 한쪽씩 입력하는 운동은 좌우 반복 입력 표시 | `workoutExerciseSetExpanded.tsx:129-157`에서 입력 모서리 라벨을 `reps`로 전달하고 좌우를 `L`/`R`로 표시한다. `inputNumber2.native.tsx:615-618`은 그 라벨을 입력칸에 그대로 그린다. 축약 행에도 `workoutExerciseSetCompact.tsx:71-101`의 `L:`/`R:`가 있다. | `reps`는 화면 및 접근성 이름에서 ‘반복’으로 바꾸고 좌우 구분은 ‘왼쪽’/‘오른쪽’으로 명시한다. 내부 필드 키와 테스트 ID는 유지한다. | Android TalkBack으로 단측 운동의 좌·우 반복 입력을 차례로 탐색하고, 320dp 및 글자 크기 최대에서 라벨과 숫자 입력이 겹치지 않는지 확인한다. 확장/축약 행 회귀 렌더 검사도 추가한다. |
+| P1 | **운동 중 세트 입력**: 운동 시작 → 확장 세트 행; 한쪽씩 입력하는 운동은 좌우 반복 입력 표시 | `workoutExerciseSetExpanded.tsx:129-157`에서 입력 모서리 라벨을 `reps`로 전달하고 좌우를 `L`/`R`로 표시한다. `inputNumber2.native.tsx:615-618`은 그 라벨을 입력칸에 그대로 그린다. 축약 행에도 `workoutExerciseSetCompact.tsx:71-101`의 `L:`/`R:`가 있다. | `reps`는 화면 및 접근성 이름에서 ‘반복’으로 바꾸고 좌우 구분은 ‘왼쪽’/‘오른쪽’으로 명시한다. 내부 필드 키와 테스트 ID는 유지한다. | Android TalkBack으로 단측 운동의 좌·우 반복 입력을 차례로 탐색한다. CI는 각 화면 변경 뒤 workout 전용 `day-name` test ID와 fixture marker가 동시에 보이는지 확인하고, 경로가 초기화된 경우 운동 탭으로 다시 들어간 뒤 font_scale 1.3/2.0 및 320dp 폭의 1.0/2.0 조합을 캡처한다. 캡처와 marker는 진단 증거일 뿐이며 사람이 읽고 조작할 수 있다는 PASS로 해석하지 않는다. 확장/축약 행 회귀 렌더 검사도 추가한다. |
 | P1 | **프로그램 편집/검사**: 프로그램 → 편집 → UI 격자 또는 전체 텍스트 모드 | 공용 편집 툴바 버튼이 `editProgram.tsx:311-339`에서 `Save`로 표시된다. 웹 격자 조정은 `editProgramGrid/gridPinch.tsx:39-45`에서 `Fit`, `Week width` 및 동일한 영문 접근성 라벨을 쓴다. 그리드 셀 편집 모달도 `useAppGridHost.ts:18-21`에서 `Name`/`Save`를 전달한다. | 사용자 문구와 접근성 이름을 ‘저장’, ‘맞춤’, ‘주 너비’, ‘이름’으로 번역한다. 이식성상 관리가 필요한 분석 설명은 내부 문자열로 남겨도 되지만 앱 화면·접근성 이름은 분리한다. | Android 전체 텍스트/그리드, 웹 격자에서 모든 컨트롤의 표시·TalkBack/키보드 이름을 확인한다. 긴 프로그램명 및 시스템 글자 크기 최대에서 툴바가 가로로 잘리지 않는지 확인한다. |
 | P1 | **잘못된 프로그램 링크 가져오기**: 프로그램 가져오기 링크에 임의 문자열, 데이터 없는 링크, 디코딩 불가 데이터 입력 | `importFromLink.ts:16-20,41-58`가 실패 원인으로 `Invalid link`, `No data found`, `Error decoding the link`를 만든다. `thunks.ts:2027-2038`은 이 문자열을 번역 없이 경고창에 표시한다. | 실패 종류를 사용자 행동과 함께 한국어로 매핑한다(링크 형식, 포함 데이터, 손상/지원 여부). 저수준 예외는 사용자 문구와 분리한다. | 각 실패 fixture에서 한국어 메시지와 링크 재입력/파일 가져오기 같은 다음 행동을 확인한다. 성공 경로와 기존 공유 링크 호환 테스트는 유지한다. |
 | P1 | **CSV 운동 기록 가져오기 미리보기**: 잘못된 날짜·값 또는 구조는 맞지만 레코드 검증에 실패하는 Liftosaur/Hevy CSV 가져오기 | 미리보기는 `screenImportPreview.tsx:49-50,148-152`에서 행 메시지를 그대로 노출한다. 통상 필드 검사는 한국어지만, 최종 스키마 검증은 `importFromLiftosaur.ts:326-332` 및 `importFromHevy.ts:588-594`에서 `Workout "…" failed validation`을 기록한다. | 행/파일 형식과 필드 오류를 한국어 문구로 표시하고, 외부 CSV에서 온 필드명·값은 인용 정보로 보존한다. raw validator 문장을 그대로 사용자에게 붙이지 않는다. | 잘못된 값과 스키마 불일치 CSV 각각으로 한글 행 오류를 검증하고, 행 번호/오류 원인/건너뛰기 동작 및 정상 CSV 가져오기를 회귀 검사한다. |
@@ -40,11 +40,11 @@ codebase-memory Verify 도구를 사용할 수 없어 지정 화면의 소스와
 | Liftosaur/Hevy 정상 CSV 가져오기 | PASS | 같은 focused run에서 정상 CSV fixture 경로 통과. 최종 Storage validator 실패 분기는 합성 fixture를 만들지 못해 별도 강제 재현하지 않았다. |
 | 기존 운동 세트/프로그램 도움말 렌더 계약 | PASS | `npm run test:render -- --runInBand test-render/contract/workoutSetTypeBadges.test.tsx test-render/contract/programHelpKorean.test.tsx`: 2 suites, 12 tests passed. 새 좌우 입력 행 전체를 네이티브로 렌더한 결과는 아님. |
 | 단측 반복 입력 Compact/Expanded 렌더 계약 | PASS | `npm run test:render -- --runInBand test-render/contract/workoutUnilateralRepsLocalization.test.tsx`: 2 tests passed. 짧은 ‘좌:’/‘우:’ 표시, ‘왼쪽 반복’/‘오른쪽 반복’ 접근성 이름, 기존 field testID 및 왼쪽/오른쪽/무게 값을 확인했다. |
-| Android 시각/접근성 검증 | NOT RUN | 새 CI 후보 캡처/TalkBack/200% 시스템 글꼴/IME 화면은 확인하지 않았다. |
-| 320px·큰 글자 Compact/Expanded 실기기 배치 | NOT RUN | 렌더 계약은 UI 트리의 문구/접근성 이름/필드 값을 확인하며 실제 픽셀 배치, native 화면, Android 글꼴 확대를 증명하지 않는다. |
+| Android 시각/접근성 검증 | NOT RUN | 현재 C1 실행에는 새 font_scale 2.0 캡처 변경이 포함되지 않는다. 다음 후보용 미커밋 QA 스크립트 변경은 설정 변경 뒤 workout 전용 `day-name` test ID와 marker를 함께 검증하며 경로가 초기화되면 운동 탭으로 재진입하도록 보강했지만 아직 실행되지 않았다. 스크린샷/XML은 진단 자료이며 TalkBack/사람의 읽기·조작 검토는 NOT RUN. |
+| 320dp·큰 글자 Compact/Expanded 실기기 배치 | NOT RUN | 렌더 계약은 UI 트리의 문구/접근성 이름/필드 값을 확인하며 실제 픽셀 배치, native 화면, Android 글꼴 확대를 증명하지 않는다. 다음 후보용 미커밋 QA 스크립트의 320dp+2.0 캡처도 실행 전이며 향후 캡처는 가독성 PASS가 아니다. |
 | 통합 `npm run check` | PASS | 마지막 freeze 이후 release owner 실행 완료. |
 | 전체 `npm test` | PASS | 2,848 passed. |
-| 전체 render suite | PASS | 21 suites passed, 1 skipped; 96 passed, 16 skipped; exit 0 (usual open-handle warning). |
+| 전체 render suite (latest QA candidate) | PASS | 22 suites passed, 1 skipped; 98 passed, 16 skipped; exit 0 (open-handle warning). Includes the 2-test backup serializer/import round-trip contract. |
 | `npm run build:prepare` safe build | PASS | webpack compiled; asset/entrypoint size, stale Browserslist data, Eleventy invalid-main, and webpack deprecation warnings were reported. |
 
 이 후속 구현은 CI 기준 후보 `c1f49f6`에 포함되지 않았으며 새 후보를 검사해야 한다. 마지막 freeze 뒤 통합 check, 전체 unit/render 검사, safe build는 통과했으나 이 문서는 v159 출시 완료 증거가 아니다.

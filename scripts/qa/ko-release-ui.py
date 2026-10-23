@@ -123,14 +123,33 @@ def switch_account(account_id: str, expected_program: str) -> None:
     print(f"PASS: switched to {account_id} and displayed its fixture program")
 
 
+def assert_workout_screen() -> None:
+    marker_text = "한국어 기록 보존 검증"
+    root = hierarchy()
+    if find_id(root, "day-name") is None:
+        # Android may recreate MainActivity after font/window configuration changes.
+        # Re-enter through the workout tab instead of trusting a marker that can
+        # also be visible on the home screen.
+        tap_node(wait_id("footer-workout"))
+        wait_id("day-name")
+        wait_text(marker_text)
+        root = hierarchy()
+
+    marker = find_text(root, marker_text)
+    workout_id = find_id(root, "day-name")
+    if marker is None or workout_id is None:
+        raise RuntimeError(
+            "Expected the workout screen's day-name test ID and Korean fixture marker "
+            "in the same visible UI hierarchy"
+        )
+    print("PASS: workout screen day-name test ID and Korean fixture marker are both visible")
+
+
 def open_fixture_workout() -> None:
     tap_node(wait_id("footer-workout"))
     time.sleep(3)
-    root = hierarchy()
-    marker = find_text(root, "한국어 기록 보존 검증")
-    if marker is None:
-        raise RuntimeError("Workout screen did not expose the fixture workout/program marker")
-    print("PASS: opened the seeded in-progress workout and found its Korean fixture marker")
+    assert_workout_screen()
+    print("PASS: opened the seeded in-progress workout")
 
 
 def assert_measurement(value: str, label: str) -> None:
@@ -164,11 +183,13 @@ def save_hierarchy(root: ET.Element, label: str) -> None:
 
 def main() -> None:
     if len(sys.argv) < 2:
-        raise RuntimeError("usage: ko-release-ui.py <assert-text|switch-account|open-fixture-workout|assert-measurement|assert-completed-history> ...")
+        raise RuntimeError("usage: ko-release-ui.py <assert-text|assert-workout-screen|switch-account|open-fixture-workout|assert-measurement|assert-completed-history> ...")
     action = sys.argv[1]
     if action == "assert-text" and len(sys.argv) == 3:
         wait_text(sys.argv[2])
         print(f"PASS: visible UI contains fixture marker: {sys.argv[2]}")
+    elif action == "assert-workout-screen" and len(sys.argv) == 2:
+        assert_workout_screen()
     elif action == "switch-account" and len(sys.argv) == 4:
         switch_account(sys.argv[2], sys.argv[3])
     elif action == "open-fixture-workout" and len(sys.argv) == 2:

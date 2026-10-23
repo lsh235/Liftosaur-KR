@@ -40,8 +40,44 @@ jobs:
           packages: >-
             platforms;android-36
             build-tools;36.0.0
+            emulator
             ndk;27.1.12297006
             cmake;3.22.1
+
+      - name: Enable KVM and verify emulator acceleration
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          mkdir -p qa-artifacts/native-upgrade
+          {
+            echo "Runner identity and KVM device before permission setup:"
+            id
+            ls -l /dev/kvm || true
+            echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+            sudo udevadm control --reload-rules
+            sudo udevadm trigger --name-match=kvm
+            sudo udevadm settle --timeout=10
+            echo "KVM device after permission setup:"
+            ls -l /dev/kvm
+            if [[ ! -r /dev/kvm || ! -w /dev/kvm ]]; then
+              echo "::error::The runner cannot read and write /dev/kvm after applying the KVM udev rule."
+              exit 1
+            fi
+            echo "Android Emulator VM acceleration preflight:"
+            set +e
+            accel_check_output=$("$ANDROID_HOME/emulator/emulator" -accel-check 2>&1)
+            accel_check_status=$?
+            set -e
+            printf '%s\n' "$accel_check_output"
+            if [[ "$accel_check_status" -ne 0 ]]; then
+              echo "::error::Android Emulator -accel-check failed; inspect this preflight log for runner and device diagnostics."
+              exit 1
+            fi
+            if ! grep -Eq 'KVM.*installed and usable' <<< "$accel_check_output"; then
+              echo "::error::Android Emulator reports that KVM acceleration is unavailable; refusing to run the native QA phase without VM acceleration."
+              exit 1
+            fi
+          } 2>&1 | tee qa-artifacts/native-upgrade/kvm-preflight.log
 
       - name: Install JavaScript dependencies
         run: npm ci
@@ -140,6 +176,7 @@ jobs:
           target: google_apis
           profile: pixel_6
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+          disable-linux-hw-accel: false
           disable-animations: true
           script: bash scripts/qa/ko-release-emulator.sh
         env:
@@ -148,8 +185,52 @@ jobs:
           FIXTURE_DIR: qa-artifacts/legacy-fixtures
           QA_ARTIFACTS_DIR: qa-artifacts/native-upgrade
 
+      - name: Verify required native upgrade evidence files
+        if: success()
+        env:
+          QA_ARTIFACTS_DIR: qa-artifacts/native-upgrade
+        run: |
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+
+          out = Path(os.environ["QA_ARTIFACTS_DIR"])
+          required = [
+              "RESULTS.txt",
+              "signature-comparison.txt",
+              "v158-package.txt",
+              "v159-package.txt",
+              "v158-mmkv-default.bin",
+              "v159-mmkv-default.bin",
+              "v158-before-upgrade.png",
+              "v158-before-upgrade.xml",
+              "v159-default.png",
+              "v159-default.xml",
+          ]
+          for version in ("v158", "v159"):
+              for account in ("primary", "secondary"):
+                  required.extend(
+                      [
+                          f"{version}-{account}-measurement.xml",
+                          f"{version}-{account}-completed-history-2x8x20kg.xml",
+                      ]
+                  )
+          for capture in (
+              "v159-workout-font-scale-1_3",
+              "v159-workout-font-scale-2_0",
+              "v159-workout-width-320dp-font-scale-1_0",
+              "v159-workout-width-320dp-font-scale-2_0",
+          ):
+              required.extend([f"{capture}.png", f"{capture}.xml", f"{capture}-display-settings.txt"])
+
+          missing = [str(out / name) for name in required if not (out / name).is_file() or (out / name).stat().st_size == 0]
+          if missing:
+              raise SystemExit("Required native QA evidence is missing or empty:\n" + "\n".join(missing))
+          print(f"PASS: {len(required)} required native QA files exist and are non-empty (presence only).")
+          PY
+
       - name: Upload candidate APK artifact
-        if: always() && github.event_name == 'workflow_dispatch'
+        if: always() && github.event_name == 'workflow_dispatch' && steps.verify_apk.outcome == 'success'
         uses: actions/upload-artifact@v4
         with:
           name: Liftosaur-KR-${{ steps.verify_apk.outputs.release_version }}-candidate
