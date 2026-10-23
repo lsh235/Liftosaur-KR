@@ -182,7 +182,7 @@ export function NextDayPicker(props: INextDayPickerProps): JSX.Element {
         {allPrograms.length > 1 && (
           <MenuItemEditable
             type="select"
-            name="Program"
+            name="프로그램"
             value={evaluatedProgram.id}
             values={programsValues}
             onChange={handleProgramChange}

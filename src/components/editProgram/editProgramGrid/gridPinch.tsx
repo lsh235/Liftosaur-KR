@@ -36,12 +36,12 @@ export function useGridPinch(args: IGridPinchArgs): IGridPinchResult {
         disabled={args.isFitted}
         onClick={() => onScaleCommit(undefined)}
       >
-        Fit
+        맞춤
       </button>
-      <span>Week width</span>
+      <span>주 너비</span>
       <input
         type="range"
-        aria-label="Week width"
+        aria-label="주 너비"
         data-testid="grid-zoom"
         className="w-32 cursor-pointer"
         style={{ accentColor: Tailwind_semantic().icon.purple }}

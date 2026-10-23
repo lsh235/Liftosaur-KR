@@ -84,6 +84,12 @@ describe("ImportFromLiftosaur", () => {
     expect(record.programName).to.equal("My Program");
   });
 
+  it("keeps the valid CSV import path error-free after localizing validation messages", () => {
+    const result = ImportFromLiftosaur_convertLiftosaurCsvToHistoryRecords(buildCsv(row()), buildSettings());
+    expect(result.errors).to.eql([]);
+    expect(result.historyRecords).to.have.length(1);
+  });
+
   it("round-trips its own export", () => {
     const settings = buildSettings();
     const imported = ImportFromLiftosaur_convertLiftosaurCsvToHistoryRecords(buildCsv(row()), settings);

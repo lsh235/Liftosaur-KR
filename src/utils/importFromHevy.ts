@@ -589,7 +589,7 @@ export function ImportFromHevy_convertHevyCsvToHistoryRecords(hevyCsvRaw: string
     if (!validation.success) {
       errors.push({
         row: hevyWorkout.row,
-        message: `Workout "${hevyWorkout.start_time}" failed validation: ${validation.error.join("; ")}`,
+        message: `운동 기록 "${hevyWorkout.start_time}" 검증에 실패했습니다: ${validation.error.join("; ")}`,
       });
       return undefined;
     }

@@ -327,7 +327,7 @@ export function ImportFromLiftosaur_convertLiftosaurCsvToHistoryRecords(
     if (!validation.success) {
       errors.push({
         row: firstRecord.row,
-        message: `Workout "${firstRecord.workoutDateTime}" failed validation: ${validation.error.join("; ")}`,
+        message: `운동 기록 "${firstRecord.workoutDateTime}" 검증에 실패했습니다: ${validation.error.join("; ")}`,
       });
       return undefined;
     }

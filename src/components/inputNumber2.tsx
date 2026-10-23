@@ -44,6 +44,7 @@ interface IInputNumber2Props {
   selectedUnit?: IUnit | IPercentageUnit;
   showUnitInside?: boolean;
   cornerLabel?: string;
+  accessibilityLabel?: string;
   inputCommitMode?: IInputCommitMode;
   inputDebounceMs?: number;
   "data-testid"?: string;
@@ -627,6 +628,7 @@ function InputNumber2Inner(props: IInputNumber2Props): JSX.Element {
           e.currentTarget.focus();
         }}
         data-testid={`input-${StringUtils_dashcase(props.name)}-field`}
+        aria-label={props.accessibilityLabel}
       >
         <div ref={inputRef} className="leading-none">
           {!value && !isFocused && props.placeholder ? (

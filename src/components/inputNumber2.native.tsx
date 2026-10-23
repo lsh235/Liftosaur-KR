@@ -73,6 +73,7 @@ interface IInputNumber2Props {
   selectedUnit?: IUnit | IPercentageUnit;
   showUnitInside?: boolean;
   cornerLabel?: string;
+  accessibilityLabel?: string;
   inputCommitMode?: IInputCommitMode;
   inputDebounceMs?: number;
   "data-testid"?: string;
@@ -587,6 +588,7 @@ function InputNumber2Inner(props: IInputNumber2Props): JSX.Element {
           hitSlop={12}
           testID={`input-${StringUtils_dashcase(props.name)}-field`}
           data-testid={`input-${StringUtils_dashcase(props.name)}-field`}
+          accessibilityLabel={props.accessibilityLabel}
           className={fieldClassName}
           style={fieldStyle}
           onLayout={onFieldLayout}

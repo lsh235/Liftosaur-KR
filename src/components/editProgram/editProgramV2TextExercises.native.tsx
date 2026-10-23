@@ -84,7 +84,7 @@ export function EditProgramV2TextExercises(props: IEditProgramV2TextExercisesPro
               ? Program_findPlannerExercise(planner, props.settings, exerciseFullName)
               : undefined;
           if (exercise == null) {
-            Dialog_alert("Couldn't tell which exercise this is. Fix any errors on this line and try again.");
+            Dialog_alert("어떤 운동인지 확인할 수 없습니다. 이 줄의 오류를 수정한 뒤 다시 시도해 주세요.");
             return;
           }
           openAcrossProgram({ planner, exerciseKey: exercise.key, exerciseFullName: exercise.fullName, field });

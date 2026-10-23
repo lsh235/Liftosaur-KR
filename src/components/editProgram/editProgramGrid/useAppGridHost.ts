@@ -17,7 +17,7 @@ export function useAppGridHost(programId: string, dispatch: IDispatch): IGridHos
       createNavigation: (context) => GridAppNavigation_create(context, programId, dispatch),
       openEditDetails: (request, onResult) => {
         pendingRef.current = onResult;
-        openEditDetailsModal({ ...request, nameLabel: "Name", submitLabel: "Save" });
+        openEditDetailsModal({ ...request, nameLabel: "이름", submitLabel: "저장" });
       },
     }),
     [programId, dispatch, openEditDetailsModal]

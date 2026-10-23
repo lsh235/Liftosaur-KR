@@ -358,8 +358,8 @@ export const ScreenProgram = memo(function ScreenProgram(props: IProps): JSX.Ele
         <View className="pb-4">
           <Nux className="mx-4 my-2" id="Playground" helps={props.helps} dispatch={dispatch}>
             <Text className="text-xs">
-              Playground lets you test the program logic. You can finish workouts here and see how reps, weights, sets
-              change. Everything you do here is ephemeral, and doesn't change any settings, workouts or programs.
+              연습 모드에서 프로그램 동작을 시험하고 운동을 완료해 반복 횟수, 무게, 세트가 어떻게 바뀌는지 확인할 수
+              있습니다. 여기서 완료한 운동은 임시 기록이며 설정, 운동 기록, 프로그램에 반영되지 않습니다.
             </Text>
           </Nux>
           <ProgramPreviewPlayground

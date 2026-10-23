@@ -79,6 +79,17 @@ jobs:
           cd android
           ./gradlew --no-daemon -PreactNativeArchitectures=arm64-v8a,x86_64 :app:testDebugUnitTest :app:assembleRelease
 
+      - name: Upload Android unit test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-unit-results-${{ github.run_id }}
+          path: |
+            android/app/build/test-results/testDebugUnitTest/**/*.xml
+            android/app/build/reports/tests/testDebugUnitTest/
+          if-no-files-found: warn
+          retention-days: 30
+
       - name: Verify APK signature and metadata
         id: verify_apk
         run: |
@@ -168,8 +179,11 @@ jobs:
 
           - [Liftosaur-KR-${VERSION}.apk](https://github.com/${GITHUB_REPOSITORY}/releases/download/${GITHUB_REF_NAME}/Liftosaur-KR-${VERSION}.apk): ARM64 Android 기기와 x86_64 에뮬레이터용 APK입니다. 다운로드한 뒤 파일을 열어 설치하세요. 브라우저나 파일 앱에서 '알 수 없는 앱 설치' 허용이 필요할 수 있습니다.
           - [SHA-256 체크섬](https://github.com/${GITHUB_REPOSITORY}/releases/download/${GITHUB_REF_NAME}/Liftosaur-KR-${VERSION}.apk.sha256)
+          - [6주 PHAT 평일 5일 예시 루틴 JSON](https://github.com/${GITHUB_REPOSITORY}/releases/download/${GITHUB_REF_NAME}/phat-6week-kr.json): 주 5회, 6주, 총 30세션의 운동 계획 예시입니다.
 
           이 APK는 기존 한국어 Liftosaur-KR 158.0과 같은 Android 패키지 ID를 유지해 해당 앱의 업데이트 대상으로 빌드했습니다. 설치 전에 기존 데이터를 앱의 전체 내보내기 기능으로 백업하세요. Android가 서명 불일치로 업데이트를 거부하면 기존 앱을 삭제하지 말고, 앱과 기록을 그대로 보존한 뒤 문제를 제보해 주세요. 공식 Liftosaur 앱은 서명·패키지가 다를 수 있으므로 이 APK를 설치하기 위해 공식 앱을 삭제하지 마세요.
+
+          예시 JSON을 사용하려면 앱 설정 화면의 '가져오기 / 내보내기'에서 'AI 운동 루틴 JSON/CSV 가져오기'를 선택하고 다운로드한 파일을 고르세요. 이 계획의 중량은 예시이며 개인 권장 중량이 아니므로 시작 전에 본인 기록과 사용 기구에 맞게 조정하세요.
 
           ## 이번 후보의 변경
 
@@ -177,11 +191,15 @@ jobs:
           - 네이티브 기본 배포를 로컬 기록 중심으로 제한하고, 클라우드 계정·구독 기능을 안내 화면으로 전환했습니다. 원격 운동 이미지는 계속 불러올 수 있습니다.
           - 한국어 운동 기록·가져오기/내보내기 흐름을 개선했습니다. 앱 데이터 자동 이전이나 모든 데이터 복원은 보장하지 않습니다.
 
+          이 GitHub 릴리스는 사전 공개(pre-release) 테스트 후보입니다. 운영 담당자와 정식 정책이 아직 정해지지 않아 Google Play 정식 출시는 준비 중입니다.
+
           GitHub Actions는 Android 단위 검사, 서명·패키지·버전 메타데이터 검사, 합성 legacy 파일로 v158.0의 로컬 계정·운동 기록을 구성한 뒤 v159 업데이트와 화면 읽기를 시도합니다. 합성 자료는 실제 사용자가 만든 기록이 아닙니다. 이 절차는 사용자 기록에 대한 의미상 완전성 비교, 실제 기기 사용성 평가, 파일 백업 복원, Health Connect/알림 권한 검증을 대신하지 않습니다. 검증 로그와 캡처는 Actions 아티팩트를 확인하세요.
           EOF
           gh release create "$GITHUB_REF_NAME" \
             "Liftosaur-KR-${VERSION}.apk#Android APK" \
             "Liftosaur-KR-${VERSION}.apk.sha256#SHA-256 checksum" \
+            "examples/phat-6week-kr.json#6-week PHAT example routine" \
             --title "Liftosaur-KR ${VERSION}" \
             --notes-file release-notes.md \
+            --prerelease \
             --verify-tag

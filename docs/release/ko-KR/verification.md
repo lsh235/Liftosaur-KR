@@ -41,3 +41,23 @@ Android 단위 검사에는 NotificationPermissionTest·TimerAlarmReschedulerTes
 | 브라우저 시각 QA | PASS (제한 범위) | Chromium에서 합성 프로그램 화면 320/360/430px 및 320px·글자 1.3 배율 캡처·검토. 해당 프로그램 미리보기 레이아웃의 가독성만 확인; 일반 앱 마운트 smoke 실패와 Android 네이티브·Play 적합성은 별도 NOT RUN |
 
 전체 `npm run check`와 렌더 계약 검사는 최종 UI 레이아웃 변경 뒤 재실행했다. 전체 모델 검사는 그 표현 전용 변경 직전에 통과했으며 변경 후 UI focused 5건도 통과했다. 이 결과는 커밋 전 공유 작업 트리에 한정된다. APK 서명·패키지/버전 및 실제 저장 기록 보존은 CI/기기 실행 뒤 별도 판정한다. 최초 웹 smoke 실패는 제품 bundle 결함이 아니라 UTF-8 charset을 표시하지 않은 정적 테스트 harness에서 발생했다. UTF-8을 명시한 harness로 동일 `dist`의 실행·마운트를 확인했으며 앱 API 동작이나 외부 서비스 연결의 증거는 아니다.
+
+## 후속 UI 문구 후보 작업 트리 검사 (2026-10-24)
+
+이 검사는 `HEAD c1f49f63984346805678bd2fb8c3691e8aa5a379` 위의 dirty worktree에서 후속 한국어 표시/accessibility 문구 수정까지 포함해 수행했다. 앱 데이터 모델·운동 값·버전은 변경하지 않았다. 이전 v159 표는 후속 UI 변경 전 시점이다.
+
+| 검사 | 결과 | 범위 / 제한 |
+| --- | --- | --- |
+| 타입 검사 | PASS | 후속 Compact/Expanded 단측 라벨 테스트 타입 수정 뒤 `npm run check` 성공 |
+| 후속 focused 검사 | PASS | Mocha 30 tests: ImportFromLink/Liftosaur/Hevy 사용자 오류 문구; render 12 tests: 세트 배지·한국어 프로그램 도움말; render 2 tests: Compact/Expanded 단측 표시 및 접근성 이름. 전체 테스트 집합에서도 포함 상태로 실행 |
+| 전체 모델/단위 | PASS | `npm test`: 2,848 passing (1m), exit 0. `MODULE_TYPELESS_PACKAGE_JSON`, Buffer deprecation 경고 및 의도된 오류 경로 로그가 출력됨 |
+| 전체 렌더 계약 | PASS | `npm run test:render -- --runInBand`: 21 suites passed, 1 skipped; 96 passed, 16 skipped. 열린 핸들 경고 뒤 exit 0 |
+| safe production build | PASS | `npm run build:prepare`: webpack compile 성공, 자산 및 entrypoint 크기 경고 2건. stale Browserslist data, Eleventy invalid `main`, webpack Compilation.assets deprecation 경고. 일반 `npm run build`의 업로드 단계는 실행하지 않음 |
+| 후속 production dist runtime | PASS (제한 범위) | 동일 후속 `dist`의 `/app/`, vendors, app 응답 200, UTF-8 MIME, `#app` child 1개/13,152 HTML bytes, CDP 예외 0. 해시와 blocked external host는 [별도 실행 결과](evidence/next-ui-production-web-runtime-smoke.json)에 보관. 이 결과는 정적 번들 mount 및 shell 초기화만 보이며 API/로그인 기능은 검증하지 않음 |
+| PHAT 예시 JSON 가져오기 검사 | PASS (모델 변환) | `examples/phat-6week-kr.json`을 `AiWorkoutProgram_tryImport`로 검사: 성공, 6주 × 주 5일 = 30 session slots. native file picker/실기기 가져오기 흐름은 NOT RUN |
+| Android native CI / APK 흐름 | NOT RUN (후속 worktree) | 현재 관찰 중인 CI run은 C1 `c1f49f6` 소스에 대한 것이며 후속 dirty UI/workflow 변경을 포함하지 않는다. C1 결과를 후속 후보에 승계하지 않음 |
+| Android unit 결과 업로드 workflow | 변경됨 / NOT RUN | 후속 C2에서 `always()` JUnit XML/HTML report artifact 단계를 추가. 이 workflow 수정 자체는 아직 Actions 실행으로 검증하지 않음; C1 실행에 이 artifact가 없으면 실행 개수는 CI 자료에서 독립 확인 불가 |
+| 실제 좁은 화면·큰 글자·네이티브 UI | NOT RUN | 후속 Compact/Expanded 변경 후 320px/system large-text/실기기 시각 proof 없음. focused render는 모의 화면 계약에 한정 |
+| 라이선스 package inventory | PARTIAL | 이번 `build:prepare`도 캐시된 native package list를 재사용했고 두 미설치 패키지를 제외함. 최종 Android shipped bundle 기준 완전성은 NOT RUN |
+
+이번 build가 새로 변경한 추적 생성 파일 `scripts/licenses/shipped-packages.json`, `src/licenses.html`, `src/sitemap.xml`은 build 전 상태와 비교해 복원했다. 이 후속 검사 결과는 C1 native workflow evidence와 구분하며, 공개/스토어 준비 승인으로 해석하지 않는다.

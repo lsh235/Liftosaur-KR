@@ -72,13 +72,14 @@ export function WorkoutExerciseSetCompact(props: IWorkoutExerciseSetBodyProps): 
           {isUnilateral && (
             <View className="flex-row items-center justify-center mb-1">
               <Text className="text-xs text-text-secondary" style={{ width: labelW }}>
-                L:
+                좌:
               </Text>
               <InputNumber2
                 width={props.repsInputWidth}
                 tabIndex={tabIndex}
                 tabStop={true}
                 name="set-left-reps"
+                accessibilityLabel="왼쪽 반복"
                 onInput={props.onInputLeftReps}
                 onBlur={props.onBlurLeftReps}
                 placeholder={props.placeholderReps}
@@ -94,7 +95,7 @@ export function WorkoutExerciseSetCompact(props: IWorkoutExerciseSetBodyProps): 
           <View className="flex-row items-center justify-center">
             {isUnilateral && (
               <Text className="text-xs text-text-secondary" style={{ width: labelW }}>
-                R:
+                우:
               </Text>
             )}
             <InputNumber2
@@ -102,6 +103,7 @@ export function WorkoutExerciseSetCompact(props: IWorkoutExerciseSetBodyProps): 
               tabIndex={tabIndex}
               tabStop={true}
               name="set-reps"
+              accessibilityLabel={isUnilateral ? "오른쪽 반복" : "반복"}
               onInput={props.onInputReps}
               onBlur={props.onBlurReps}
               placeholder={props.placeholderReps}

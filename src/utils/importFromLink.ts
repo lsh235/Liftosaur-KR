@@ -17,7 +17,7 @@ export async function ImportFromLink_importFromLink(
   try {
     url = UrlUtils_build(link);
   } catch (e) {
-    return { success: false, error: ["Invalid link"] };
+    return { success: false, error: ["올바르지 않은 링크입니다. 링크를 확인해 주세요."] };
   }
   let base64 = url.searchParams.get("data") || undefined;
   let source = url.searchParams.get("s") || undefined;
@@ -45,7 +45,7 @@ export async function ImportFromLink_importFromLink(
       return decoded;
     }
   } else {
-    return { success: false, error: ["No data found"] };
+    return { success: false, error: ["링크에서 가져올 데이터를 찾지 못했습니다. 링크를 확인해 주세요."] };
   }
 }
 
@@ -54,6 +54,6 @@ async function getDecodedData(base64: string): Promise<IEither<string, string[]>
     const decoded = await Encoder_decode(base64);
     return { success: true, data: decoded };
   } catch (e) {
-    return { success: false, error: ["Error decoding the link"] };
+    return { success: false, error: ["링크 데이터를 읽을 수 없습니다. 링크가 손상되지 않았는지 확인해 주세요."] };
   }
 }

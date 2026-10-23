@@ -129,14 +129,15 @@ export function WorkoutExerciseSetExpanded(props: IWorkoutExerciseSetBodyProps):
             <View className="flex-row items-center gap-2 pr-4">
               {isUnilateral ? (
                 <>
-                  <Text className="text-xs text-text-secondary">L</Text>
+                  <Text className="text-xs text-text-secondary">좌:</Text>
                   <InputNumber2
                     size="lg"
                     fill={true}
                     tabIndex={tabIndex}
                     tabStop={true}
                     name="set-left-reps"
-                    cornerLabel="reps"
+                    accessibilityLabel="왼쪽 반복"
+                    cornerLabel="반복"
                     onInput={props.onInputLeftReps}
                     onBlur={props.onBlurLeftReps}
                     placeholder={props.placeholderReps}
@@ -147,14 +148,15 @@ export function WorkoutExerciseSetExpanded(props: IWorkoutExerciseSetBodyProps):
                     step={1}
                     inputCommitMode="blur"
                   />
-                  <Text className="text-xs text-text-secondary">R</Text>
+                  <Text className="text-xs text-text-secondary">우:</Text>
                   <InputNumber2
                     size="lg"
                     fill={true}
                     tabIndex={tabIndex}
                     tabStop={true}
                     name="set-reps"
-                    cornerLabel="reps"
+                    accessibilityLabel="오른쪽 반복"
+                    cornerLabel="반복"
                     onInput={props.onInputReps}
                     onBlur={props.onBlurReps}
                     placeholder={props.placeholderReps}
@@ -173,7 +175,8 @@ export function WorkoutExerciseSetExpanded(props: IWorkoutExerciseSetBodyProps):
                   tabIndex={tabIndex}
                   tabStop={true}
                   name="set-reps"
-                  cornerLabel="reps"
+                  accessibilityLabel="반복"
+                  cornerLabel="반복"
                   onInput={props.onInputReps}
                   onBlur={props.onBlurReps}
                   placeholder={props.placeholderReps}

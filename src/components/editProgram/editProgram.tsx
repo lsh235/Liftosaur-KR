@@ -335,7 +335,7 @@ export const EditProgramNavbar = memo(function EditProgramNavbar(props: IEditPro
               props.dispatch(Thunk_pushScreen("main", undefined, { tab: "home" }));
             }}
           >
-            Save
+            저장
           </Button>
         </View>
       </View>

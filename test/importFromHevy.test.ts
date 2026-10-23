@@ -74,6 +74,12 @@ describe("ImportFromHevy", () => {
     expect(record.endTime).to.equal(new Date(2026, 2, 13, 16, 0).getTime());
   });
 
+  it("keeps the valid Hevy CSV import path error-free after localizing validation messages", () => {
+    const result = ImportFromHevy_convertHevyCsvToHistoryRecords(buildCsv(row()), buildSettings());
+    expect(result.errors).to.eql([]);
+    expect(result.historyRecords).to.have.length(1);
+  });
+
   it("parses the US 12-hour Hevy date format without relying on Date string parsing", () => {
     const realDate = Date;
     class HermesDate extends realDate {

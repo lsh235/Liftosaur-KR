@@ -17,7 +17,7 @@ interface IProps {
 }
 
 export function EditProgramDaysList(props: IProps): JSX.Element {
-  useNavOptions({ navTitle: "Edit Program" });
+  useNavOptions({ navTitle: "프로그램 편집" });
 
   const fetchFn =
     typeof window !== "undefined"
@@ -29,9 +29,9 @@ export function EditProgramDaysList(props: IProps): JSX.Element {
   return (
     <View className="px-4">
       <MigrationBanner program={props.editProgram} settings={props.settings} client={fetchFn} />
-      <GroupHeader name="Current Program" />
+      <GroupHeader name="현재 프로그램" />
       <MenuItem
-        name="Program"
+        name="프로그램"
         value={props.editProgram.name}
         expandValue={true}
         shouldShowRightArrow={true}
