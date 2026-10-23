@@ -1197,6 +1197,8 @@ export interface IProgramSchedule {
   completedSessions: number;
   shiftCount: number;
   reminderTime?: string;
+  /** Scheduled dates frozen on completion, including shifts; absent in older backups. */
+  completedSessionDates?: Record<string, string>;
 }
 export interface IWorkoutScheduleReminder {
   id: number;
@@ -1212,6 +1214,7 @@ const _VProgramSchedule = v.object({
   completedSessions: v.number(),
   shiftCount: v.number(),
   reminderTime: v.optional(v.string()),
+  completedSessionDates: v.optional(v.record(v.string(), v.string())),
 });
 const _VProgramScheduleMatches: IEquals<v.InferOutput<typeof _VProgramSchedule>, IProgramSchedule> = true;
 void _VProgramScheduleMatches;

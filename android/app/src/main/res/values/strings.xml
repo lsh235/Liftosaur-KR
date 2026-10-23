@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Liftosaur</string>
+    <string name="app_name">Liftosaur KR</string>
     <string name="channel_name">Liftosaur Notifications Channel</string>
     <string name="channel_description">To deliver Liftosaur Notification</string>
     <string name="lft_updates_manifest_url">https://www.liftosaur.com/api/updates/manifest</string>

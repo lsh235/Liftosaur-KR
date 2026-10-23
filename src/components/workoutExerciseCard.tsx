@@ -14,6 +14,7 @@ import { updateProgress, updateSettings } from "../models/state";
 import { lb } from "lens-shmens";
 import {
   Exercise_get,
+  Exercise_equipmentNameForDisplay,
   Exercise_getNotes,
   Exercise_onerm,
   Exercise_nameWithEquipment,
@@ -59,10 +60,7 @@ import { IPrevExerciseData } from "../models/history";
 import { DateUtils_format } from "../utils/date";
 import { IDispatch } from "../ducks/types";
 import { IEvaluatedProgram, IEvaluatedProgramDay, Program_getProgramExerciseForKeyAndDay } from "../models/program";
-import {
-  Equipment_getEquipmentNameForExerciseType,
-  Equipment_getEquipmentDataForExerciseType,
-} from "../models/equipment";
+import { Equipment_getEquipmentDataForExerciseType } from "../models/equipment";
 import { PlannerProgramExercise_currentDescription } from "../pages/planner/models/plannerProgramExercise";
 import { IByExercise } from "../pages/planner/plannerEvaluator";
 import { useTrackClick } from "../utils/clickTracking";
@@ -111,7 +109,7 @@ function WorkoutExerciseCardInner(props: IWorkoutExerciseCardProps): JSX.Element
   const exerciseType = props.entry.exercise;
   const settings = props.settings;
   const exercise = Exercise_get(exerciseType, settings.exercises);
-  const currentEquipmentName = Equipment_getEquipmentNameForExerciseType(settings, exercise);
+  const currentEquipmentName = Exercise_equipmentNameForDisplay(exercise, settings);
   const currentEquipmentNotes = Equipment_getEquipmentDataForExerciseType(settings, exercise)?.notes;
   const exerciseNotes = Exercise_getNotes(exerciseType, settings);
   const description = programExercise
@@ -200,7 +198,7 @@ function WorkoutExerciseCardInner(props: IWorkoutExerciseCardProps): JSX.Element
   }, [dispatch, entry, progressId]);
 
   const removeExercise = useCallback(async (): Promise<void> => {
-    if (!(await Dialog_confirm("Do you want to remove this exercise in this workout only?"))) {
+    if (!(await Dialog_confirm("이번 운동에서만 이 종목을 삭제할까요?"))) {
       return;
     }
     updateProgress(
@@ -411,10 +409,14 @@ function WorkoutExerciseCardInner(props: IWorkoutExerciseCardProps): JSX.Element
               className="flex-row items-center"
               data-testid="exercise-name"
               testID="exercise-name"
+              accessibilityRole="button"
+              accessibilityLabel={`${Exercise_nameWithEquipment(exercise, props.settings)} 기록 보기`}
               onPress={onPressExerciseStats}
               onLayout={onTitleLayout}
             >
-              <Text className="pr-1 text-lg font-bold">{Exercise_nameWithEquipment(exercise, props.settings)}</Text>
+              <Text className="flex-1 min-w-0 pr-1 text-lg font-bold">
+                {Exercise_nameWithEquipment(exercise, props.settings)}
+              </Text>
               <IconArrowRight />
             </Pressable>
             <View data-testid="exercise-equipment" className="flex-row flex-wrap items-center">
@@ -435,7 +437,7 @@ function WorkoutExerciseCardInner(props: IWorkoutExerciseCardProps): JSX.Element
                 testID="exercise-superset"
                 className="flex-row flex-wrap items-center"
               >
-                <Text className="text-sm text-text-secondary">Supersets with: </Text>
+                <Text className="text-sm text-text-secondary">슈퍼세트: </Text>
                 <LinkButton
                   name="exercise-superset-picker"
                   data-testid="exercise-superset-picker"
@@ -472,6 +474,8 @@ function WorkoutExerciseCardInner(props: IWorkoutExerciseCardProps): JSX.Element
               testID="exercise-options"
               className="p-4"
               style={{ marginRight: -12 }}
+              accessibilityRole="button"
+              accessibilityLabel="운동 옵션"
               onPress={onKebabPress}
               hitSlop={16}
             >
@@ -567,7 +571,7 @@ function WorkoutExerciseCardInner(props: IWorkoutExerciseCardProps): JSX.Element
               id="exercise-notes"
               maxLength={4095}
               name="exercise-notes"
-              placeholder="Add workout notes for this exercise here..."
+              placeholder="이 종목에 대한 메모를 입력하세요"
               value={props.entry.notes}
               onChangeText={onChangeNotes}
               className="mt-1"

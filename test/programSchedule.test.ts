@@ -1,19 +1,21 @@
 import { expect } from "chai";
+import * as v from "valibot";
 import {
   ProgramSchedule_build,
   ProgramSchedule_buildReminderRequests,
   ProgramSchedule_completeSession,
   ProgramSchedule_getNextDate,
+  ProgramSchedule_getDueSessionCount,
   ProgramSchedule_getSessionDate,
   ProgramSchedule_isValid,
   ProgramSchedule_skipSession,
   ProgramSchedule_today,
 } from "../src/models/programSchedule";
 import { Program_create, Program_createExercise } from "../src/models/program";
-import { Thunk_skipProgramSchedule } from "../src/ducks/thunks";
+import { Thunk_setProgramSchedule, Thunk_skipProgramSchedule } from "../src/ducks/thunks";
 import { IDispatch } from "../src/ducks/types";
 import { IEnv, IState } from "../src/models/state";
-import { IProgram, IWorkoutScheduleReminder } from "../src/types";
+import { IProgram, IWorkoutScheduleReminder, VProgramSchedule } from "../src/types";
 
 describe("ProgramSchedule", () => {
   it("maps weekdays and keeps weekend rest days out of the session calendar", () => {
@@ -45,6 +47,102 @@ describe("ProgramSchedule", () => {
       ProgramSchedule_getNextDate(ProgramSchedule_completeSession(ProgramSchedule_completeSession(schedule)), 2)
     ).to.equal(undefined);
     expect(ProgramSchedule_skipSession(schedule, 2)).to.eql({ ...schedule, shiftCount: 1 });
+  });
+
+  it("freezes shifted completed dates across later skips and backup restore", () => {
+    const schedule = ProgramSchedule_build("2026-10-19", [1, 2, 3, 4, 5], 3);
+    const shifted = ProgramSchedule_skipSession(schedule, 30);
+    const completed = ProgramSchedule_completeSession(shifted, 30);
+    expect(ProgramSchedule_getSessionDate(completed, 3, 30)).to.equal("2026-10-23");
+    expect(ProgramSchedule_getDueSessionCount(completed, 30, "2026-10-22")).to.equal(3);
+    const restored = v.parse(VProgramSchedule, JSON.parse(JSON.stringify(completed)));
+    expect(restored.completedSessionDates).to.eql({ "3": "2026-10-23" });
+    const skippedAgain = ProgramSchedule_skipSession(restored, 30);
+    expect(ProgramSchedule_getSessionDate(skippedAgain, 3, 30)).to.equal("2026-10-23");
+    expect(ProgramSchedule_getNextDate(skippedAgain, 30)).to.equal("2026-10-27");
+    expect(ProgramSchedule_getSessionDate(ProgramSchedule_completeSession(skippedAgain, 30), 4, 30)).to.equal(
+      "2026-10-27"
+    );
+    expect(v.parse(VProgramSchedule, JSON.parse(JSON.stringify(schedule)))).to.eql(
+      JSON.parse(JSON.stringify(schedule))
+    );
+  });
+
+  it("preserves completed dates when changing schedule settings and clears them when starting a new cycle", async () => {
+    const program: IProgram = {
+      ...Program_create("새 일정", "reconfigure"),
+      planner: {
+        vtype: "planner",
+        name: "새 일정",
+        weeks: [
+          {
+            name: "1주차",
+            days: [
+              { name: "첫날", exerciseText: "Bench Press / 3x5" },
+              { name: "둘째날", exerciseText: "Squat / 3x5" },
+            ],
+          },
+        ],
+      },
+      schedule: ProgramSchedule_completeSession(
+        ProgramSchedule_skipSession(ProgramSchedule_build("2026-10-19", [1, 2, 3, 4, 5]), 2),
+        2
+      ),
+    };
+    let state = { storage: { programs: [program] } } as unknown as IState;
+    const dispatch: IDispatch = (action) => {
+      if (typeof action !== "function" && action.type === "UpdateState") {
+        state = action.lensRecording.reduce((memo, recording) => recording.fn(memo), state);
+      }
+    };
+    await Thunk_setProgramSchedule(program.id, "2026-11-02", [1, 3, 5], "19:00")(dispatch, () => state, {} as IEnv);
+    const changed = state.storage.programs[0].schedule!;
+    expect(ProgramSchedule_getSessionDate(changed, 0, 2)).to.equal("2026-10-20");
+    expect(changed.reminderTime).to.equal("19:00");
+    const finished = ProgramSchedule_completeSession(changed, 2);
+    expect(ProgramSchedule_completeSession(finished, 2)).to.equal(finished);
+    state.storage.programs[0] = { ...state.storage.programs[0], schedule: finished };
+    await Thunk_setProgramSchedule(program.id, "2026-12-07", [1, 3], "18:00")(dispatch, () => state, {} as IEnv);
+    const restarted = state.storage.programs[0].schedule!;
+    expect(restarted.completedSessions).to.equal(0);
+    expect(restarted.shiftCount).to.equal(0);
+    expect(restarted.completedSessionDates).to.equal(undefined);
+    expect(ProgramSchedule_getNextDate(restarted, 2)).to.equal("2026-12-07");
+  });
+
+  it("handles extreme restored offsets in bounded time and rejects invalid completed-date metadata", () => {
+    const schedule = ProgramSchedule_build("2026-10-19", [1], 0, Number.MAX_SAFE_INTEGER);
+    expect(ProgramSchedule_getNextDate(schedule, 30)).to.equal(undefined);
+    expect(
+      ProgramSchedule_isValid({ ...schedule, completedSessions: 1, completedSessionDates: { "1": "2026-10-19" } })
+    ).to.equal(false);
+    expect(
+      ProgramSchedule_isValid({ ...schedule, completedSessions: 1, completedSessionDates: { "0": "2026-02-30" } })
+    ).to.equal(false);
+    expect(
+      ProgramSchedule_getSessionDate(
+        { ...schedule, completedSessions: 1, completedSessionDates: { "0": "garbage" } },
+        0,
+        30
+      )
+    ).to.equal(undefined);
+    expect(
+      ProgramSchedule_completeSession({ ...schedule, completedSessions: Number.MAX_SAFE_INTEGER }, 30).completedSessions
+    ).to.equal(Number.MAX_SAFE_INTEGER);
+  });
+
+  it("uses Korean local calendar dates near UTC midnight", () => {
+    const originalTimeZone = process.env.TZ;
+    process.env.TZ = "Asia/Seoul";
+    try {
+      expect(ProgramSchedule_today(Date.UTC(2026, 9, 23, 15, 5))).to.equal("2026-10-24");
+    } finally {
+      if (originalTimeZone == null) {
+        delete process.env.TZ;
+      } else {
+        process.env.TZ = originalTimeZone;
+      }
+    }
   });
 
   it("rejects invalid dates and requires at least one workout weekday", () => {

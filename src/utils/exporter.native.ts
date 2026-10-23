@@ -32,7 +32,7 @@ async function exportToFile(filename: string, contents: string): Promise<void> {
     if (err.message && /cancel|cancelled|user did not share/i.test(err.message)) {
       return;
     }
-    Alert.alert("Export failed", err.message ?? "Unknown error");
+    Alert.alert("파일을 내보내지 못했습니다", err.message ?? "알 수 없는 오류");
   } finally {
     try {
       if (await RNFS.exists(tempPath)) {

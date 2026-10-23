@@ -1,4 +1,5 @@
 import { JSX, useEffect } from "react";
+import { Distribution_isLocalOnly, Distribution_localOnlyMessage } from "../utils/distribution";
 import { View, Pressable, Platform, Image, AppState } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Text } from "./primitives/text";
@@ -125,12 +126,14 @@ export function ScreenSubscription(props: IProps): JSX.Element {
   const isNative = StoreRuntime_isNative();
 
   useEffect(() => {
+    if (Distribution_isLocalOnly()) return;
     for (const path of SubscriptionInfoImages_allPaths()) {
       ImagePreloader_preload(path);
     }
   }, []);
 
   useEffect(() => {
+    if (Distribution_isLocalOnly()) return;
     props.dispatch(Thunk_iapRefreshActiveSubscriptions());
     // Re-check on foreground so a cancel/change made in the system subscription manager
     // (App Store / Google Play) is reflected when the user comes back to the app.
@@ -177,6 +180,20 @@ export function ScreenSubscription(props: IProps): JSX.Element {
   const supportsLifetime = Platform.OS === "ios" || Platform.OS === "android";
 
   useNavOptions({ navHidden: true });
+
+  if (Distribution_isLocalOnly()) {
+    return (
+      <NavScreenContent>
+        <View className="px-gutter py-6" testID="local-only-subscription">
+          <Text className="text-lg font-bold text-text-primary">결제 없는 로컬 버전</Text>
+          <Text className="mt-3 text-base text-text-secondary">{Distribution_localOnlyMessage}</Text>
+          <View className="mt-4">
+            <Button name="local-only-subscription-back" kind="purple" onClick={() => goBack()}>돌아가기</Button>
+          </View>
+        </View>
+      </NavScreenContent>
+    );
+  }
 
   const isUnclaimed = props.subscription.key === "unclaimed";
 

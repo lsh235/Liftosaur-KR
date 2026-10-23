@@ -5,6 +5,7 @@ import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.WritableMap
 import com.google.firebase.messaging.FirebaseMessaging
+import com.liftosaur.www.twa.BuildConfig
 import com.liftosaur.www.twa.specs.NativeLiftosaurPushSpec
 
 class LiftosaurPushModule(reactContext: ReactApplicationContext) :
@@ -15,6 +16,10 @@ class LiftosaurPushModule(reactContext: ReactApplicationContext) :
     }
 
     override fun start(promise: Promise) {
+        if (BuildConfig.LOCAL_ONLY) {
+            promise.reject("local_only_distribution", "Remote push is disabled in the KR local version")
+            return
+        }
         FirebaseMessaging.getInstance().token
             .addOnSuccessListener { token -> PushDispatcher.emitToken(token) }
             .addOnFailureListener { e -> Log.w("LiftosaurPush", "FCM token unavailable", e) }
@@ -22,7 +27,7 @@ class LiftosaurPushModule(reactContext: ReactApplicationContext) :
     }
 
     override fun flushPending(promise: Promise) {
-        PushDispatcher.flushPending()
+        if (!BuildConfig.LOCAL_ONLY) PushDispatcher.flushPending()
         promise.resolve(null)
     }
 

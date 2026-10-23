@@ -1,4 +1,5 @@
 import RB, { Dictionary, LogArgument } from "rollbar";
+import { Distribution_isLocalOnly, Distribution_requireRemoteServices } from "./distribution";
 import { Service } from "../api/service";
 import { IState } from "../models/state";
 import { UidFactory_generateUid } from "./generator";
@@ -51,6 +52,7 @@ export const exceptionIgnores = [
 ];
 
 export async function RollbarUtils_load(item: string | number, token: string, key: string): Promise<void> {
+  Distribution_requireRemoteServices();
   const result = await fetch(`https://api.rollbar.com/api/1/instance/${item}`, {
     headers: {
       accept: "application/json",
@@ -92,7 +94,7 @@ export function RollbarUtils_checkIgnore(isUncaught: boolean, args: LogArgument[
 
 export function RollbarUtils_config(payload?: object): RB.Configuration {
   return {
-    enabled: __ENV__ === "production" || __ENV__ === "prod-lambda" || __ENV__ === "android",
+    enabled: !Distribution_isLocalOnly() && (__ENV__ === "production" || __ENV__ === "prod-lambda" || __ENV__ === "android"),
     payload: {
       environment: __ENV__,
       client: {
@@ -106,6 +108,7 @@ export function RollbarUtils_config(payload?: object): RB.Configuration {
     },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     transform: async (pld: any, item: any) => {
+      if (Distribution_isLocalOnly()) return;
       const shouldIgnore = RollbarUtils_checkIgnore(false, [item?.err?.message], item);
       if (shouldIgnore) {
         return;

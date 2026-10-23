@@ -1,4 +1,5 @@
 import { Platform } from "react-native";
+import { Distribution_guardClient } from "../utils/distribution";
 import {
   IStorage,
   IHistoryRecord,
@@ -225,7 +226,7 @@ export class Service {
   public readonly client: Window["fetch"];
 
   constructor(client: Window["fetch"]) {
-    this.client = client;
+    this.client = Distribution_guardClient(client);
   }
 
   public async googleSignIn(

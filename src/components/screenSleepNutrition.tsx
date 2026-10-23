@@ -30,14 +30,14 @@ interface IHealthValue {
 }
 
 function unitForMetric(key: IStatsHealthKey): string {
-  return key === "sleep" ? "h" : key === "calories" ? "kcal" : "g";
+  return key === "sleep" ? "시간" : key === "calories" ? "kcal" : "g";
 }
 
 function formatHealthValue(key: IStatsHealthKey, value: number): string {
   if (key === "sleep") {
     const hours = Math.floor(value / 60);
     const minutes = Math.round(value % 60);
-    return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+    return hours > 0 ? `${hours}시간 ${minutes}분` : `${minutes}분`;
   }
   if (key === "calories") {
     return `${Math.round(value)} kcal`;
@@ -46,7 +46,7 @@ function formatHealthValue(key: IStatsHealthKey, value: number): string {
 }
 
 export function ScreenSleepNutrition(props: IProps): JSX.Element {
-  useNavOptions({ navTitle: "Sleep & Nutrition" });
+  useNavOptions({ navTitle: "수면 및 영양" });
 
   const keysWithData = statsHealthDef.filter((key) => (props.stats.health?.[key] || []).length > 0);
 
@@ -54,8 +54,8 @@ export function ScreenSleepNutrition(props: IProps): JSX.Element {
     return (
       <View className="px-gutter">
         <Text className="py-16 text-center text-text-secondary">
-          No sleep or nutrition data yet. Enable syncing in your Apple Health or Google Health settings, and it will
-          appear here as it's imported.
+          아직 수면이나 영양 기록이 없습니다. Apple 건강 또는 Google 헬스 설정에서 동기화를 켜면 가져온 기록이
+          표시됩니다.
         </Text>
       </View>
     );
@@ -99,7 +99,7 @@ function HealthMetricList(props: IHealthMetricListProps): JSX.Element {
   if (all.length === 0) {
     return (
       <View className="px-gutter">
-        <Text className="py-12 text-center text-text-secondary">No {Stats_name(statsKey)} data yet</Text>
+        <Text className="py-12 text-center text-text-secondary">아직 {Stats_name(statsKey)} 기록이 없습니다</Text>
       </View>
     );
   }
@@ -137,7 +137,7 @@ function HealthMetricList(props: IHealthMetricListProps): JSX.Element {
         )}
       </View>
       {visible.length === 0 ? (
-        <Text className="py-8 text-center text-text-secondary">All {Stats_name(statsKey)} records are hidden</Text>
+        <Text className="py-8 text-center text-text-secondary">모든 {Stats_name(statsKey)} 기록이 숨겨져 있습니다</Text>
       ) : (
         visible.map((value) => (
           <HealthMetricRow
@@ -158,7 +158,7 @@ function HealthMetricList(props: IHealthMetricListProps): JSX.Element {
             onPress={() => setShowHidden((s) => !s)}
           >
             <Text className="text-center text-text-link">
-              {showHidden ? "Hide" : "Show"} {hidden.length} hidden {hidden.length === 1 ? "record" : "records"}
+              {showHidden ? "숨긴 기록 접기" : `숨긴 기록 ${hidden.length}개 보기`}
             </Text>
           </Pressable>
           {showHidden &&
@@ -200,6 +200,8 @@ function HealthMetricRow(props: IHealthMetricRowProps): JSX.Element {
         className={isHidden ? "p-3 nm-unhide-health-stat" : "p-3 nm-hide-health-stat"}
         data-testid={isHidden ? "unhide-health-stat" : "hide-health-stat"}
         testID={isHidden ? "unhide-health-stat" : "hide-health-stat"}
+        accessibilityRole="button"
+        accessibilityLabel={isHidden ? "기록 다시 표시" : "기록 숨기기"}
         onPress={onToggle}
       >
         {isHidden ? <IconUndo /> : <IconTrash />}

@@ -480,8 +480,10 @@ function buildExerciseText(exercise: IAIExercise, week: number, unit: IUnit): st
   const workSets = progression.sets
     .filter((set) => set.type !== "WARMUP")
     .map((set) => {
-      const weight = set.target_weight === 0 ? "?+" : Number(set.target_weight.toFixed(3)) + unit;
-      const rest = exercise.rest_seconds > 0 ? " " + exercise.rest_seconds + "s" : "";
+      const isUnloadedBodyweight = getExerciseNameAndEquipment(exercise.name).equipment === "bodyweight";
+      const weight =
+        set.target_weight === 0 && !isUnloadedBodyweight ? "?+" : Number(set.target_weight.toFixed(3)) + unit;
+      const rest = " " + exercise.rest_seconds + "s";
       return "1x" + set.target_reps + " (" + set.type + ") " + weight + rest;
     });
   const warmupGroups = new Map<string, { count: number; reps: number; weight?: number }>();
@@ -892,198 +894,191 @@ export function AiWorkoutProgram_buildPromptTemplate(): string {
   ].join("\n");
 }
 
+// Targets below preserve the user's supplied six-week routine. This is an editable
+// example with explicit loads, not an individualized recommendation or automatic progression.
+type ISixWeeks = [number, number, number, number, number, number];
 interface ISeedSetGroup {
   type: IAISetType;
-  reps: number;
+  reps: ISixWeeks;
+  weights: ISixWeeks;
   count: number;
 }
-
 interface ISeedExercise {
   name: string;
   target_muscle: string;
   rest_seconds: number;
   sets: ISeedSetGroup[];
 }
-
 interface ISeedWorkout {
   day_name: string;
   exercises: ISeedExercise[];
 }
 
+function seedExercise(
+  name: string,
+  target_muscle: string,
+  rest_seconds: number,
+  count: number,
+  weights: ISixWeeks,
+  reps: ISixWeeks
+): ISeedExercise {
+  return { name, target_muscle, rest_seconds, sets: [{ type: "STRAIGHT", count, weights, reps }] };
+}
+
 const seedWorkouts: ISeedWorkout[] = [
   {
-    day_name: "월요일: 상체 파워 (Upper Power)",
+    day_name: "월요일: 상체 파워",
     exercises: [
       {
-        name: "Bench Press",
+        name: "Bench Press, Barbell",
         target_muscle: "가슴",
         rest_seconds: 180,
         sets: [
-          { type: "TOP", reps: 3, count: 2 },
-          { type: "BACKOFF", reps: 8, count: 3 },
+          { type: "TOP", count: 2, weights: [90, 90, 92.5, 92.5, 95, 95], reps: [4, 5, 4, 5, 4, 5] },
+          { type: "BACKOFF", count: 3, weights: [80, 80, 82.5, 82.5, 85, 85], reps: [8, 9, 8, 9, 8, 9] },
         ],
       },
       {
-        name: "Bent Over Row",
+        name: "Bent Over Row, Barbell",
         target_muscle: "등",
         rest_seconds: 180,
         sets: [
-          { type: "TOP", reps: 3, count: 2 },
-          { type: "BACKOFF", reps: 8, count: 2 },
+          { type: "TOP", count: 2, weights: [60, 60, 65, 65, 70, 70], reps: [5, 6, 5, 6, 5, 6] },
+          { type: "BACKOFF", count: 3, weights: [50, 50, 55, 55, 60, 60], reps: [8, 9, 8, 9, 8, 9] },
         ],
       },
-      {
-        name: "Overhead Press",
-        target_muscle: "어깨",
-        rest_seconds: 150,
-        sets: [
-          { type: "TOP", reps: 3, count: 1 },
-          { type: "BACKOFF", reps: 8, count: 3 },
-        ],
-      },
-      { name: "Lat Pulldown", target_muscle: "등", rest_seconds: 120, sets: [{ type: "STRAIGHT", reps: 8, count: 3 }] },
-      {
-        name: "Barbell Curl",
-        target_muscle: "이두",
-        rest_seconds: 90,
-        sets: [{ type: "STRAIGHT", reps: 8, count: 3 }],
-      },
+      seedExercise("Overhead Press, Barbell", "어깨", 150, 4, [37.5, 37.5, 40, 40, 42.5, 42.5], [6, 7, 6, 7, 5, 6]),
+      seedExercise("Lat Pulldown, Cable", "등", 120, 3, [56, 56, 63, 63, 63, 70], [6, 8, 6, 7, 8, 6]),
+      seedExercise("Bicep Curl, Barbell", "이두", 90, 3, [30, 30, 30, 32.5, 32.5, 35], [8, 9, 10, 8, 9, 8]),
+      seedExercise("Skullcrusher, EZ Bar", "삼두", 90, 3, [30, 30, 30, 32.5, 32.5, 35], [8, 9, 10, 8, 9, 8]),
     ],
   },
   {
-    day_name: "화요일: 하체 파워 (Lower Power)",
+    day_name: "화요일: 하체 파워",
     exercises: [
       {
-        name: "Squat",
+        name: "Squat, Barbell",
         target_muscle: "대퇴사두근",
         rest_seconds: 210,
         sets: [
-          { type: "TOP", reps: 3, count: 2 },
-          { type: "BACKOFF", reps: 8, count: 3 },
+          { type: "TOP", count: 2, weights: [100, 100, 105, 105, 110, 110], reps: [4, 5, 4, 5, 4, 5] },
+          { type: "BACKOFF", count: 3, weights: [85, 85, 90, 90, 95, 95], reps: [8, 9, 8, 9, 8, 9] },
         ],
       },
-      {
-        name: "Deadlift",
-        target_muscle: "둔근·햄스트링",
-        rest_seconds: 210,
-        sets: [
-          { type: "TOP", reps: 3, count: 1 },
-          { type: "BACKOFF", reps: 6, count: 2 },
-        ],
-      },
-      {
-        name: "Leg Press",
-        target_muscle: "대퇴사두근",
-        rest_seconds: 150,
-        sets: [{ type: "STRAIGHT", reps: 8, count: 3 }],
-      },
-      {
-        name: "Standing Calf Raise",
-        target_muscle: "종아리",
-        rest_seconds: 90,
-        sets: [{ type: "STRAIGHT", reps: 10, count: 3 }],
-      },
-      { name: "Ab Wheel", target_muscle: "복근", rest_seconds: 90, sets: [{ type: "STRAIGHT", reps: 10, count: 3 }] },
+      seedExercise("Romanian Deadlift, Barbell", "햄스트링", 150, 4, [80, 80, 85, 85, 90, 90], [6, 8, 6, 8, 6, 8]),
+      seedExercise(
+        "Leg Press, Leverage Machine",
+        "대퇴사두근",
+        120,
+        3,
+        [160, 160, 180, 180, 200, 200],
+        [8, 10, 8, 10, 8, 10]
+      ),
+      seedExercise(
+        "Lying Leg Curl, Leverage Machine",
+        "햄스트링",
+        90,
+        3,
+        [40, 40, 45, 45, 50, 50],
+        [10, 12, 10, 12, 10, 12]
+      ),
+      seedExercise(
+        "Standing Calf Raise, Leverage Machine",
+        "종아리",
+        90,
+        4,
+        [60, 60, 70, 70, 80, 80],
+        [12, 15, 12, 15, 12, 15]
+      ),
     ],
   },
   {
-    day_name: "수요일: 등·어깨 근비대 (Back & Shoulder Hypertrophy)",
+    day_name: "수요일: 당기기 근비대",
     exercises: [
-      {
-        name: "Seated Cable Row",
-        target_muscle: "등",
-        rest_seconds: 120,
-        sets: [{ type: "STRAIGHT", reps: 12, count: 4 }],
-      },
-      {
-        name: "Lat Pulldown",
-        target_muscle: "등",
-        rest_seconds: 120,
-        sets: [{ type: "STRAIGHT", reps: 12, count: 3 }],
-      },
-      {
-        name: "Face Pull",
-        target_muscle: "후면 삼각근",
-        rest_seconds: 90,
-        sets: [{ type: "STRAIGHT", reps: 15, count: 3 }],
-      },
-      {
-        name: "Lateral Raise",
-        target_muscle: "측면 삼각근",
-        rest_seconds: 90,
-        sets: [{ type: "STRAIGHT", reps: 15, count: 4 }],
-      },
-      {
-        name: "Dumbbell Curl",
-        target_muscle: "이두",
-        rest_seconds: 90,
-        sets: [{ type: "STRAIGHT", reps: 12, count: 3 }],
-      },
+      seedExercise("Lat Pulldown, Cable", "등", 120, 4, [48.9, 48.9, 48.9, 56, 56, 56], [10, 11, 12, 8, 9, 10]),
+      seedExercise("Seated Row, Cable", "등", 120, 4, [48.9, 48.9, 48.9, 56, 56, 56], [10, 11, 12, 8, 9, 10]),
+      seedExercise(
+        "케이블 암 풀다운, Cable",
+        "등",
+        90,
+        2,
+        [23.75, 26.25, 26.25, 28.75, 28.75, 28.75],
+        [15, 12, 15, 12, 14, 15]
+      ),
+      seedExercise("Reverse Fly, Leverage Machine", "어깨", 90, 4, [30, 30, 35, 35, 40, 40], [12, 15, 12, 15, 12, 15]),
+      seedExercise("Incline Curl, Dumbbell", "이두", 90, 3, [12, 12, 14, 14, 14, 16], [10, 12, 10, 11, 12, 10]),
+      seedExercise("Hammer Curl, Dumbbell", "이두", 90, 3, [12, 14, 14, 16, 16, 16], [12, 10, 12, 10, 11, 12]),
     ],
   },
   {
-    day_name: "목요일: 가슴·팔 근비대 (Chest & Arms Hypertrophy)",
+    day_name: "목요일: 밀기 근비대",
     exercises: [
-      {
-        name: "Incline Bench Press",
-        target_muscle: "상부 가슴",
-        rest_seconds: 120,
-        sets: [{ type: "STRAIGHT", reps: 10, count: 4 }],
-      },
-      { name: "Chest Fly", target_muscle: "가슴", rest_seconds: 90, sets: [{ type: "STRAIGHT", reps: 12, count: 3 }] },
-      {
-        name: "Triceps Pushdown",
-        target_muscle: "삼두",
-        rest_seconds: 90,
-        sets: [{ type: "STRAIGHT", reps: 12, count: 3 }],
-      },
-      {
-        name: "Overhead Triceps Extension",
-        target_muscle: "삼두",
-        rest_seconds: 90,
-        sets: [{ type: "STRAIGHT", reps: 12, count: 3 }],
-      },
-      {
-        name: "Hammer Curl",
-        target_muscle: "이두·전완",
-        rest_seconds: 90,
-        sets: [{ type: "STRAIGHT", reps: 12, count: 3 }],
-      },
+      seedExercise("Incline Bench Press, Dumbbell", "가슴", 120, 4, [26, 28, 28, 30, 30, 32], [10, 8, 10, 8, 10, 8]),
+      seedExercise("Chest Dip, Bodyweight", "가슴", 120, 4, [0, 0, 0, 0, 4, 4], [8, 9, 10, 12, 8, 10]),
+      seedExercise("Chest Fly, Leverage Machine", "가슴", 90, 3, [40, 45, 45, 50, 50, 50], [12, 10, 12, 10, 11, 12]),
+      seedExercise("Lateral Raise, Dumbbell", "어깨", 90, 4, [10, 10, 10, 12, 12, 12], [15, 18, 20, 12, 14, 15]),
+      seedExercise(
+        "Triceps Pushdown, Cable",
+        "삼두",
+        90,
+        3,
+        [21.25, 21.25, 23.75, 23.75, 26.25, 26.25],
+        [12, 15, 12, 15, 12, 15]
+      ),
+      seedExercise(
+        "Triceps Extension, Cable",
+        "삼두",
+        90,
+        3,
+        [21.25, 21.25, 26.25, 26.25, 28.75, 28.75],
+        [12, 15, 12, 15, 12, 15]
+      ),
     ],
   },
   {
-    day_name: "금요일: 하체 근비대 (Leg Hypertrophy)",
+    day_name: "금요일: 하체 근비대",
     exercises: [
-      {
-        name: "Leg Press",
-        target_muscle: "대퇴사두근",
-        rest_seconds: 150,
-        sets: [{ type: "STRAIGHT", reps: 12, count: 4 }],
-      },
-      {
-        name: "Leg Extension",
-        target_muscle: "대퇴사두근",
-        rest_seconds: 90,
-        sets: [{ type: "STRAIGHT", reps: 15, count: 3 }],
-      },
-      {
-        name: "Leg Curl",
-        target_muscle: "햄스트링",
-        rest_seconds: 90,
-        sets: [{ type: "STRAIGHT", reps: 15, count: 3 }],
-      },
-      {
-        name: "Hip Thrust",
-        target_muscle: "둔근",
-        rest_seconds: 120,
-        sets: [{ type: "STRAIGHT", reps: 10, count: 3 }],
-      },
-      {
-        name: "Seated Calf Raise",
-        target_muscle: "종아리",
-        rest_seconds: 90,
-        sets: [{ type: "STRAIGHT", reps: 15, count: 3 }],
-      },
+      seedExercise(
+        "Hack Squat, Leverage Machine",
+        "대퇴사두근",
+        150,
+        4,
+        [80, 80, 90, 90, 100, 100],
+        [10, 12, 10, 12, 10, 12]
+      ),
+      seedExercise(
+        "Bulgarian Split Squat, Dumbbell",
+        "하체",
+        120,
+        3,
+        [12, 12, 16, 16, 20, 20],
+        [10, 12, 10, 12, 10, 12]
+      ),
+      seedExercise(
+        "Leg Extension, Leverage Machine",
+        "대퇴사두근",
+        90,
+        3,
+        [45, 45, 50, 50, 55, 55],
+        [12, 15, 12, 15, 12, 15]
+      ),
+      seedExercise(
+        "Seated Leg Curl, Leverage Machine",
+        "햄스트링",
+        90,
+        4,
+        [40, 40, 45, 45, 50, 50],
+        [12, 15, 12, 15, 12, 15]
+      ),
+      seedExercise(
+        "Seated Calf Raise, Leverage Machine",
+        "종아리",
+        60,
+        3,
+        [40, 40, 45, 45, 50, 50],
+        [15, 18, 15, 18, 15, 18]
+      ),
+      seedExercise("Hanging Leg Raise, Bodyweight", "복근", 60, 3, [0, 0, 0, 0, 0, 0], [15, 15, 18, 18, 20, 20]),
     ],
   },
 ];
@@ -1092,7 +1087,7 @@ export function AiWorkoutProgram_buildPhatSeedJson(): string {
   const program: IAIProgram = {
     program_name: "6주 완성 PHAT 변형 루틴 (평일 5일)",
     description:
-      "PHAT의 파워/근비대 5일 분할을 바탕으로 만든 6주 평일 변형 예시입니다. 원 PHAT은 고정된 6주 계획이나 4주차 회복 주간을 규정하지 않으므로 주차별 반복 목표와 4주차 회복 계획은 이 프리셋의 가이드입니다. 파워 TOP은 3–5회 이중 진행을 참고해 모든 세트에서 5회를 좋은 자세로 달성한 뒤 가능한 최소 중량을 올리고 반복 목표를 낮추세요. BACKOFF와 근비대 운동은 목표 반복을 달성하지 못하면 중량을 유지하고, 모든 세트에서 범위 상단을 달성한 뒤 최소 단위로 올리세요. 4주차는 각 그룹의 세트 수를 절반(올림)으로, 반복 목표를 80%로 낮춘 회복 주간입니다. 개인별 중량 정보가 없어 목표 중량은 0으로 두었으니 본인 기록에 맞게 입력하세요.",
+      "사용자가 제공한 상·하체 파워(TOP/BACKOFF)와 3분할 근비대(STRAIGHT) 6주 30세션 예시입니다. 주차별 중량·반복·세트·휴식 시간을 원안대로 포함합니다. 개인 권장 중량이 아니므로 시작 전 본인 기록과 사용 기구에 맞게 조정하세요. 맨몸 종목의 0kg은 추가 중량 없음을 뜻합니다. 앱은 이 계획을 자동 증량하거나 4주차 회복 주간으로 변경하지 않습니다.",
     duration_weeks: 6,
     days_per_week: 5,
     weight_unit: "kg",
@@ -1105,28 +1100,17 @@ export function AiWorkoutProgram_buildPhatSeedJson(): string {
         target_muscle: exercise.target_muscle,
         rest_seconds: exercise.rest_seconds,
         weekly_progression: Array.from({ length: 6 }, (_, weekIndex) => {
-          const week = weekIndex + 1;
-          const isRecoveryWeek = week === 4;
-          const progressionLevel = week <= 3 ? week - 1 : week - 3;
           let setNo = 0;
           return {
-            week,
-            sets: exercise.sets.flatMap((group) => {
-              const setCount = isRecoveryWeek ? Math.max(1, Math.ceil(group.count / 2)) : group.count;
-              const maxReps = group.type === "TOP" ? 5 : group.type === "BACKOFF" ? 10 : 20;
-              const targetReps = isRecoveryWeek
-                ? Math.max(1, Math.round(group.reps * 0.8))
-                : Math.min(maxReps, group.reps + progressionLevel);
-              return Array.from({ length: setCount }, () => {
-                setNo += 1;
-                return {
-                  set_no: setNo,
-                  type: group.type,
-                  target_weight: 0,
-                  target_reps: targetReps,
-                };
-              });
-            }),
+            week: weekIndex + 1,
+            sets: exercise.sets.flatMap((group) =>
+              Array.from({ length: group.count }, () => ({
+                set_no: ++setNo,
+                type: group.type,
+                target_weight: group.weights[weekIndex],
+                target_reps: group.reps[weekIndex],
+              }))
+            ),
           };
         }),
       })),

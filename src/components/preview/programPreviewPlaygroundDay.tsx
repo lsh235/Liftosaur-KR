@@ -107,7 +107,7 @@ export const ProgramPreviewPlaygroundDay = memo((props: IProgramPreviewPlaygroun
             data-testid="finish-day-details-playground"
             testID="finish-day-details-playground"
           >
-            Finish this day
+            오늘 운동 완료
           </Button>
         </View>
       )}

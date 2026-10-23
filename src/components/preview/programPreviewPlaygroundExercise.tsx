@@ -6,6 +6,7 @@ import { SimpleMarkdown } from "../simpleMarkdown";
 import {
   equipmentName,
   Exercise_get,
+  Exercise_equipmentNameForDisplay,
   Exercise_getNotes,
   Exercise_nameWithEquipment,
   Exercise_fullName,
@@ -25,7 +26,6 @@ import { PlannerProgramExercise_currentDescription } from "../../pages/planner/m
 import { WorkoutExerciseAllSets } from "../workoutExerciseAllSets";
 import { WorkoutExerciseUtils_getBgColor50 } from "../../utils/workoutExerciseUtils";
 import { Tailwind_semantic } from "../../utils/tailwindConfig";
-import { Equipment_getEquipmentNameForExerciseType } from "../../models/equipment";
 import { GroupHeader } from "../groupHeader";
 import { Progress_getNextSupersetEntry } from "../../models/progress";
 
@@ -164,7 +164,7 @@ function ProgramPreviewPlayground(props: IProgramPreviewPlaygroundProps): JSX.El
   const programExercise = props.programExercise;
   const dayData = Program_getDayData(props.program, props.dayIndex);
   const description = PlannerProgramExercise_currentDescription(programExercise);
-  const currentEquipmentName = Equipment_getEquipmentNameForExerciseType(props.settings, exercise);
+  const currentEquipmentName = Exercise_equipmentNameForDisplay(exercise, props.settings);
   const exerciseNotes = Exercise_getNotes(props.entry.exercise, props.settings);
   const supersetEntry = Progress_getNextSupersetEntry(props.progress.entries, props.entry);
   const supersetExercise = supersetEntry ? Exercise_get(supersetEntry.exercise, props.settings.exercises) : undefined;
@@ -195,11 +195,11 @@ function ProgramPreviewPlayground(props: IProgramPreviewPlaygroundProps): JSX.El
               <Text className="flex-1 mr-1 font-bold">{Exercise_nameWithEquipment(exercise, props.settings)}</Text>
             </View>
             <Text data-testid="exercise-equipment" testID="exercise-equipment" className="text-xs text-text-secondary">
-              Equipment: <Text className="text-xs font-bold text-text-secondary">{currentEquipmentName || "None"}</Text>
+              기구: <Text className="text-xs font-bold text-text-secondary">{currentEquipmentName || "미지정"}</Text>
             </Text>
             {supersetExercise && (
               <Text data-testid="exercise-superset" testID="exercise-superset" className="text-xs text-text-secondary">
-                Supersets with:{" "}
+                슈퍼세트:{" "}
                 <Text className="text-xs font-bold text-text-secondary">
                   {Exercise_fullName(supersetExercise, props.settings)}
                 </Text>
@@ -209,13 +209,13 @@ function ProgramPreviewPlayground(props: IProgramPreviewPlaygroundProps): JSX.El
         </View>
         {exerciseNotes && (
           <View className="mt-1">
-            {exerciseNotes && description && <GroupHeader name="Exercise Notes" />}
+            {exerciseNotes && description && <GroupHeader name="운동 메모" />}
             <SimpleMarkdown value={exerciseNotes} className="text-sm" />
           </View>
         )}
         {description && (
           <View className="mt-1">
-            {exerciseNotes && description && <GroupHeader name="Program Exercise Description" />}
+            {exerciseNotes && description && <GroupHeader name="프로그램 운동 설명" />}
             <SimpleMarkdown value={description} className="text-sm" />
           </View>
         )}

@@ -1,5 +1,5 @@
 import {
-  Exercise_fullName,
+  Exercise_nameWithEquipment,
   Exercise_get,
   Exercise_synergistMuscles,
   Exercise_targetMuscles,
@@ -7,7 +7,7 @@ import {
 } from "../models/exercise";
 import { IHistoryEntry, IHistoryRecord, IProgram, ISet, IScreenMuscle, ISettings, IWeight } from "../types";
 import { DateUtils_firstDayOfWeekTimestamp, DateUtils_formatYYYYMMDD } from "./date";
-import { Weight_build, Weight_convertTo } from "../models/weight";
+import { Weight_build, Weight_convertTo, Weight_is } from "../models/weight";
 import { Reps_avgUnilateralCompletedReps } from "../models/set";
 import { ProgramSchedule_getDueSessionCount, ProgramSchedule_sessionCount } from "../models/programSchedule";
 import { History_totalEntryWeight } from "../models/history";
@@ -27,6 +27,16 @@ interface ISessionVolume {
 
 function numberText(value: number): string {
   return Number(value.toFixed(1)).toString();
+}
+
+function weightValueText(value: number): string {
+  return Number(value.toFixed(3)).toString();
+}
+
+function plannedWeight(set: ISet): IWeight | undefined {
+  // The workout engine may round the load to the user's available equipment.
+  // Retain the imported target for AI comparison instead of silently rewriting it.
+  return Weight_is(set.originalWeight) ? set.originalWeight : set.weight;
 }
 
 const markdownInlinePunctuation = new Set(Array.from("\\`*_{}[]<>#+-.!|~()"));
@@ -50,7 +60,7 @@ function weightText(weight: IWeight | undefined, settings: ISettings): string {
     return "중량 미기록";
   }
   const converted = Weight_convertTo(weight, settings.units);
-  return numberText(converted.value) + converted.unit;
+  return weightValueText(converted.value) + converted.unit;
 }
 
 function loggedSets(entry: IHistoryEntry, settings: ISettings): ILoggedSet[] {
@@ -72,7 +82,7 @@ function loggedSets(entry: IHistoryEntry, settings: ISettings): ILoggedSet[] {
 }
 
 function exerciseName(entry: IHistoryEntry, settings: ISettings): string {
-  return Exercise_fullName(Exercise_get(entry.exercise, settings.exercises), settings);
+  return Exercise_nameWithEquipment(Exercise_get(entry.exercise, settings.exercises), settings);
 }
 
 function bestSet(sets: ILoggedSet[]): ILoggedSet | undefined {
@@ -88,7 +98,8 @@ function statusForSet(set: ISet, settings: ISettings): string {
   );
   const targetReps = set.reps;
   const actualWeight = set.completedWeight ? Weight_convertTo(set.completedWeight, settings.units).value : undefined;
-  const targetWeight = set.weight ? Weight_convertTo(set.weight, settings.units).value : undefined;
+  const originalTarget = plannedWeight(set);
+  const targetWeight = originalTarget ? Weight_convertTo(originalTarget, settings.units).value : undefined;
   if (actualReps.length === 0 && actualWeight == null) {
     return "미기록";
   }
@@ -122,9 +133,16 @@ function statusForSet(set: ISet, settings: ISettings): string {
 }
 
 function targetText(set: ISet, settings: ISettings): string {
-  const weight = set.weight ? weightText(set.weight, settings) : set.askWeight ? "중량 입력" : "중량 미지정";
+  const originalTarget = plannedWeight(set);
+  const weight = originalTarget ? weightText(originalTarget, settings) : set.askWeight ? "중량 입력" : "중량 미지정";
   const reps = set.reps == null ? "반복 미지정" : set.reps + "회";
-  return weight + " × " + reps;
+  const adjusted =
+    originalTarget &&
+    set.weight &&
+    Weight_convertTo(originalTarget, settings.units).value !== Weight_convertTo(set.weight, settings.units).value
+      ? " (기구 조정 " + weightText(set.weight, settings) + ")"
+      : "";
+  return weight + " × " + reps + adjusted;
 }
 
 function actualText(set: ISet, settings: ISettings): string {
@@ -334,7 +352,7 @@ function progressionSummary(records: IHistoryRecord[], settings: ISettings): str
         " | " +
         firstLabel +
         " " +
-        numberText(first.weight.value) +
+        weightValueText(first.weight.value) +
         settings.units +
         " × " +
         first.reps +
@@ -345,7 +363,7 @@ function progressionSummary(records: IHistoryRecord[], settings: ISettings): str
         " | " +
         lastLabel +
         " " +
-        numberText(last.weight.value) +
+        weightValueText(last.weight.value) +
         settings.units +
         " × " +
         last.reps +
@@ -505,7 +523,7 @@ export function AiFeedbackExport_buildMarkdown(
       const volumeText =
         volume.weight == null
           ? "실제 중량 미기록"
-          : numberText(Weight_convertTo(volume.weight, settings.units).value) + settings.units;
+          : weightValueText(Weight_convertTo(volume.weight, settings.units).value) + settings.units;
       const missingWeightNote =
         volume.missingWeightSets > 0 ? " (중량 미기록 " + volume.missingWeightSets + "세트 제외)" : "";
       lines.push(

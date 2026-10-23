@@ -3,6 +3,7 @@ import { View, Pressable } from "react-native";
 import { Text } from "../primitives/text";
 import {
   Exercise_get,
+  Exercise_equipmentNameForDisplay,
   Exercise_getNotes,
   Exercise_onerm,
   Exercise_nameWithEquipment,
@@ -26,10 +27,7 @@ import { Thunk_pushExerciseStatsScreen } from "../../ducks/thunks";
 import { ProgramExercise_doesUse1RM } from "../../models/programExercise";
 import { Weight_print } from "../../models/weight";
 import { LinkButton } from "../linkButton";
-import {
-  Equipment_getEquipmentNameForExerciseType,
-  Equipment_getEquipmentDataForExerciseType,
-} from "../../models/equipment";
+import { Equipment_getEquipmentDataForExerciseType } from "../../models/equipment";
 import { IconArrowRight } from "../icons/iconArrowRight";
 import { GroupHeader } from "../groupHeader";
 import { Progress_getNextSupersetEntry } from "../../models/progress";
@@ -59,7 +57,7 @@ export const ProgramPreviewTabExercise = memo(function ProgramPreviewTabExercise
   const programExercise = props.programExercise;
   const description = useMemo(() => PlannerProgramExercise_currentDescription(programExercise), [programExercise]);
   const currentEquipmentName = useMemo(
-    () => Equipment_getEquipmentNameForExerciseType(props.settings, exercise),
+    () => Exercise_equipmentNameForDisplay(exercise, props.settings),
     [props.settings, exercise]
   );
   const currentEquipmentNotes = useMemo(
@@ -86,7 +84,7 @@ export const ProgramPreviewTabExercise = memo(function ProgramPreviewTabExercise
       data-testid={StringUtils_dashcase(exercise.name)}
       testID={StringUtils_dashcase(exercise.name)}
     >
-      <View className="flex-row items-center gap-2">
+      <View className="flex-row items-start gap-2">
         <ProgramPreviewTabExerciseTopBar
           plannerDispatch={props.plannerDispatch}
           index={props.index}
@@ -104,13 +102,13 @@ export const ProgramPreviewTabExercise = memo(function ProgramPreviewTabExercise
             <ExerciseImage settings={props.settings} className="w-full" exerciseType={exercise} size="small" />
           </Pressable>
         </View>
-        <View className="flex-1 ml-auto" style={{ minWidth: 64 }}>
+        <View className="flex-1 min-w-0">
           <View>
             <Pressable
               className="flex-row items-center"
               onPress={() => props.dispatch(Thunk_pushExerciseStatsScreen(props.entry.exercise))}
             >
-              <Text className="pr-1 text-sm font-bold text-left">
+              <Text className="flex-1 min-w-0 pr-1 text-sm font-bold text-left">
                 {Exercise_nameWithEquipment(exercise, props.settings)}
               </Text>
               <IconArrowRight width={5} height={10} />
@@ -121,7 +119,7 @@ export const ProgramPreviewTabExercise = memo(function ProgramPreviewTabExercise
             testID="exercise-equipment"
             className="flex-row flex-wrap items-center"
           >
-            <Text className="text-xs text-text-secondary">Equipment: </Text>
+            <Text className="text-xs text-text-secondary">기구: </Text>
             <LinkButton
               name="exercise-equipment-picker"
               data-testid="exercise-equipment-picker"
@@ -138,7 +136,7 @@ export const ProgramPreviewTabExercise = memo(function ProgramPreviewTabExercise
                 navigateToModal("equipmentModal", { context: "preview", programId: props.programId });
               }}
             >
-              {currentEquipmentName || "None"}
+              {currentEquipmentName || "미지정"}
             </LinkButton>
           </View>
           {!!currentEquipmentNotes && (
@@ -172,7 +170,7 @@ export const ProgramPreviewTabExercise = memo(function ProgramPreviewTabExercise
           {supersetExercise && (
             <View data-testid="exercise-superset" testID="exercise-superset">
               <Text className="text-xs text-text-secondary">
-                Supersets with:{" "}
+                슈퍼세트:{" "}
                 <Text className="text-xs font-bold text-text-secondary">
                   {Exercise_fullName(supersetExercise, props.settings)}
                 </Text>
@@ -180,19 +178,19 @@ export const ProgramPreviewTabExercise = memo(function ProgramPreviewTabExercise
             </View>
           )}
         </View>
-        <View className="mt-1 ml-1">
-          <HistoryRecordSetsView sets={props.entry.sets} units={props.settings.units} isNext={true} />
-        </View>
+      </View>
+      <View className="mt-2">
+        <HistoryRecordSetsView sets={props.entry.sets} units={props.settings.units} isNext={true} />
       </View>
       {!!exerciseNotes && (
         <View className="mt-1">
-          {!!exerciseNotes && !!description && <GroupHeader name="Exercise Notes" />}
+          {!!exerciseNotes && !!description && <GroupHeader name="운동 메모" />}
           <Markdown className="text-sm" value={exerciseNotes} />
         </View>
       )}
       {!!description && (
         <View className="mt-1">
-          {!!exerciseNotes && !!description && <GroupHeader name="Program Exercise Description" />}
+          {!!exerciseNotes && !!description && <GroupHeader name="프로그램 운동 설명" />}
           <Markdown className="text-sm" value={description} />
         </View>
       )}

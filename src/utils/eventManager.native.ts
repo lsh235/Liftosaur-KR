@@ -1,4 +1,5 @@
 import { AppState, AppStateStatus } from "react-native";
+import { Distribution_isLocalOnly } from "./distribution";
 import { createMMKV } from "react-native-mmkv";
 import NativeLiftosaurEventReporter from "../specs/NativeLiftosaurEventReporter";
 
@@ -98,6 +99,7 @@ function handleFailedEvents(events: IStoredEvent[]): void {
 }
 
 async function postBatch(events: IStoredEvent[]): Promise<{ success: boolean; acknowledged?: string[] }> {
+  if (Distribution_isLocalOnly()) return { success: false };
   if (events.length === 0) {
     return { success: true, acknowledged: [] };
   }
@@ -229,6 +231,7 @@ function handleAppStateChange(next: AppStateStatus): void {
 }
 
 function initIfNeeded(): void {
+  if (Distribution_isLocalOnly()) return;
   if (initialized) {
     return;
   }
@@ -245,10 +248,11 @@ function initIfNeeded(): void {
 initIfNeeded();
 
 export function EventManager_isAvailable(): boolean {
-  return true;
+  return !Distribution_isLocalOnly();
 }
 
 export function EventManager_log(data: string): void {
+  if (Distribution_isLocalOnly()) return;
   if (!data || data.length === 0 || data.length >= MAX_EVENT_SIZE) {
     return;
   }
@@ -264,6 +268,7 @@ export function EventManager_log(data: string): void {
 }
 
 export function EventManager_flush(): Promise<void> {
+  if (Distribution_isLocalOnly()) return Promise.resolve();
   return flushInternal();
 }
 
@@ -274,6 +279,7 @@ export type IEventManagerTelemetryHandler = (event: {
 }) => void;
 
 export function EventManager_initTelemetry(handler: IEventManagerTelemetryHandler): void {
+  if (Distribution_isLocalOnly()) return;
   if (telemetryInitialized) {
     return;
   }

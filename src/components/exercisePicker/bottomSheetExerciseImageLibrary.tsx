@@ -9,6 +9,7 @@ import {
   Exercise_allExpanded,
   Exercise_find,
   Exercise_fullName,
+  Exercise_nameWithEquipment,
   Exercise_toKey,
 } from "../../models/exercise";
 import { MenuItemWrapper } from "../menuItem";
@@ -19,6 +20,7 @@ import { StringUtils_fuzzySearch } from "../../utils/string";
 import { Service } from "../../api/service";
 import { GroupHeader } from "../groupHeader";
 import { IconSpinner } from "../icons/iconSpinner";
+import { LinkButton } from "../linkButton";
 import { UidFactory_generateUid } from "../../utils/generator";
 import { ExerciseImageUtils_url } from "../../models/exerciseImage";
 import { BottomSheetOrModal } from "../bottomSheetOrModal";
@@ -43,15 +45,37 @@ export function ExerciseImageLibraryContent(props: IExerciseImageLibraryContentP
   const [isLoading, setIsLoading] = useState<boolean>(props.isLoggedIn);
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [search, setSearch] = useState<string>("");
+  const [hasUploadError, setHasUploadError] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
+    let active = true;
+    setUploadedImages([]);
+    setHasUploadError(false);
+    setIsLoading(props.isLoggedIn);
     if (props.isLoggedIn) {
-      props.service.getUploadedImages().then((imgs) => {
-        setUploadedImages(imgs);
-        setIsLoading(false);
-      });
+      props.service
+        .getUploadedImages()
+        .then((imgs) => {
+          if (active) {
+            setUploadedImages(imgs);
+          }
+        })
+        .catch(() => {
+          if (active) {
+            setHasUploadError(true);
+          }
+        })
+        .finally(() => {
+          if (active) {
+            setIsLoading(false);
+          }
+        });
     }
-  }, []);
+    return () => {
+      active = false;
+    };
+  }, [props.isLoggedIn, props.service, retryCount]);
 
   const trimmedSearch = search.trim().toLowerCase();
   const exercises = useMemo(
@@ -59,9 +83,12 @@ export function ExerciseImageLibraryContent(props: IExerciseImageLibraryContentP
       !trimmedSearch
         ? Exercise_allExpanded({})
         : Exercise_allExpanded({}).filter((e) => {
-            return StringUtils_fuzzySearch(trimmedSearch, e.name.toLowerCase());
+            return StringUtils_fuzzySearch(
+              trimmedSearch,
+              `${Exercise_nameWithEquipment(e, props.settings)} ${Exercise_fullName(e, props.settings)}`.toLowerCase()
+            );
           }),
-    [trimmedSearch]
+    [trimmedSearch, props.settings]
   );
 
   const filteredUploadedImages = !trimmedSearch
@@ -87,11 +114,11 @@ export function ExerciseImageLibraryContent(props: IExerciseImageLibraryContentP
           props.onSelect(smallImageUrl, largeImageUrl);
         }}
       >
-        <View className="flex-row items-center h-scaled-16 gap-4">
+        <View className="flex-row items-center min-h-scaled-16 py-2 gap-4">
           <View className="w-scaled-10">
             <ExerciseImage settings={props.settings} exerciseType={exercise} size="small" className="w-full" />
           </View>
-          <Text className="flex-1">{Exercise_fullName(exercise, props.settings)}</Text>
+          <Text className="flex-1 min-w-0">{Exercise_nameWithEquipment(exercise, props.settings)}</Text>
         </View>
       </MenuItemWrapper>
     ),
@@ -100,6 +127,16 @@ export function ExerciseImageLibraryContent(props: IExerciseImageLibraryContentP
 
   const ListHeader = (
     <>
+      {hasUploadError && (
+        <View className="py-3 gap-2" testID="uploaded-images-error">
+          <Text className="text-sm text-text-secondary">
+            업로드한 이미지를 불러오지 못했습니다. 기본 운동 이미지를 선택하거나 다시 시도하세요.
+          </Text>
+          <LinkButton name="retry-uploaded-images" onClick={() => setRetryCount((count) => count + 1)}>
+            다시 시도
+          </LinkButton>
+        </View>
+      )}
       {(isLoading || filteredUploadedImages.length > 0) && (
         <>
           <GroupHeader name="업로드한 이미지" />
@@ -121,21 +158,23 @@ export function ExerciseImageLibraryContent(props: IExerciseImageLibraryContentP
                     props.onSelect(img);
                   }}
                 >
-                  <View className="flex-row items-center h-scaled-16 gap-4">
+                  <View className="flex-row items-center min-h-scaled-16 py-2 gap-4">
                     <View className="w-scaled-10">
                       <Image source={{ uri: img }} className="w-scaled-10 h-scaled-10" resizeMode="contain" />
                     </View>
                     {customExercise && (
-                      <Text className="flex-1">{Exercise_fullName(customExercise, props.settings)}</Text>
+                      <Text className="flex-1 min-w-0">
+                        {Exercise_nameWithEquipment(customExercise, props.settings)}
+                      </Text>
                     )}
                   </View>
                 </MenuItemWrapper>
               );
             })
           )}
-          <GroupHeader name="Built-in Images" topPadding={true} />
         </>
       )}
+      <GroupHeader name="기본 운동 이미지" topPadding={true} />
     </>
   );
 
@@ -146,7 +185,7 @@ export function ExerciseImageLibraryContent(props: IExerciseImageLibraryContentP
         <View className="flex-row items-center gap-2 p-2 rounded-lg bg-background-neutral">
           <IconMagnifyingGlass size={18} color={Tailwind_colors().lightgray[600]} />
           <TextInput
-            placeholder="Search by name"
+            placeholder="운동 이름으로 검색"
             placeholderTextColor={Tailwind_semantic().text.secondarysubtle}
             className="flex-1 text-sm text-text-secondary"
             style={{ paddingVertical: 0, includeFontPadding: false }}
@@ -166,6 +205,9 @@ export function ExerciseImageLibraryContent(props: IExerciseImageLibraryContentP
       keyExtractor={keyExtractor}
       renderItem={renderBuiltinItem}
       ListHeaderComponent={ListHeader}
+      ListEmptyComponent={
+        <Text className="py-4 text-sm text-center text-text-secondary">검색한 운동 이미지가 없습니다</Text>
+      }
       contentContainerStyle={{ paddingHorizontal: 16 }}
       keyboardShouldPersistTaps="handled"
     />

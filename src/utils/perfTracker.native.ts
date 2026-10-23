@@ -2,6 +2,7 @@ import { Platform } from "react-native";
 import { PerfTrackerStore_create, PerfTrackerStore_generateSessionId } from "./perfTrackerStore";
 import type { IPerfEvent, IPerfFrameWindow, IPerfRecentAction } from "./perfTracker";
 import { PerfEnabled_tier2 } from "./perfEnabled";
+import { Distribution_isLocalOnly } from "./distribution";
 
 export type { IPerfEvent, IPerfFrameWindow, IPerfRecentAction };
 
@@ -29,6 +30,10 @@ function scheduleFlush(): void {
 }
 
 async function flushNow(): Promise<void> {
+  if (Distribution_isLocalOnly()) {
+    store.drainPending();
+    return;
+  }
   const batch = store.drainPending();
   if (batch.length === 0) {
     return;
@@ -71,7 +76,7 @@ export function PerfTracker_mark(_name: string, _screen?: string): void {
 }
 
 export function PerfTracker_recordEvent(event: IPerfEvent): void {
-  if (!PerfEnabled_tier2()) {
+  if (Distribution_isLocalOnly() || !PerfEnabled_tier2()) {
     return;
   }
   ensureSessionStart();
@@ -92,7 +97,7 @@ export function PerfTracker_getSessionId(): string {
 }
 
 export function PerfTracker_flush(): Promise<void> {
-  if (!PerfEnabled_tier2()) {
+  if (Distribution_isLocalOnly() || !PerfEnabled_tier2()) {
     return Promise.resolve();
   }
   if (flushTimer != null) {

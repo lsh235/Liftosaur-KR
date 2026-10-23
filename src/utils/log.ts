@@ -4,6 +4,7 @@ import { UrlUtils_build } from "./url";
 import { IAffiliateData } from "../types";
 import { IEventPayload } from "../api/service";
 import { EventManager_isAvailable, EventManager_log } from "./eventManager";
+import { Distribution_isLocalOnly } from "./distribution";
 
 declare let Rollbar: RB;
 declare let __API_HOST__: string;
@@ -18,6 +19,11 @@ export function LogUtils_log(
   landingPage?: string,
   detail?: string
 ): void {
+  // The native KR profile is local-only. EventManager deliberately reports
+  // unavailable there so it drops events; avoid falling through to legacy fetch.
+  if (Distribution_isLocalOnly()) {
+    return;
+  }
   const platform = {
     name: Platform.OS,
     version: "RN",

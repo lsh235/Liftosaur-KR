@@ -1,5 +1,6 @@
 import type { LiftosaurPushEvent, LiftosaurPushTokenEvent } from "../specs/NativeLiftosaurPush";
 import { Service } from "../api/service";
+import { Distribution_isLocalOnly } from "./distribution";
 import { lg } from "./posthog";
 import { PushMessage_parse } from "./pushMessage";
 import {
@@ -39,6 +40,7 @@ export class PushSyncClient implements IPushSync {
     getLocalOriginalId: () => number | undefined;
     onSync: (done: () => void) => void;
   }): () => void {
+    if (Distribution_isLocalOnly()) return () => undefined;
     this.getLocalOriginalId = args.getLocalOriginalId;
     this.onSync = args.onSync;
     const tokenSubscription = this.native.onToken((event) => {
@@ -67,10 +69,12 @@ export class PushSyncClient implements IPushSync {
   }
 
   public setIdentity(identity: IPushIdentity | undefined): void {
+    if (Distribution_isLocalOnly()) return;
     this.apply({ type: "identity", identity });
   }
 
   public async unregisterBeforeSignout(): Promise<void> {
+    if (Distribution_isLocalOnly()) return;
     this.apply({ type: "signout" });
     await this.requests;
   }

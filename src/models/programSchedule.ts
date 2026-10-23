@@ -18,10 +18,18 @@ export function ProgramSchedule_isValid(schedule: IProgramSchedule): boolean {
     schedule.weekdays.length > 0 &&
     schedule.weekdays.every((day) => Number.isInteger(day) && day >= 1 && day <= 7) &&
     new Set(schedule.weekdays).size === schedule.weekdays.length &&
-    Number.isInteger(schedule.completedSessions) &&
+    Number.isSafeInteger(schedule.completedSessions) &&
     schedule.completedSessions >= 0 &&
-    Number.isInteger(schedule.shiftCount) &&
+    Number.isSafeInteger(schedule.shiftCount) &&
     schedule.shiftCount >= 0 &&
+    (schedule.completedSessionDates == null ||
+      Object.entries(schedule.completedSessionDates).every(
+        ([index, date]) =>
+          /^(0|[1-9]\d*)$/.test(index) &&
+          Number.isSafeInteger(Number(index)) &&
+          Number(index) < schedule.completedSessions &&
+          isValidDateString(date)
+      )) &&
     reminderTimeIsValid
   );
 }
@@ -37,17 +45,25 @@ export function ProgramSchedule_sessionCount(program: IProgram): number {
 }
 
 function workoutDateAtSlot(schedule: IProgramSchedule, slotIndex: number): string | undefined {
-  if (!ProgramSchedule_isValid(schedule) || !Number.isInteger(slotIndex) || slotIndex < 0) {
+  if (!ProgramSchedule_isValid(schedule) || !Number.isSafeInteger(slotIndex) || slotIndex < 0) {
     return undefined;
   }
   const weekdays = new Set(schedule.weekdays);
   const start = new Date(schedule.startDate + "T00:00:00Z");
+  // Every seven-day window contains exactly weekdays.size available slots. Jump
+  // whole weeks first so malformed restored shift counts cannot cause a long loop.
+  const wholeWeeks = Math.floor(slotIndex / weekdays.size);
+  const remainingSlot = slotIndex % weekdays.size;
   let slot = 0;
-  for (let dayOffset = 0; dayOffset < (slotIndex + 1) * 7; dayOffset += 1) {
+  for (let offset = 0; offset < 7; offset += 1) {
+    const dayOffset = wholeWeeks * 7 + offset;
     const date = new Date(start.getTime() + dayOffset * 24 * 60 * 60 * 1000);
+    if (isNaN(date.getTime()) || date.getUTCFullYear() > 9999) {
+      return undefined;
+    }
     const isoWeekday = ((date.getUTCDay() + 6) % 7) + 1;
     if (weekdays.has(isoWeekday)) {
-      if (slot === slotIndex) {
+      if (slot === remainingSlot) {
         return date.toISOString().slice(0, 10);
       }
       slot += 1;
@@ -62,13 +78,17 @@ export function ProgramSchedule_getSessionDate(
   totalSessions: number
 ): string | undefined {
   if (
-    !Number.isInteger(sessionIndex) ||
+    !ProgramSchedule_isValid(schedule) ||
+    !Number.isSafeInteger(sessionIndex) ||
     sessionIndex < 0 ||
     sessionIndex >= totalSessions ||
-    !Number.isInteger(totalSessions) ||
+    !Number.isSafeInteger(totalSessions) ||
     totalSessions < 0
   ) {
     return undefined;
+  }
+  if (sessionIndex < schedule.completedSessions && schedule.completedSessionDates?.[sessionIndex]) {
+    return schedule.completedSessionDates[sessionIndex];
   }
   const skippedSlots = sessionIndex >= schedule.completedSessions ? schedule.shiftCount : 0;
   return workoutDateAtSlot(schedule, sessionIndex + skippedSlots);
@@ -94,9 +114,17 @@ export function ProgramSchedule_getDueSessionCount(
 }
 
 export function ProgramSchedule_completeSession(schedule: IProgramSchedule, totalSessions?: number): IProgramSchedule {
+  const sessionLimit = totalSessions ?? Number.MAX_SAFE_INTEGER;
+  const date = ProgramSchedule_getNextDate(schedule, sessionLimit);
+  if (date == null) {
+    return schedule;
+  }
+  // Legacy schedules did not retain shifted completion dates. Store only newly
+  // observed mappings, without inventing old dates or allocating from a saved count.
   return {
     ...schedule,
-    completedSessions: Math.min(schedule.completedSessions + 1, totalSessions ?? Number.MAX_SAFE_INTEGER),
+    completedSessions: schedule.completedSessions + 1,
+    completedSessionDates: { ...schedule.completedSessionDates, [schedule.completedSessions]: date },
   };
 }
 
@@ -128,7 +156,8 @@ export function ProgramSchedule_build(
   weekdays: number[],
   completedSessions: number = 0,
   shiftCount: number = 0,
-  reminderTime?: string
+  reminderTime?: string,
+  completedSessionDates?: Record<string, string>
 ): IProgramSchedule {
   return {
     startDate,
@@ -136,6 +165,7 @@ export function ProgramSchedule_build(
     completedSessions,
     shiftCount,
     reminderTime,
+    ...(completedSessionDates == null ? {} : { completedSessionDates: { ...completedSessionDates } }),
   };
 }
 

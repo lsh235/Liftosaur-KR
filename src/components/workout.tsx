@@ -468,7 +468,7 @@ function WorkoutHeaderInner(props: IWorkoutHeaderProps): JSX.Element {
             debounceMs={1000}
             maxLength={4095}
             name="workout-notes"
-            placeholder="Add workout notes here..."
+            placeholder="이번 운동에 대한 메모를 입력하세요"
             value={props.progress.notes}
             onChangeText={(text) => {
               Progress_editNotes(props.dispatch, props.progress.id, text);
@@ -850,6 +850,8 @@ function WorkoutThumbnailsStripInner(props: IWorkoutThumbnailsStripProps): JSX.E
             testID="add-exercise-button"
             data-testid="add-exercise-button"
             className="p-2"
+            accessibilityRole="button"
+            accessibilityLabel="운동 추가"
             onPress={onAddExercise}
           >
             <IconPlus2 size={15} color={Tailwind_colors().lightgray[600]} />

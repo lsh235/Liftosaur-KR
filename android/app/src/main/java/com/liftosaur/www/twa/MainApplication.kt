@@ -64,7 +64,9 @@ class MainApplication : Application(), ReactApplication {
     }
     prefs.edit().putBoolean("launchInProgress", true).apply()
     LastTerminationHolder.set(EventReporterTombstone.consumeAndArm(this))
-    RollbarReactNative.init(this, "f29180c0746c4922996ff41dfc2527d2", "android-rn")
+    if (!BuildConfig.LOCAL_ONLY) {
+      RollbarReactNative.init(this, "f29180c0746c4922996ff41dfc2527d2", "android-rn")
+    }
     loadReactNative(this)
   }
 

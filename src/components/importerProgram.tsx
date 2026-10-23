@@ -30,7 +30,7 @@ export function ImporterProgram(props: IImporterProgramProps): JSX.Element {
 
   const onImportPhatSample = useCallback(async () => {
     const ok = await FileImport_confirm(
-      "6주 PHAT 평일 5일 샘플을 추가합니다. 개인 중량은 포함되어 있지 않으니 운동을 시작하기 전에 본인에게 맞는 중량을 입력하세요."
+      "요청한 6주 PHAT 평일 5일 샘플을 추가합니다. 주차별 예시 목표 중량이 포함되어 있으니 운동을 시작하기 전에 본인 기록과 사용 기구에 맞게 조정하세요."
     );
     if (ok) {
       props.dispatch(Thunk_importProgram({ decoded: AiWorkoutProgram_buildPhatSeedJson() }));
@@ -49,7 +49,7 @@ export function ImporterProgram(props: IImporterProgramProps): JSX.Element {
         <View className="py-3">
           <Text className="text-base text-text-primary">6주 PHAT 평일 5일 샘플 루틴 추가</Text>
           <Text className="pt-1 text-sm text-text-secondary">
-            개인 중량은 비워 두고 세트·반복·휴식을 미리 구성합니다.
+            6주 30세션의 예시 목표 중량·세트·반복·휴식을 포함합니다.
           </Text>
         </View>
       </MenuItemWrapper>

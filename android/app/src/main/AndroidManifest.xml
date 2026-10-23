@@ -15,8 +15,8 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
-    <uses-permission android:name="com.android.vending.BILLING" />
-    <uses-permission android:name="com.google.android.gms.permission.AD_ID" />
+    <uses-permission android:name="com.android.vending.BILLING" tools:node="remove" />
+    <uses-permission android:name="com.google.android.gms.permission.AD_ID" tools:node="remove" />
     <uses-permission android:name="android.permission.health.READ_WEIGHT" />
     <uses-permission android:name="android.permission.health.WRITE_WEIGHT" />
     <uses-permission android:name="android.permission.health.READ_BODY_FAT" />
@@ -48,7 +48,10 @@
       android:usesCleartextTraffic="${usesCleartextTraffic}"
       android:supportsRtl="true"
       tools:replace="android:allowBackup">
-      <meta-data android:name="com.appsflyer.FacebookApplicationId" android:value="3448767138535273" />
+      <!-- KR local distribution: never auto-register with the upstream Firebase project. -->
+      <meta-data android:name="firebase_messaging_auto_init_enabled" android:value="false" />
+      <meta-data android:name="firebase_analytics_collection_enabled" android:value="false" />
+      <meta-data android:name="firebase_crashlytics_collection_enabled" android:value="false" />
       <activity
         android:name=".MainActivity"
         android:label="@string/app_name"

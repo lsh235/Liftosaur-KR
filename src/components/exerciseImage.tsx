@@ -155,7 +155,7 @@ export const ExerciseImage = memo(function ExerciseImage(props: IProps): JSX.Ele
       </>
     ) : (
       <ExerciseNoImage size={props.size}>
-        <Text>No exercise image</Text>
+        <Text>등록된 운동 이미지가 없습니다</Text>
       </ExerciseNoImage>
     );
   }
@@ -169,7 +169,7 @@ function ExerciseImageAuxiliary(props: {
   if (props.isError) {
     return (
       <ExerciseNoImage size={props.size}>
-        <Text className="text-xs leading-normal text-center text-red-700">Error fetching the exercise image</Text>
+        <Text className="text-xs leading-normal text-center text-red-700">운동 이미지를 불러오지 못했습니다</Text>
       </ExerciseNoImage>
     );
   } else if (props.isLoading) {

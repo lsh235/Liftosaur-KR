@@ -1,4 +1,5 @@
 import { Platform } from "react-native";
+import { Distribution_isLocalOnly, Distribution_requireRemoteServices } from "./distribution";
 import {
   initConnection,
   endConnection,
@@ -115,14 +116,17 @@ export class IapAdapter implements IIapAdapter {
   }
 
   public async initConnection(): Promise<void> {
+    Distribution_requireRemoteServices();
     await initConnection();
   }
 
   public async endConnection(): Promise<void> {
+    if (Distribution_isLocalOnly()) return;
     await endConnection();
   }
 
   public async fetchSubscriptions(skus: string[]): Promise<IIapSubscriptionProduct[]> {
+    Distribution_requireRemoteServices();
     const result = (await fetchProducts({ skus, type: "subs" })) as ProductSubscription[] | null;
     (result ?? []).forEach((p) => this.cachePrice(p.id, p.price, p.currency));
     const mapped = (result ?? []).map(toIapSubscriptionProduct);
@@ -131,6 +135,7 @@ export class IapAdapter implements IIapAdapter {
   }
 
   public async fetchInAppProducts(skus: string[]): Promise<IIapInAppProduct[]> {
+    Distribution_requireRemoteServices();
     const result = (await fetchProducts({ skus, type: "in-app" })) as Product[] | null;
     (result ?? []).forEach((p) => {
       const currency = (p as { currency?: string | null }).currency ?? null;
@@ -140,6 +145,7 @@ export class IapAdapter implements IIapAdapter {
   }
 
   public async getProductPrice(productId: string): Promise<{ price?: number; currency?: string }> {
+    Distribution_requireRemoteServices();
     const cached = this.priceCache.get(productId);
     if (cached?.price != null) {
       return { price: cached.price, currency: cached.currency };
@@ -156,11 +162,13 @@ export class IapAdapter implements IIapAdapter {
   }
 
   public async getAvailablePurchases(): Promise<IIapPurchase[]> {
+    Distribution_requireRemoteServices();
     const result = await getAvailablePurchases();
     return (result ?? []).map((p) => toIapPurchase(p, this.priceCache));
   }
 
   public async getActiveSubscriptions(): Promise<IIapActiveSubscription[]> {
+    Distribution_requireRemoteServices();
     const result = await getActiveSubscriptions();
     return (result ?? []).map((s) => {
       const renewsAs = s.renewalInfoIOS?.autoRenewPreference ?? s.renewalInfoIOS?.pendingUpgradeProductId ?? undefined;
@@ -176,6 +184,7 @@ export class IapAdapter implements IIapAdapter {
   }
 
   public async requestSubscription(args: IIapRequestSubscriptionArgs): Promise<void> {
+    Distribution_requireRemoteServices();
     // A plan switch reuses the old purchase token. The switching user already consumed their intro,
     // so an intro/discount offer is ineligible and Play rejects it with DEVELOPER_ERROR — use the
     // base-plan offer for switches.
@@ -209,6 +218,7 @@ export class IapAdapter implements IIapAdapter {
   }
 
   public async openManageSubscriptions(): Promise<void> {
+    Distribution_requireRemoteServices();
     if (Platform.OS === "ios") {
       await showManageSubscriptionsIOS();
     } else {
@@ -217,6 +227,7 @@ export class IapAdapter implements IIapAdapter {
   }
 
   public async requestInAppProduct(args: { sku: string }): Promise<void> {
+    Distribution_requireRemoteServices();
     await requestPurchase({
       type: "in-app",
       request: {
@@ -227,6 +238,7 @@ export class IapAdapter implements IIapAdapter {
   }
 
   public async finishTransaction(purchase: IIapPurchase): Promise<void> {
+    Distribution_requireRemoteServices();
     await finishTransaction({
       // purchaseToken is required on Android - without it the purchase is never acknowledged,
       // and Google auto-refunds unacknowledged purchases after 3 days
@@ -241,6 +253,7 @@ export class IapAdapter implements IIapAdapter {
   }
 
   public async getReceiptDataIOS(): Promise<string | undefined> {
+    Distribution_requireRemoteServices();
     try {
       const r = await getReceiptDataIOS();
       return r || undefined;
@@ -250,6 +263,7 @@ export class IapAdapter implements IIapAdapter {
   }
 
   public async getReceiptIOS(): Promise<string | undefined> {
+    Distribution_requireRemoteServices();
     try {
       const r = await getReceiptIOS();
       return r || undefined;
@@ -259,6 +273,7 @@ export class IapAdapter implements IIapAdapter {
   }
 
   public async presentCodeRedemptionSheetIOS(): Promise<boolean> {
+    Distribution_requireRemoteServices();
     try {
       return await presentCodeRedemptionSheetIOS();
     } catch (e) {
@@ -268,6 +283,7 @@ export class IapAdapter implements IIapAdapter {
   }
 
   public onPurchaseUpdated(handler: (purchase: IIapPurchase) => void | Promise<void>): () => void {
+    if (Distribution_isLocalOnly()) return () => undefined;
     const handled = new Set<string>();
     const sub = purchaseUpdatedListener(async (p) => {
       const purchase = toIapPurchase(p, this.priceCache);
@@ -290,6 +306,7 @@ export class IapAdapter implements IIapAdapter {
   }
 
   public onPurchaseError(handler: (error: IIapPurchaseError) => void | Promise<void>): () => void {
+    if (Distribution_isLocalOnly()) return () => undefined;
     const sub = purchaseErrorListener((e: { code?: string; message?: string; productId?: string | null }) =>
       handler({
         code: e.code ?? "unknown",

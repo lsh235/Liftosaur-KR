@@ -93,12 +93,12 @@ function GraphStatsInner(props: IGraphStatsProps): JSX.Element {
   const series: ILineChartSeries[] = useMemo(() => {
     const label =
       props.statsKey === "weight"
-        ? "Weight"
+        ? "체중"
         : props.statsKey === "bodyfat"
-          ? "Percentage"
+          ? "체지방률"
           : props.statsKey === "sleep" || props.statsKey === "calories" || props.statsKey === "protein"
             ? Stats_name(props.statsKey)
-            : "Size";
+            : "둘레";
     const out: ILineChartSeries[] = [
       {
         label,
@@ -109,7 +109,7 @@ function GraphStatsInner(props: IGraphStatsProps): JSX.Element {
     ];
     if (movingAverageWindowSize != null) {
       out.push({
-        label: "Moving Average",
+        label: "이동 평균",
         show: true,
         color: Tailwind_colors().blue[500],
         width: 1.5,
@@ -156,7 +156,7 @@ function GraphStatsInner(props: IGraphStatsProps): JSX.Element {
                 {movingAvg != null && (
                   <Text className="text-sm text-text-secondary">
                     {" "}
-                    (Avg. {movingAvg} {props.units})
+                    (평균 {movingAvg} {props.units})
                   </Text>
                 )}
               </Text>

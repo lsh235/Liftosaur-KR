@@ -6,41 +6,41 @@ import { Weight_add, Weight_build, Weight_divide } from "./weight";
 export function Stats_name(key: IStatsKey | IStatsHealthKey): string {
   switch (key) {
     case "bicepLeft":
-      return "Left Bicep";
+      return "왼쪽 이두근";
     case "bicepRight":
-      return "Right Bicep";
+      return "오른쪽 이두근";
     case "calfLeft":
-      return "Left Calf";
+      return "왼쪽 종아리";
     case "calfRight":
-      return "Right Calf";
+      return "오른쪽 종아리";
     case "chest":
-      return "Chest";
+      return "가슴";
     case "forearmLeft":
-      return "Left Forearm";
+      return "왼쪽 전완근";
     case "forearmRight":
-      return "Right Forearm";
+      return "오른쪽 전완근";
     case "hips":
-      return "Hips";
+      return "엉덩이";
     case "neck":
-      return "Neck";
+      return "목";
     case "shoulders":
-      return "Shoulders";
+      return "어깨";
     case "thighLeft":
-      return "Left Thigh";
+      return "왼쪽 허벅지";
     case "thighRight":
-      return "Right Thigh";
+      return "오른쪽 허벅지";
     case "waist":
-      return "Waist";
+      return "허리";
     case "weight":
-      return "Bodyweight";
+      return "체중";
     case "bodyfat":
-      return "Bodyfat";
+      return "체지방률";
     case "sleep":
-      return "Sleep";
+      return "수면";
     case "calories":
-      return "Calories";
+      return "칼로리";
     case "protein":
-      return "Protein";
+      return "단백질";
   }
 }
 

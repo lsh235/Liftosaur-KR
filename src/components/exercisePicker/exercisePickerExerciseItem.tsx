@@ -4,6 +4,7 @@ import { View, Pressable } from "react-native";
 import { FastText } from "../primitives/fastText";
 import {
   IExercise,
+  Exercise_nameForDisplay,
   Exercise_toKey,
   Exercise_targetMuscles,
   Exercise_synergistMuscles,
@@ -46,6 +47,7 @@ export const ExercisePickerExerciseItem = memo(function ExercisePickerExerciseIt
   const { exercise: e } = props;
   const exerciseType = { id: e.id, equipment: e.equipment || e.defaultEquipment };
   const key = Exercise_toKey(e);
+  const displayName = Exercise_nameForDisplay(e);
   const isStarred = !!props.settings.starredExercises?.[key];
   const onEdit = props.onEdit;
   const onChoose = props.onChoose;
@@ -63,8 +65,8 @@ export const ExercisePickerExerciseItem = memo(function ExercisePickerExerciseIt
             exerciseType={exerciseType}
             accessibilityLabel={
               exerciseType.equipment
-                ? `${e.name}, ${ExercisePickerUtils_getEquipmentName(exerciseType.equipment)}`
-                : e.name
+                ? `${displayName}, ${ExercisePickerUtils_getEquipmentName(exerciseType.equipment)}`
+                : displayName
             }
             size="small"
           />
@@ -88,7 +90,7 @@ export const ExercisePickerExerciseItem = memo(function ExercisePickerExerciseIt
               />
             </View>
           )}
-          <ExerciseNameLine name={e.name} equipment={exerciseType.equipment} />
+          <ExerciseNameLine name={displayName} equipment={exerciseType.equipment} />
         </Pressable>
         <Pressable
           data-testid={`custom-exercise-${StringUtils_dashcase(e.name)}`}

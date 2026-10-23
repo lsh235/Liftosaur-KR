@@ -1,4 +1,5 @@
 import { Platform } from "react-native";
+import { Distribution_isLocalOnly } from "./distribution";
 import NativeLftUpdater from "../specs/NativeLftUpdater";
 
 interface IRollbarShim {
@@ -15,7 +16,7 @@ function logRollbarWarn(msg: string, extra?: unknown): void {
 // Populated by Ota_init(); a kick-off promise also fires at module load so
 // uncaught errors very early in the launch still get a best-effort label.
 let cachedActiveBundleId: string | null = null;
-NativeLftUpdater.activeBundleId()
+if (!Distribution_isLocalOnly()) NativeLftUpdater.activeBundleId()
   .then((id) => {
     cachedActiveBundleId = id;
   })
@@ -26,7 +27,7 @@ export function Ota_activeBundleIdSync(): string | null {
 }
 
 export async function Ota_init(): Promise<void> {
-  if (__DEV__) {
+  if (Distribution_isLocalOnly() || __DEV__) {
     return;
   }
 
@@ -47,9 +48,11 @@ export async function Ota_init(): Promise<void> {
 }
 
 export async function Ota_activeBundleId(): Promise<string | null> {
+  if (Distribution_isLocalOnly()) return null;
   return NativeLftUpdater.activeBundleId();
 }
 
 export async function Ota_revertToEmbedded(): Promise<void> {
+  if (Distribution_isLocalOnly()) return;
   return NativeLftUpdater.revertToEmbedded();
 }

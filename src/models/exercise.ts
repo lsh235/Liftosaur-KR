@@ -37,7 +37,11 @@ import {
 import { UidFactory_generateUid } from "../utils/generator";
 import { CollectionUtils_compact, CollectionUtils_sort, CollectionUtils_flat } from "../utils/collection";
 import { ExerciseImageUtils_exists } from "./exerciseImage";
-import { Equipment_getUnitOrDefaultForExerciseType, Equipment_currentEquipment } from "./equipment";
+import {
+  Equipment_getUnitOrDefaultForExerciseType,
+  Equipment_currentEquipment,
+  Equipment_getEquipmentIdForExerciseType,
+} from "./equipment";
 import { IDispatch } from "../ducks/types";
 import { Program_changeExerciseName } from "./program";
 import { EditProgram_updateProgram } from "./editProgram";
@@ -4194,7 +4198,10 @@ const equipmentNameTokens: Partial<Record<IEquipment, string[]>> = {
   trapbar: ["트랩바", "트랩 바", "trap bar", "trapbar"],
 };
 
-function localizedEquipmentName(equipment: IEquipment, equipmentSettings?: IAllEquipment): string {
+export function localizedEquipmentName(equipment: IEquipment | undefined, equipmentSettings?: IAllEquipment): string {
+  if (equipment == null) {
+    return "";
+  }
   const configuredName = equipmentSettings?.[equipment]?.name?.trim();
   const defaultName = equipmentName(equipment);
   if (configuredName && configuredName !== defaultName) {
@@ -4385,13 +4392,62 @@ export function Exercise_reverseName(exercise: IExercise, settings?: ISettings):
   }
 }
 
+// Display labels are separate from canonical names used by Liftoscript and imports.
+const koreanExerciseDisplayNames: Partial<Record<IExerciseId, string>> = {
+  benchPress: "벤치프레스",
+  bentOverRow: "벤트오버 로우",
+  overheadPress: "오버헤드 프레스",
+  latPulldown: "랫풀다운",
+  bicepCurl: "바이셉 컬",
+  skullcrusher: "스컬크러셔",
+  squat: "스쿼트",
+  romanianDeadlift: "루마니안 데드리프트",
+  legPress: "레그 프레스",
+  lyingLegCurl: "라잉 레그 컬",
+  standingCalfRaise: "스탠딩 카프 레이즈",
+  seatedRow: "시티드 로우",
+  reverseFly: "리버스 플라이",
+  inclineCurl: "인클라인 컬",
+  hammerCurl: "해머 컬",
+  inclineBenchPress: "인클라인 벤치프레스",
+  chestDip: "체스트 딥스",
+  chestFly: "체스트 플라이",
+  lateralRaise: "레터럴 레이즈",
+  tricepsPushdown: "트라이셉스 푸시다운",
+  tricepsExtension: "트라이셉스 익스텐션",
+  hackSquat: "핵 스쿼트",
+  bulgarianSplitSquat: "불가리안 스플릿 스쿼트",
+  legExtension: "레그 익스텐션",
+  seatedLegCurl: "시티드 레그 컬",
+  seatedCalfRaise: "시티드 카프 레이즈",
+  hangingLegRaise: "행잉 레그 레이즈",
+};
+
+export function Exercise_nameForDisplay(exercise: IExercise): string {
+  return allExercisesList[exercise.id]?.name === exercise.name
+    ? (koreanExerciseDisplayNames[exercise.id] ?? exercise.name)
+    : exercise.name;
+}
+
+export function Exercise_equipmentNameForDisplay(exercise: IExercise, settings: ISettings): string | undefined {
+  const equipment = Equipment_getEquipmentIdForExerciseType(settings, exercise);
+  const allEquipment = Equipment_currentEquipment(settings);
+  if (equipment == null || !allEquipment[equipment] || allEquipment[equipment]?.isDeleted) {
+    return undefined;
+  }
+  return localizedEquipmentName(equipment, allEquipment);
+}
+
 export function Exercise_nameWithEquipment(exercise: IExercise, settings?: ISettings): string {
+  const displayName = Exercise_nameForDisplay(exercise);
   if (exercise.equipment) {
-    const normalizedName = exercise.name.trim();
+    const normalizedName = displayName.trim();
     const equipmentTokens = equipmentNameTokens[exercise.equipment] ?? [];
     for (const token of equipmentTokens) {
       const escapedToken = token.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-      const withoutRepeatedSuffix = normalizedName.replace(new RegExp(`(?:,\\s*|\\s+)${escapedToken}\\s*$`, "i"), "").trim();
+      const withoutRepeatedSuffix = normalizedName
+        .replace(new RegExp(`(?:,\\s*|\\s+)${escapedToken}\\s*$`, "i"), "")
+        .trim();
       if (withoutRepeatedSuffix !== normalizedName && withoutRepeatedSuffix.length > 0) {
         return withoutRepeatedSuffix;
       }
@@ -4401,9 +4457,9 @@ export function Exercise_nameWithEquipment(exercise: IExercise, settings?: ISett
     }
     const allEquipment = settings ? Equipment_currentEquipment(settings) : {};
     const equipment = localizedEquipmentName(exercise.equipment, allEquipment);
-    return `${exercise.name}, ${equipment}`;
+    return `${displayName}, ${equipment}`;
   } else {
-    return exercise.name;
+    return displayName;
   }
 }
 
@@ -5297,8 +5353,9 @@ function scoreTokenAgainstWords(
 
 function tokenizeQuery(query: string): { normalized: string; tokens: string[] } | undefined {
   const tokens = query
+    .normalize("NFC")
     .toLowerCase()
-    .split(/[^a-z0-9]+/)
+    .split(/[^a-z0-9\u1100-\u11ff\u3130-\u318f\ua960-\ua97f\uac00-\ud7af\ud7b0-\ud7ff]+/)
     .filter((t) => t.length > 0);
   if (tokens.length === 0) {
     return undefined;
@@ -5343,6 +5400,36 @@ function scoreExerciseAgainstTokens(
   return totalScore;
 }
 
+const koreanExerciseSearchAliases: Record<string, string> = Object.fromEntries(
+  Object.entries(koreanExerciseDisplayNames).flatMap(([id, name]) => {
+    const canonicalName = allExercisesList[id]?.name;
+    return canonicalName && name ? [[canonicalName, name]] : [];
+  })
+);
+
+function scoreExerciseQuery(
+  exercise: { name: string; equipment?: IEquipment; defaultEquipment?: IEquipment },
+  parsed: { normalized: string; tokens: string[] }
+): number | undefined {
+  const name = exercise.name.toLowerCase();
+  const equipment = exercise.equipment ? equipmentName(exercise.equipment).toLowerCase() : "";
+  const isDefaultEquipment =
+    !!exercise.equipment && !!exercise.defaultEquipment && exercise.equipment === exercise.defaultEquipment;
+  const canonicalScore = scoreExerciseAgainstTokens(name, equipment, isDefaultEquipment, parsed.normalized, parsed.tokens);
+  const localizedName = koreanExerciseSearchAliases[exercise.name] ?? exercise.name;
+  const localizedEquipment = localizedEquipmentName(exercise.equipment);
+  // Search both labels so users can enter mixed Korean/English terms in either order.
+  // Returning the original exercise preserves selection keys and canonical program names.
+  const aliasScore = scoreExerciseAgainstTokens(
+    `${name} ${localizedName.toLowerCase()}`,
+    `${equipment} ${localizedEquipment.toLowerCase()}`.trim(),
+    isDefaultEquipment,
+    parsed.normalized,
+    parsed.tokens
+  );
+  return canonicalScore == null ? aliasScore : aliasScore == null ? canonicalScore : Math.max(canonicalScore, aliasScore);
+}
+
 export function Exercise_matchesQuery<T extends { name: string; equipment?: IEquipment }>(
   exercise: T,
   query: string
@@ -5351,9 +5438,7 @@ export function Exercise_matchesQuery<T extends { name: string; equipment?: IEqu
   if (!parsed) {
     return true;
   }
-  const name = exercise.name.toLowerCase();
-  const equipment = exercise.equipment ? equipmentName(exercise.equipment).toLowerCase() : "";
-  return scoreExerciseAgainstTokens(name, equipment, false, parsed.normalized, parsed.tokens) != null;
+  return scoreExerciseQuery(exercise, parsed) != null;
 }
 
 export function Exercise_filterAndRankByQuery<
@@ -5363,14 +5448,11 @@ export function Exercise_filterAndRankByQuery<
   if (!parsed) {
     return allExercises;
   }
-  const { normalized, tokens } = parsed;
-
   const scored: Array<{ exercise: T; score: number; name: string; fullName: string }> = [];
   for (const e of allExercises) {
     const name = e.name.toLowerCase();
     const equipment = e.equipment ? equipmentName(e.equipment).toLowerCase() : "";
-    const isDefaultEquipment = !!e.equipment && !!e.defaultEquipment && e.equipment === e.defaultEquipment;
-    const score = scoreExerciseAgainstTokens(name, equipment, isDefaultEquipment, normalized, tokens);
+    const score = scoreExerciseQuery(e, parsed);
     if (score == null) {
       continue;
     }

@@ -1,0 +1,4849 @@
+{
+  "program_name": "6주 완성 PHAT 변형 루틴 (평일 5일)",
+  "description": "사용자가 제공한 상·하체 파워(TOP/BACKOFF)와 3분할 근비대(STRAIGHT) 6주 30세션 예시입니다. 주차별 중량·반복·세트·휴식 시간을 원안대로 포함합니다. 개인 권장 중량이 아니므로 시작 전 본인 기록과 사용 기구에 맞게 조정하세요. 맨몸 종목의 0kg은 추가 중량 없음을 뜻합니다. 앱은 이 계획을 자동 증량하거나 4주차 회복 주간으로 변경하지 않습니다.",
+  "duration_weeks": 6,
+  "days_per_week": 5,
+  "weight_unit": "kg",
+  "workouts": [
+    {
+      "day_index": 1,
+      "day_name": "월요일: 상체 파워",
+      "exercises": [
+        {
+          "order": 1,
+          "name": "Bench Press, Barbell",
+          "target_muscle": "가슴",
+          "rest_seconds": 180,
+          "weekly_progression": [
+            {
+              "week": 1,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "TOP",
+                  "target_weight": 90,
+                  "target_reps": 4
+                },
+                {
+                  "set_no": 2,
+                  "type": "TOP",
+                  "target_weight": 90,
+                  "target_reps": 4
+                },
+                {
+                  "set_no": 3,
+                  "type": "BACKOFF",
+                  "target_weight": 80,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 4,
+                  "type": "BACKOFF",
+                  "target_weight": 80,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 5,
+                  "type": "BACKOFF",
+                  "target_weight": 80,
+                  "target_reps": 8
+                }
+              ]
+            },
+            {
+              "week": 2,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "TOP",
+                  "target_weight": 90,
+                  "target_reps": 5
+                },
+                {
+                  "set_no": 2,
+                  "type": "TOP",
+                  "target_weight": 90,
+                  "target_reps": 5
+                },
+                {
+                  "set_no": 3,
+                  "type": "BACKOFF",
+                  "target_weight": 80,
+                  "target_reps": 9
+                },
+                {
+                  "set_no": 4,
+                  "type": "BACKOFF",
+                  "target_weight": 80,
+                  "target_reps": 9
+                },
+                {
+                  "set_no": 5,
+                  "type": "BACKOFF",
+                  "target_weight": 80,
+                  "target_reps": 9
+                }
+              ]
+            },
+            {
+              "week": 3,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "TOP",
+                  "target_weight": 92.5,
+                  "target_reps": 4
+                },
+                {
+                  "set_no": 2,
+                  "type": "TOP",
+                  "target_weight": 92.5,
+                  "target_reps": 4
+                },
+                {
+                  "set_no": 3,
+                  "type": "BACKOFF",
+                  "target_weight": 82.5,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 4,
+                  "type": "BACKOFF",
+                  "target_weight": 82.5,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 5,
+                  "type": "BACKOFF",
+                  "target_weight": 82.5,
+                  "target_reps": 8
+                }
+              ]
+            },
+            {
+              "week": 4,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "TOP",
+                  "target_weight": 92.5,
+                  "target_reps": 5
+                },
+                {
+                  "set_no": 2,
+                  "type": "TOP",
+                  "target_weight": 92.5,
+                  "target_reps": 5
+                },
+                {
+                  "set_no": 3,
+                  "type": "BACKOFF",
+                  "target_weight": 82.5,
+                  "target_reps": 9
+                },
+                {
+                  "set_no": 4,
+                  "type": "BACKOFF",
+                  "target_weight": 82.5,
+                  "target_reps": 9
+                },
+                {
+                  "set_no": 5,
+                  "type": "BACKOFF",
+                  "target_weight": 82.5,
+                  "target_reps": 9
+                }
+              ]
+            },
+            {
+              "week": 5,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "TOP",
+                  "target_weight": 95,
+                  "target_reps": 4
+                },
+                {
+                  "set_no": 2,
+                  "type": "TOP",
+                  "target_weight": 95,
+                  "target_reps": 4
+                },
+                {
+                  "set_no": 3,
+                  "type": "BACKOFF",
+                  "target_weight": 85,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 4,
+                  "type": "BACKOFF",
+                  "target_weight": 85,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 5,
+                  "type": "BACKOFF",
+                  "target_weight": 85,
+                  "target_reps": 8
+                }
+              ]
+            },
+            {
+              "week": 6,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "TOP",
+                  "target_weight": 95,
+                  "target_reps": 5
+                },
+                {
+                  "set_no": 2,
+                  "type": "TOP",
+                  "target_weight": 95,
+                  "target_reps": 5
+                },
+                {
+                  "set_no": 3,
+                  "type": "BACKOFF",
+                  "target_weight": 85,
+                  "target_reps": 9
+                },
+                {
+                  "set_no": 4,
+                  "type": "BACKOFF",
+                  "target_weight": 85,
+                  "target_reps": 9
+                },
+                {
+                  "set_no": 5,
+                  "type": "BACKOFF",
+                  "target_weight": 85,
+                  "target_reps": 9
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 2,
+          "name": "Bent Over Row, Barbell",
+          "target_muscle": "등",
+          "rest_seconds": 180,
+          "weekly_progression": [
+            {
+              "week": 1,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "TOP",
+                  "target_weight": 60,
+                  "target_reps": 5
+                },
+                {
+                  "set_no": 2,
+                  "type": "TOP",
+                  "target_weight": 60,
+                  "target_reps": 5
+                },
+                {
+                  "set_no": 3,
+                  "type": "BACKOFF",
+                  "target_weight": 50,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 4,
+                  "type": "BACKOFF",
+                  "target_weight": 50,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 5,
+                  "type": "BACKOFF",
+                  "target_weight": 50,
+                  "target_reps": 8
+                }
+              ]
+            },
+            {
+              "week": 2,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "TOP",
+                  "target_weight": 60,
+                  "target_reps": 6
+                },
+                {
+                  "set_no": 2,
+                  "type": "TOP",
+                  "target_weight": 60,
+                  "target_reps": 6
+                },
+                {
+                  "set_no": 3,
+                  "type": "BACKOFF",
+                  "target_weight": 50,
+                  "target_reps": 9
+                },
+                {
+                  "set_no": 4,
+                  "type": "BACKOFF",
+                  "target_weight": 50,
+                  "target_reps": 9
+                },
+                {
+                  "set_no": 5,
+                  "type": "BACKOFF",
+                  "target_weight": 50,
+                  "target_reps": 9
+                }
+              ]
+            },
+            {
+              "week": 3,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "TOP",
+                  "target_weight": 65,
+                  "target_reps": 5
+                },
+                {
+                  "set_no": 2,
+                  "type": "TOP",
+                  "target_weight": 65,
+                  "target_reps": 5
+                },
+                {
+                  "set_no": 3,
+                  "type": "BACKOFF",
+                  "target_weight": 55,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 4,
+                  "type": "BACKOFF",
+                  "target_weight": 55,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 5,
+                  "type": "BACKOFF",
+                  "target_weight": 55,
+                  "target_reps": 8
+                }
+              ]
+            },
+            {
+              "week": 4,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "TOP",
+                  "target_weight": 65,
+                  "target_reps": 6
+                },
+                {
+                  "set_no": 2,
+                  "type": "TOP",
+                  "target_weight": 65,
+                  "target_reps": 6
+                },
+                {
+                  "set_no": 3,
+                  "type": "BACKOFF",
+                  "target_weight": 55,
+                  "target_reps": 9
+                },
+                {
+                  "set_no": 4,
+                  "type": "BACKOFF",
+                  "target_weight": 55,
+                  "target_reps": 9
+                },
+                {
+                  "set_no": 5,
+                  "type": "BACKOFF",
+                  "target_weight": 55,
+                  "target_reps": 9
+                }
+              ]
+            },
+            {
+              "week": 5,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "TOP",
+                  "target_weight": 70,
+                  "target_reps": 5
+                },
+                {
+                  "set_no": 2,
+                  "type": "TOP",
+                  "target_weight": 70,
+                  "target_reps": 5
+                },
+                {
+                  "set_no": 3,
+                  "type": "BACKOFF",
+                  "target_weight": 60,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 4,
+                  "type": "BACKOFF",
+                  "target_weight": 60,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 5,
+                  "type": "BACKOFF",
+                  "target_weight": 60,
+                  "target_reps": 8
+                }
+              ]
+            },
+            {
+              "week": 6,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "TOP",
+                  "target_weight": 70,
+                  "target_reps": 6
+                },
+                {
+                  "set_no": 2,
+                  "type": "TOP",
+                  "target_weight": 70,
+                  "target_reps": 6
+                },
+                {
+                  "set_no": 3,
+                  "type": "BACKOFF",
+                  "target_weight": 60,
+                  "target_reps": 9
+                },
+                {
+                  "set_no": 4,
+                  "type": "BACKOFF",
+                  "target_weight": 60,
+                  "target_reps": 9
+                },
+                {
+                  "set_no": 5,
+                  "type": "BACKOFF",
+                  "target_weight": 60,
+                  "target_reps": 9
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 3,
+          "name": "Overhead Press, Barbell",
+          "target_muscle": "어깨",
+          "rest_seconds": 150,
+          "weekly_progression": [
+            {
+              "week": 1,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 37.5,
+                  "target_reps": 6
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 37.5,
+                  "target_reps": 6
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 37.5,
+                  "target_reps": 6
+                },
+                {
+                  "set_no": 4,
+                  "type": "STRAIGHT",
+                  "target_weight": 37.5,
+                  "target_reps": 6
+                }
+              ]
+            },
+            {
+              "week": 2,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 37.5,
+                  "target_reps": 7
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 37.5,
+                  "target_reps": 7
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 37.5,
+                  "target_reps": 7
+                },
+                {
+                  "set_no": 4,
+                  "type": "STRAIGHT",
+                  "target_weight": 37.5,
+                  "target_reps": 7
+                }
+              ]
+            },
+            {
+              "week": 3,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 40,
+                  "target_reps": 6
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 40,
+                  "target_reps": 6
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 40,
+                  "target_reps": 6
+                },
+                {
+                  "set_no": 4,
+                  "type": "STRAIGHT",
+                  "target_weight": 40,
+                  "target_reps": 6
+                }
+              ]
+            },
+            {
+              "week": 4,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 40,
+                  "target_reps": 7
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 40,
+                  "target_reps": 7
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 40,
+                  "target_reps": 7
+                },
+                {
+                  "set_no": 4,
+                  "type": "STRAIGHT",
+                  "target_weight": 40,
+                  "target_reps": 7
+                }
+              ]
+            },
+            {
+              "week": 5,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 42.5,
+                  "target_reps": 5
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 42.5,
+                  "target_reps": 5
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 42.5,
+                  "target_reps": 5
+                },
+                {
+                  "set_no": 4,
+                  "type": "STRAIGHT",
+                  "target_weight": 42.5,
+                  "target_reps": 5
+                }
+              ]
+            },
+            {
+              "week": 6,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 42.5,
+                  "target_reps": 6
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 42.5,
+                  "target_reps": 6
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 42.5,
+                  "target_reps": 6
+                },
+                {
+                  "set_no": 4,
+                  "type": "STRAIGHT",
+                  "target_weight": 42.5,
+                  "target_reps": 6
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 4,
+          "name": "Lat Pulldown, Cable",
+          "target_muscle": "등",
+          "rest_seconds": 120,
+          "weekly_progression": [
+            {
+              "week": 1,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 56,
+                  "target_reps": 6
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 56,
+                  "target_reps": 6
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 56,
+                  "target_reps": 6
+                }
+              ]
+            },
+            {
+              "week": 2,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 56,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 56,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 56,
+                  "target_reps": 8
+                }
+              ]
+            },
+            {
+              "week": 3,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 63,
+                  "target_reps": 6
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 63,
+                  "target_reps": 6
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 63,
+                  "target_reps": 6
+                }
+              ]
+            },
+            {
+              "week": 4,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 63,
+                  "target_reps": 7
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 63,
+                  "target_reps": 7
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 63,
+                  "target_reps": 7
+                }
+              ]
+            },
+            {
+              "week": 5,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 63,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 63,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 63,
+                  "target_reps": 8
+                }
+              ]
+            },
+            {
+              "week": 6,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 70,
+                  "target_reps": 6
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 70,
+                  "target_reps": 6
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 70,
+                  "target_reps": 6
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 5,
+          "name": "Bicep Curl, Barbell",
+          "target_muscle": "이두",
+          "rest_seconds": 90,
+          "weekly_progression": [
+            {
+              "week": 1,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 30,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 30,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 30,
+                  "target_reps": 8
+                }
+              ]
+            },
+            {
+              "week": 2,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 30,
+                  "target_reps": 9
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 30,
+                  "target_reps": 9
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 30,
+                  "target_reps": 9
+                }
+              ]
+            },
+            {
+              "week": 3,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 30,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 30,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 30,
+                  "target_reps": 10
+                }
+              ]
+            },
+            {
+              "week": 4,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 32.5,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 32.5,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 32.5,
+                  "target_reps": 8
+                }
+              ]
+            },
+            {
+              "week": 5,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 32.5,
+                  "target_reps": 9
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 32.5,
+                  "target_reps": 9
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 32.5,
+                  "target_reps": 9
+                }
+              ]
+            },
+            {
+              "week": 6,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 35,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 35,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 35,
+                  "target_reps": 8
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 6,
+          "name": "Skullcrusher, EZ Bar",
+          "target_muscle": "삼두",
+          "rest_seconds": 90,
+          "weekly_progression": [
+            {
+              "week": 1,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 30,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 30,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 30,
+                  "target_reps": 8
+                }
+              ]
+            },
+            {
+              "week": 2,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 30,
+                  "target_reps": 9
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 30,
+                  "target_reps": 9
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 30,
+                  "target_reps": 9
+                }
+              ]
+            },
+            {
+              "week": 3,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 30,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 30,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 30,
+                  "target_reps": 10
+                }
+              ]
+            },
+            {
+              "week": 4,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 32.5,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 32.5,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 32.5,
+                  "target_reps": 8
+                }
+              ]
+            },
+            {
+              "week": 5,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 32.5,
+                  "target_reps": 9
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 32.5,
+                  "target_reps": 9
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 32.5,
+                  "target_reps": 9
+                }
+              ]
+            },
+            {
+              "week": 6,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 35,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 35,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 35,
+                  "target_reps": 8
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "day_index": 2,
+      "day_name": "화요일: 하체 파워",
+      "exercises": [
+        {
+          "order": 1,
+          "name": "Squat, Barbell",
+          "target_muscle": "대퇴사두근",
+          "rest_seconds": 210,
+          "weekly_progression": [
+            {
+              "week": 1,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "TOP",
+                  "target_weight": 100,
+                  "target_reps": 4
+                },
+                {
+                  "set_no": 2,
+                  "type": "TOP",
+                  "target_weight": 100,
+                  "target_reps": 4
+                },
+                {
+                  "set_no": 3,
+                  "type": "BACKOFF",
+                  "target_weight": 85,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 4,
+                  "type": "BACKOFF",
+                  "target_weight": 85,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 5,
+                  "type": "BACKOFF",
+                  "target_weight": 85,
+                  "target_reps": 8
+                }
+              ]
+            },
+            {
+              "week": 2,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "TOP",
+                  "target_weight": 100,
+                  "target_reps": 5
+                },
+                {
+                  "set_no": 2,
+                  "type": "TOP",
+                  "target_weight": 100,
+                  "target_reps": 5
+                },
+                {
+                  "set_no": 3,
+                  "type": "BACKOFF",
+                  "target_weight": 85,
+                  "target_reps": 9
+                },
+                {
+                  "set_no": 4,
+                  "type": "BACKOFF",
+                  "target_weight": 85,
+                  "target_reps": 9
+                },
+                {
+                  "set_no": 5,
+                  "type": "BACKOFF",
+                  "target_weight": 85,
+                  "target_reps": 9
+                }
+              ]
+            },
+            {
+              "week": 3,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "TOP",
+                  "target_weight": 105,
+                  "target_reps": 4
+                },
+                {
+                  "set_no": 2,
+                  "type": "TOP",
+                  "target_weight": 105,
+                  "target_reps": 4
+                },
+                {
+                  "set_no": 3,
+                  "type": "BACKOFF",
+                  "target_weight": 90,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 4,
+                  "type": "BACKOFF",
+                  "target_weight": 90,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 5,
+                  "type": "BACKOFF",
+                  "target_weight": 90,
+                  "target_reps": 8
+                }
+              ]
+            },
+            {
+              "week": 4,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "TOP",
+                  "target_weight": 105,
+                  "target_reps": 5
+                },
+                {
+                  "set_no": 2,
+                  "type": "TOP",
+                  "target_weight": 105,
+                  "target_reps": 5
+                },
+                {
+                  "set_no": 3,
+                  "type": "BACKOFF",
+                  "target_weight": 90,
+                  "target_reps": 9
+                },
+                {
+                  "set_no": 4,
+                  "type": "BACKOFF",
+                  "target_weight": 90,
+                  "target_reps": 9
+                },
+                {
+                  "set_no": 5,
+                  "type": "BACKOFF",
+                  "target_weight": 90,
+                  "target_reps": 9
+                }
+              ]
+            },
+            {
+              "week": 5,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "TOP",
+                  "target_weight": 110,
+                  "target_reps": 4
+                },
+                {
+                  "set_no": 2,
+                  "type": "TOP",
+                  "target_weight": 110,
+                  "target_reps": 4
+                },
+                {
+                  "set_no": 3,
+                  "type": "BACKOFF",
+                  "target_weight": 95,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 4,
+                  "type": "BACKOFF",
+                  "target_weight": 95,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 5,
+                  "type": "BACKOFF",
+                  "target_weight": 95,
+                  "target_reps": 8
+                }
+              ]
+            },
+            {
+              "week": 6,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "TOP",
+                  "target_weight": 110,
+                  "target_reps": 5
+                },
+                {
+                  "set_no": 2,
+                  "type": "TOP",
+                  "target_weight": 110,
+                  "target_reps": 5
+                },
+                {
+                  "set_no": 3,
+                  "type": "BACKOFF",
+                  "target_weight": 95,
+                  "target_reps": 9
+                },
+                {
+                  "set_no": 4,
+                  "type": "BACKOFF",
+                  "target_weight": 95,
+                  "target_reps": 9
+                },
+                {
+                  "set_no": 5,
+                  "type": "BACKOFF",
+                  "target_weight": 95,
+                  "target_reps": 9
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 2,
+          "name": "Romanian Deadlift, Barbell",
+          "target_muscle": "햄스트링",
+          "rest_seconds": 150,
+          "weekly_progression": [
+            {
+              "week": 1,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 80,
+                  "target_reps": 6
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 80,
+                  "target_reps": 6
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 80,
+                  "target_reps": 6
+                },
+                {
+                  "set_no": 4,
+                  "type": "STRAIGHT",
+                  "target_weight": 80,
+                  "target_reps": 6
+                }
+              ]
+            },
+            {
+              "week": 2,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 80,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 80,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 80,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 4,
+                  "type": "STRAIGHT",
+                  "target_weight": 80,
+                  "target_reps": 8
+                }
+              ]
+            },
+            {
+              "week": 3,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 85,
+                  "target_reps": 6
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 85,
+                  "target_reps": 6
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 85,
+                  "target_reps": 6
+                },
+                {
+                  "set_no": 4,
+                  "type": "STRAIGHT",
+                  "target_weight": 85,
+                  "target_reps": 6
+                }
+              ]
+            },
+            {
+              "week": 4,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 85,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 85,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 85,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 4,
+                  "type": "STRAIGHT",
+                  "target_weight": 85,
+                  "target_reps": 8
+                }
+              ]
+            },
+            {
+              "week": 5,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 90,
+                  "target_reps": 6
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 90,
+                  "target_reps": 6
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 90,
+                  "target_reps": 6
+                },
+                {
+                  "set_no": 4,
+                  "type": "STRAIGHT",
+                  "target_weight": 90,
+                  "target_reps": 6
+                }
+              ]
+            },
+            {
+              "week": 6,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 90,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 90,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 90,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 4,
+                  "type": "STRAIGHT",
+                  "target_weight": 90,
+                  "target_reps": 8
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 3,
+          "name": "Leg Press, Leverage Machine",
+          "target_muscle": "대퇴사두근",
+          "rest_seconds": 120,
+          "weekly_progression": [
+            {
+              "week": 1,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 160,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 160,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 160,
+                  "target_reps": 8
+                }
+              ]
+            },
+            {
+              "week": 2,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 160,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 160,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 160,
+                  "target_reps": 10
+                }
+              ]
+            },
+            {
+              "week": 3,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 180,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 180,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 180,
+                  "target_reps": 8
+                }
+              ]
+            },
+            {
+              "week": 4,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 180,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 180,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 180,
+                  "target_reps": 10
+                }
+              ]
+            },
+            {
+              "week": 5,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 200,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 200,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 200,
+                  "target_reps": 8
+                }
+              ]
+            },
+            {
+              "week": 6,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 200,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 200,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 200,
+                  "target_reps": 10
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 4,
+          "name": "Lying Leg Curl, Leverage Machine",
+          "target_muscle": "햄스트링",
+          "rest_seconds": 90,
+          "weekly_progression": [
+            {
+              "week": 1,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 40,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 40,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 40,
+                  "target_reps": 10
+                }
+              ]
+            },
+            {
+              "week": 2,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 40,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 40,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 40,
+                  "target_reps": 12
+                }
+              ]
+            },
+            {
+              "week": 3,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 45,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 45,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 45,
+                  "target_reps": 10
+                }
+              ]
+            },
+            {
+              "week": 4,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 45,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 45,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 45,
+                  "target_reps": 12
+                }
+              ]
+            },
+            {
+              "week": 5,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 50,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 50,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 50,
+                  "target_reps": 10
+                }
+              ]
+            },
+            {
+              "week": 6,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 50,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 50,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 50,
+                  "target_reps": 12
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 5,
+          "name": "Standing Calf Raise, Leverage Machine",
+          "target_muscle": "종아리",
+          "rest_seconds": 90,
+          "weekly_progression": [
+            {
+              "week": 1,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 60,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 60,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 60,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 4,
+                  "type": "STRAIGHT",
+                  "target_weight": 60,
+                  "target_reps": 12
+                }
+              ]
+            },
+            {
+              "week": 2,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 60,
+                  "target_reps": 15
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 60,
+                  "target_reps": 15
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 60,
+                  "target_reps": 15
+                },
+                {
+                  "set_no": 4,
+                  "type": "STRAIGHT",
+                  "target_weight": 60,
+                  "target_reps": 15
+                }
+              ]
+            },
+            {
+              "week": 3,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 70,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 70,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 70,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 4,
+                  "type": "STRAIGHT",
+                  "target_weight": 70,
+                  "target_reps": 12
+                }
+              ]
+            },
+            {
+              "week": 4,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 70,
+                  "target_reps": 15
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 70,
+                  "target_reps": 15
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 70,
+                  "target_reps": 15
+                },
+                {
+                  "set_no": 4,
+                  "type": "STRAIGHT",
+                  "target_weight": 70,
+                  "target_reps": 15
+                }
+              ]
+            },
+            {
+              "week": 5,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 80,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 80,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 80,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 4,
+                  "type": "STRAIGHT",
+                  "target_weight": 80,
+                  "target_reps": 12
+                }
+              ]
+            },
+            {
+              "week": 6,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 80,
+                  "target_reps": 15
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 80,
+                  "target_reps": 15
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 80,
+                  "target_reps": 15
+                },
+                {
+                  "set_no": 4,
+                  "type": "STRAIGHT",
+                  "target_weight": 80,
+                  "target_reps": 15
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "day_index": 3,
+      "day_name": "수요일: 당기기 근비대",
+      "exercises": [
+        {
+          "order": 1,
+          "name": "Lat Pulldown, Cable",
+          "target_muscle": "등",
+          "rest_seconds": 120,
+          "weekly_progression": [
+            {
+              "week": 1,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 48.9,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 48.9,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 48.9,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 4,
+                  "type": "STRAIGHT",
+                  "target_weight": 48.9,
+                  "target_reps": 10
+                }
+              ]
+            },
+            {
+              "week": 2,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 48.9,
+                  "target_reps": 11
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 48.9,
+                  "target_reps": 11
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 48.9,
+                  "target_reps": 11
+                },
+                {
+                  "set_no": 4,
+                  "type": "STRAIGHT",
+                  "target_weight": 48.9,
+                  "target_reps": 11
+                }
+              ]
+            },
+            {
+              "week": 3,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 48.9,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 48.9,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 48.9,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 4,
+                  "type": "STRAIGHT",
+                  "target_weight": 48.9,
+                  "target_reps": 12
+                }
+              ]
+            },
+            {
+              "week": 4,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 56,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 56,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 56,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 4,
+                  "type": "STRAIGHT",
+                  "target_weight": 56,
+                  "target_reps": 8
+                }
+              ]
+            },
+            {
+              "week": 5,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 56,
+                  "target_reps": 9
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 56,
+                  "target_reps": 9
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 56,
+                  "target_reps": 9
+                },
+                {
+                  "set_no": 4,
+                  "type": "STRAIGHT",
+                  "target_weight": 56,
+                  "target_reps": 9
+                }
+              ]
+            },
+            {
+              "week": 6,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 56,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 56,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 56,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 4,
+                  "type": "STRAIGHT",
+                  "target_weight": 56,
+                  "target_reps": 10
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 2,
+          "name": "Seated Row, Cable",
+          "target_muscle": "등",
+          "rest_seconds": 120,
+          "weekly_progression": [
+            {
+              "week": 1,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 48.9,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 48.9,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 48.9,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 4,
+                  "type": "STRAIGHT",
+                  "target_weight": 48.9,
+                  "target_reps": 10
+                }
+              ]
+            },
+            {
+              "week": 2,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 48.9,
+                  "target_reps": 11
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 48.9,
+                  "target_reps": 11
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 48.9,
+                  "target_reps": 11
+                },
+                {
+                  "set_no": 4,
+                  "type": "STRAIGHT",
+                  "target_weight": 48.9,
+                  "target_reps": 11
+                }
+              ]
+            },
+            {
+              "week": 3,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 48.9,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 48.9,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 48.9,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 4,
+                  "type": "STRAIGHT",
+                  "target_weight": 48.9,
+                  "target_reps": 12
+                }
+              ]
+            },
+            {
+              "week": 4,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 56,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 56,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 56,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 4,
+                  "type": "STRAIGHT",
+                  "target_weight": 56,
+                  "target_reps": 8
+                }
+              ]
+            },
+            {
+              "week": 5,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 56,
+                  "target_reps": 9
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 56,
+                  "target_reps": 9
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 56,
+                  "target_reps": 9
+                },
+                {
+                  "set_no": 4,
+                  "type": "STRAIGHT",
+                  "target_weight": 56,
+                  "target_reps": 9
+                }
+              ]
+            },
+            {
+              "week": 6,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 56,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 56,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 56,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 4,
+                  "type": "STRAIGHT",
+                  "target_weight": 56,
+                  "target_reps": 10
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 3,
+          "name": "케이블 암 풀다운, Cable",
+          "target_muscle": "등",
+          "rest_seconds": 90,
+          "weekly_progression": [
+            {
+              "week": 1,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 23.75,
+                  "target_reps": 15
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 23.75,
+                  "target_reps": 15
+                }
+              ]
+            },
+            {
+              "week": 2,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 26.25,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 26.25,
+                  "target_reps": 12
+                }
+              ]
+            },
+            {
+              "week": 3,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 26.25,
+                  "target_reps": 15
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 26.25,
+                  "target_reps": 15
+                }
+              ]
+            },
+            {
+              "week": 4,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 28.75,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 28.75,
+                  "target_reps": 12
+                }
+              ]
+            },
+            {
+              "week": 5,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 28.75,
+                  "target_reps": 14
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 28.75,
+                  "target_reps": 14
+                }
+              ]
+            },
+            {
+              "week": 6,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 28.75,
+                  "target_reps": 15
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 28.75,
+                  "target_reps": 15
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 4,
+          "name": "Reverse Fly, Leverage Machine",
+          "target_muscle": "어깨",
+          "rest_seconds": 90,
+          "weekly_progression": [
+            {
+              "week": 1,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 30,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 30,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 30,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 4,
+                  "type": "STRAIGHT",
+                  "target_weight": 30,
+                  "target_reps": 12
+                }
+              ]
+            },
+            {
+              "week": 2,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 30,
+                  "target_reps": 15
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 30,
+                  "target_reps": 15
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 30,
+                  "target_reps": 15
+                },
+                {
+                  "set_no": 4,
+                  "type": "STRAIGHT",
+                  "target_weight": 30,
+                  "target_reps": 15
+                }
+              ]
+            },
+            {
+              "week": 3,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 35,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 35,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 35,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 4,
+                  "type": "STRAIGHT",
+                  "target_weight": 35,
+                  "target_reps": 12
+                }
+              ]
+            },
+            {
+              "week": 4,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 35,
+                  "target_reps": 15
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 35,
+                  "target_reps": 15
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 35,
+                  "target_reps": 15
+                },
+                {
+                  "set_no": 4,
+                  "type": "STRAIGHT",
+                  "target_weight": 35,
+                  "target_reps": 15
+                }
+              ]
+            },
+            {
+              "week": 5,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 40,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 40,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 40,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 4,
+                  "type": "STRAIGHT",
+                  "target_weight": 40,
+                  "target_reps": 12
+                }
+              ]
+            },
+            {
+              "week": 6,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 40,
+                  "target_reps": 15
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 40,
+                  "target_reps": 15
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 40,
+                  "target_reps": 15
+                },
+                {
+                  "set_no": 4,
+                  "type": "STRAIGHT",
+                  "target_weight": 40,
+                  "target_reps": 15
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 5,
+          "name": "Incline Curl, Dumbbell",
+          "target_muscle": "이두",
+          "rest_seconds": 90,
+          "weekly_progression": [
+            {
+              "week": 1,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 12,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 12,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 12,
+                  "target_reps": 10
+                }
+              ]
+            },
+            {
+              "week": 2,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 12,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 12,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 12,
+                  "target_reps": 12
+                }
+              ]
+            },
+            {
+              "week": 3,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 14,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 14,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 14,
+                  "target_reps": 10
+                }
+              ]
+            },
+            {
+              "week": 4,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 14,
+                  "target_reps": 11
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 14,
+                  "target_reps": 11
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 14,
+                  "target_reps": 11
+                }
+              ]
+            },
+            {
+              "week": 5,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 14,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 14,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 14,
+                  "target_reps": 12
+                }
+              ]
+            },
+            {
+              "week": 6,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 16,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 16,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 16,
+                  "target_reps": 10
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 6,
+          "name": "Hammer Curl, Dumbbell",
+          "target_muscle": "이두",
+          "rest_seconds": 90,
+          "weekly_progression": [
+            {
+              "week": 1,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 12,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 12,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 12,
+                  "target_reps": 12
+                }
+              ]
+            },
+            {
+              "week": 2,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 14,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 14,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 14,
+                  "target_reps": 10
+                }
+              ]
+            },
+            {
+              "week": 3,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 14,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 14,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 14,
+                  "target_reps": 12
+                }
+              ]
+            },
+            {
+              "week": 4,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 16,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 16,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 16,
+                  "target_reps": 10
+                }
+              ]
+            },
+            {
+              "week": 5,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 16,
+                  "target_reps": 11
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 16,
+                  "target_reps": 11
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 16,
+                  "target_reps": 11
+                }
+              ]
+            },
+            {
+              "week": 6,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 16,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 16,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 16,
+                  "target_reps": 12
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "day_index": 4,
+      "day_name": "목요일: 밀기 근비대",
+      "exercises": [
+        {
+          "order": 1,
+          "name": "Incline Bench Press, Dumbbell",
+          "target_muscle": "가슴",
+          "rest_seconds": 120,
+          "weekly_progression": [
+            {
+              "week": 1,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 26,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 26,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 26,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 4,
+                  "type": "STRAIGHT",
+                  "target_weight": 26,
+                  "target_reps": 10
+                }
+              ]
+            },
+            {
+              "week": 2,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 28,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 28,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 28,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 4,
+                  "type": "STRAIGHT",
+                  "target_weight": 28,
+                  "target_reps": 8
+                }
+              ]
+            },
+            {
+              "week": 3,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 28,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 28,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 28,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 4,
+                  "type": "STRAIGHT",
+                  "target_weight": 28,
+                  "target_reps": 10
+                }
+              ]
+            },
+            {
+              "week": 4,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 30,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 30,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 30,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 4,
+                  "type": "STRAIGHT",
+                  "target_weight": 30,
+                  "target_reps": 8
+                }
+              ]
+            },
+            {
+              "week": 5,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 30,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 30,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 30,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 4,
+                  "type": "STRAIGHT",
+                  "target_weight": 30,
+                  "target_reps": 10
+                }
+              ]
+            },
+            {
+              "week": 6,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 32,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 32,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 32,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 4,
+                  "type": "STRAIGHT",
+                  "target_weight": 32,
+                  "target_reps": 8
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 2,
+          "name": "Chest Dip, Bodyweight",
+          "target_muscle": "가슴",
+          "rest_seconds": 120,
+          "weekly_progression": [
+            {
+              "week": 1,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 0,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 0,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 0,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 4,
+                  "type": "STRAIGHT",
+                  "target_weight": 0,
+                  "target_reps": 8
+                }
+              ]
+            },
+            {
+              "week": 2,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 0,
+                  "target_reps": 9
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 0,
+                  "target_reps": 9
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 0,
+                  "target_reps": 9
+                },
+                {
+                  "set_no": 4,
+                  "type": "STRAIGHT",
+                  "target_weight": 0,
+                  "target_reps": 9
+                }
+              ]
+            },
+            {
+              "week": 3,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 0,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 0,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 0,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 4,
+                  "type": "STRAIGHT",
+                  "target_weight": 0,
+                  "target_reps": 10
+                }
+              ]
+            },
+            {
+              "week": 4,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 0,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 0,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 0,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 4,
+                  "type": "STRAIGHT",
+                  "target_weight": 0,
+                  "target_reps": 12
+                }
+              ]
+            },
+            {
+              "week": 5,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 4,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 4,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 4,
+                  "target_reps": 8
+                },
+                {
+                  "set_no": 4,
+                  "type": "STRAIGHT",
+                  "target_weight": 4,
+                  "target_reps": 8
+                }
+              ]
+            },
+            {
+              "week": 6,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 4,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 4,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 4,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 4,
+                  "type": "STRAIGHT",
+                  "target_weight": 4,
+                  "target_reps": 10
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 3,
+          "name": "Chest Fly, Leverage Machine",
+          "target_muscle": "가슴",
+          "rest_seconds": 90,
+          "weekly_progression": [
+            {
+              "week": 1,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 40,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 40,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 40,
+                  "target_reps": 12
+                }
+              ]
+            },
+            {
+              "week": 2,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 45,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 45,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 45,
+                  "target_reps": 10
+                }
+              ]
+            },
+            {
+              "week": 3,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 45,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 45,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 45,
+                  "target_reps": 12
+                }
+              ]
+            },
+            {
+              "week": 4,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 50,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 50,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 50,
+                  "target_reps": 10
+                }
+              ]
+            },
+            {
+              "week": 5,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 50,
+                  "target_reps": 11
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 50,
+                  "target_reps": 11
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 50,
+                  "target_reps": 11
+                }
+              ]
+            },
+            {
+              "week": 6,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 50,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 50,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 50,
+                  "target_reps": 12
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 4,
+          "name": "Lateral Raise, Dumbbell",
+          "target_muscle": "어깨",
+          "rest_seconds": 90,
+          "weekly_progression": [
+            {
+              "week": 1,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 10,
+                  "target_reps": 15
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 10,
+                  "target_reps": 15
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 10,
+                  "target_reps": 15
+                },
+                {
+                  "set_no": 4,
+                  "type": "STRAIGHT",
+                  "target_weight": 10,
+                  "target_reps": 15
+                }
+              ]
+            },
+            {
+              "week": 2,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 10,
+                  "target_reps": 18
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 10,
+                  "target_reps": 18
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 10,
+                  "target_reps": 18
+                },
+                {
+                  "set_no": 4,
+                  "type": "STRAIGHT",
+                  "target_weight": 10,
+                  "target_reps": 18
+                }
+              ]
+            },
+            {
+              "week": 3,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 10,
+                  "target_reps": 20
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 10,
+                  "target_reps": 20
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 10,
+                  "target_reps": 20
+                },
+                {
+                  "set_no": 4,
+                  "type": "STRAIGHT",
+                  "target_weight": 10,
+                  "target_reps": 20
+                }
+              ]
+            },
+            {
+              "week": 4,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 12,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 12,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 12,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 4,
+                  "type": "STRAIGHT",
+                  "target_weight": 12,
+                  "target_reps": 12
+                }
+              ]
+            },
+            {
+              "week": 5,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 12,
+                  "target_reps": 14
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 12,
+                  "target_reps": 14
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 12,
+                  "target_reps": 14
+                },
+                {
+                  "set_no": 4,
+                  "type": "STRAIGHT",
+                  "target_weight": 12,
+                  "target_reps": 14
+                }
+              ]
+            },
+            {
+              "week": 6,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 12,
+                  "target_reps": 15
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 12,
+                  "target_reps": 15
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 12,
+                  "target_reps": 15
+                },
+                {
+                  "set_no": 4,
+                  "type": "STRAIGHT",
+                  "target_weight": 12,
+                  "target_reps": 15
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 5,
+          "name": "Triceps Pushdown, Cable",
+          "target_muscle": "삼두",
+          "rest_seconds": 90,
+          "weekly_progression": [
+            {
+              "week": 1,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 21.25,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 21.25,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 21.25,
+                  "target_reps": 12
+                }
+              ]
+            },
+            {
+              "week": 2,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 21.25,
+                  "target_reps": 15
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 21.25,
+                  "target_reps": 15
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 21.25,
+                  "target_reps": 15
+                }
+              ]
+            },
+            {
+              "week": 3,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 23.75,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 23.75,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 23.75,
+                  "target_reps": 12
+                }
+              ]
+            },
+            {
+              "week": 4,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 23.75,
+                  "target_reps": 15
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 23.75,
+                  "target_reps": 15
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 23.75,
+                  "target_reps": 15
+                }
+              ]
+            },
+            {
+              "week": 5,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 26.25,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 26.25,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 26.25,
+                  "target_reps": 12
+                }
+              ]
+            },
+            {
+              "week": 6,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 26.25,
+                  "target_reps": 15
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 26.25,
+                  "target_reps": 15
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 26.25,
+                  "target_reps": 15
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 6,
+          "name": "Triceps Extension, Cable",
+          "target_muscle": "삼두",
+          "rest_seconds": 90,
+          "weekly_progression": [
+            {
+              "week": 1,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 21.25,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 21.25,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 21.25,
+                  "target_reps": 12
+                }
+              ]
+            },
+            {
+              "week": 2,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 21.25,
+                  "target_reps": 15
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 21.25,
+                  "target_reps": 15
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 21.25,
+                  "target_reps": 15
+                }
+              ]
+            },
+            {
+              "week": 3,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 26.25,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 26.25,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 26.25,
+                  "target_reps": 12
+                }
+              ]
+            },
+            {
+              "week": 4,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 26.25,
+                  "target_reps": 15
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 26.25,
+                  "target_reps": 15
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 26.25,
+                  "target_reps": 15
+                }
+              ]
+            },
+            {
+              "week": 5,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 28.75,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 28.75,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 28.75,
+                  "target_reps": 12
+                }
+              ]
+            },
+            {
+              "week": 6,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 28.75,
+                  "target_reps": 15
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 28.75,
+                  "target_reps": 15
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 28.75,
+                  "target_reps": 15
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "day_index": 5,
+      "day_name": "금요일: 하체 근비대",
+      "exercises": [
+        {
+          "order": 1,
+          "name": "Hack Squat, Leverage Machine",
+          "target_muscle": "대퇴사두근",
+          "rest_seconds": 150,
+          "weekly_progression": [
+            {
+              "week": 1,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 80,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 80,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 80,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 4,
+                  "type": "STRAIGHT",
+                  "target_weight": 80,
+                  "target_reps": 10
+                }
+              ]
+            },
+            {
+              "week": 2,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 80,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 80,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 80,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 4,
+                  "type": "STRAIGHT",
+                  "target_weight": 80,
+                  "target_reps": 12
+                }
+              ]
+            },
+            {
+              "week": 3,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 90,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 90,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 90,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 4,
+                  "type": "STRAIGHT",
+                  "target_weight": 90,
+                  "target_reps": 10
+                }
+              ]
+            },
+            {
+              "week": 4,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 90,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 90,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 90,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 4,
+                  "type": "STRAIGHT",
+                  "target_weight": 90,
+                  "target_reps": 12
+                }
+              ]
+            },
+            {
+              "week": 5,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 100,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 100,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 100,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 4,
+                  "type": "STRAIGHT",
+                  "target_weight": 100,
+                  "target_reps": 10
+                }
+              ]
+            },
+            {
+              "week": 6,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 100,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 100,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 100,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 4,
+                  "type": "STRAIGHT",
+                  "target_weight": 100,
+                  "target_reps": 12
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 2,
+          "name": "Bulgarian Split Squat, Dumbbell",
+          "target_muscle": "하체",
+          "rest_seconds": 120,
+          "weekly_progression": [
+            {
+              "week": 1,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 12,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 12,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 12,
+                  "target_reps": 10
+                }
+              ]
+            },
+            {
+              "week": 2,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 12,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 12,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 12,
+                  "target_reps": 12
+                }
+              ]
+            },
+            {
+              "week": 3,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 16,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 16,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 16,
+                  "target_reps": 10
+                }
+              ]
+            },
+            {
+              "week": 4,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 16,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 16,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 16,
+                  "target_reps": 12
+                }
+              ]
+            },
+            {
+              "week": 5,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 20,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 20,
+                  "target_reps": 10
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 20,
+                  "target_reps": 10
+                }
+              ]
+            },
+            {
+              "week": 6,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 20,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 20,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 20,
+                  "target_reps": 12
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 3,
+          "name": "Leg Extension, Leverage Machine",
+          "target_muscle": "대퇴사두근",
+          "rest_seconds": 90,
+          "weekly_progression": [
+            {
+              "week": 1,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 45,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 45,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 45,
+                  "target_reps": 12
+                }
+              ]
+            },
+            {
+              "week": 2,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 45,
+                  "target_reps": 15
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 45,
+                  "target_reps": 15
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 45,
+                  "target_reps": 15
+                }
+              ]
+            },
+            {
+              "week": 3,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 50,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 50,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 50,
+                  "target_reps": 12
+                }
+              ]
+            },
+            {
+              "week": 4,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 50,
+                  "target_reps": 15
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 50,
+                  "target_reps": 15
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 50,
+                  "target_reps": 15
+                }
+              ]
+            },
+            {
+              "week": 5,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 55,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 55,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 55,
+                  "target_reps": 12
+                }
+              ]
+            },
+            {
+              "week": 6,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 55,
+                  "target_reps": 15
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 55,
+                  "target_reps": 15
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 55,
+                  "target_reps": 15
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 4,
+          "name": "Seated Leg Curl, Leverage Machine",
+          "target_muscle": "햄스트링",
+          "rest_seconds": 90,
+          "weekly_progression": [
+            {
+              "week": 1,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 40,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 40,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 40,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 4,
+                  "type": "STRAIGHT",
+                  "target_weight": 40,
+                  "target_reps": 12
+                }
+              ]
+            },
+            {
+              "week": 2,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 40,
+                  "target_reps": 15
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 40,
+                  "target_reps": 15
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 40,
+                  "target_reps": 15
+                },
+                {
+                  "set_no": 4,
+                  "type": "STRAIGHT",
+                  "target_weight": 40,
+                  "target_reps": 15
+                }
+              ]
+            },
+            {
+              "week": 3,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 45,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 45,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 45,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 4,
+                  "type": "STRAIGHT",
+                  "target_weight": 45,
+                  "target_reps": 12
+                }
+              ]
+            },
+            {
+              "week": 4,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 45,
+                  "target_reps": 15
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 45,
+                  "target_reps": 15
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 45,
+                  "target_reps": 15
+                },
+                {
+                  "set_no": 4,
+                  "type": "STRAIGHT",
+                  "target_weight": 45,
+                  "target_reps": 15
+                }
+              ]
+            },
+            {
+              "week": 5,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 50,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 50,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 50,
+                  "target_reps": 12
+                },
+                {
+                  "set_no": 4,
+                  "type": "STRAIGHT",
+                  "target_weight": 50,
+                  "target_reps": 12
+                }
+              ]
+            },
+            {
+              "week": 6,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 50,
+                  "target_reps": 15
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 50,
+                  "target_reps": 15
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 50,
+                  "target_reps": 15
+                },
+                {
+                  "set_no": 4,
+                  "type": "STRAIGHT",
+                  "target_weight": 50,
+                  "target_reps": 15
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 5,
+          "name": "Seated Calf Raise, Leverage Machine",
+          "target_muscle": "종아리",
+          "rest_seconds": 60,
+          "weekly_progression": [
+            {
+              "week": 1,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 40,
+                  "target_reps": 15
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 40,
+                  "target_reps": 15
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 40,
+                  "target_reps": 15
+                }
+              ]
+            },
+            {
+              "week": 2,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 40,
+                  "target_reps": 18
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 40,
+                  "target_reps": 18
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 40,
+                  "target_reps": 18
+                }
+              ]
+            },
+            {
+              "week": 3,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 45,
+                  "target_reps": 15
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 45,
+                  "target_reps": 15
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 45,
+                  "target_reps": 15
+                }
+              ]
+            },
+            {
+              "week": 4,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 45,
+                  "target_reps": 18
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 45,
+                  "target_reps": 18
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 45,
+                  "target_reps": 18
+                }
+              ]
+            },
+            {
+              "week": 5,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 50,
+                  "target_reps": 15
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 50,
+                  "target_reps": 15
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 50,
+                  "target_reps": 15
+                }
+              ]
+            },
+            {
+              "week": 6,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 50,
+                  "target_reps": 18
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 50,
+                  "target_reps": 18
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 50,
+                  "target_reps": 18
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 6,
+          "name": "Hanging Leg Raise, Bodyweight",
+          "target_muscle": "복근",
+          "rest_seconds": 60,
+          "weekly_progression": [
+            {
+              "week": 1,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 0,
+                  "target_reps": 15
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 0,
+                  "target_reps": 15
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 0,
+                  "target_reps": 15
+                }
+              ]
+            },
+            {
+              "week": 2,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 0,
+                  "target_reps": 15
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 0,
+                  "target_reps": 15
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 0,
+                  "target_reps": 15
+                }
+              ]
+            },
+            {
+              "week": 3,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 0,
+                  "target_reps": 18
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 0,
+                  "target_reps": 18
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 0,
+                  "target_reps": 18
+                }
+              ]
+            },
+            {
+              "week": 4,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 0,
+                  "target_reps": 18
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 0,
+                  "target_reps": 18
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 0,
+                  "target_reps": 18
+                }
+              ]
+            },
+            {
+              "week": 5,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 0,
+                  "target_reps": 20
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 0,
+                  "target_reps": 20
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 0,
+                  "target_reps": 20
+                }
+              ]
+            },
+            {
+              "week": 6,
+              "sets": [
+                {
+                  "set_no": 1,
+                  "type": "STRAIGHT",
+                  "target_weight": 0,
+                  "target_reps": 20
+                },
+                {
+                  "set_no": 2,
+                  "type": "STRAIGHT",
+                  "target_weight": 0,
+                  "target_reps": 20
+                },
+                {
+                  "set_no": 3,
+                  "type": "STRAIGHT",
+                  "target_weight": 0,
+                  "target_reps": 20
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

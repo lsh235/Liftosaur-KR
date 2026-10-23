@@ -101,7 +101,7 @@ export const ExerciseHistory = memo((props: IExerciseHistoryProps): JSX.Element 
     );
   }, [dispatch, hideWithoutWorkoutNotes]);
   const headerName = useMemo(
-    () => `${Exercise_fullName(fullExercise, props.settings)} History`,
+    () => `${Exercise_fullName(fullExercise, props.settings)} 기록`,
     [fullExercise, props.settings]
   );
 
@@ -116,6 +116,8 @@ export const ExerciseHistory = memo((props: IExerciseHistoryProps): JSX.Element 
             data-testid="exercise-stats-history-filter"
             testID="exercise-stats-history-filter"
             style={{ marginRight: -8, marginTop: -8 }}
+            accessibilityRole="button"
+            accessibilityLabel="운동 기록 필터"
             onPress={onToggleFilters}
           >
             <IconFilter />
@@ -126,19 +128,19 @@ export const ExerciseHistory = memo((props: IExerciseHistoryProps): JSX.Element 
         <View>
           <MenuItemEditable
             type="boolean"
-            name="Ascending sort by date"
+            name="오래된 기록부터 보기"
             value={!!ascendingSort ? "true" : "false"}
             onChange={onToggleAscending}
           />
           <MenuItemEditable
             type="boolean"
-            name="Hide entries without exercise notes"
+            name="운동 종목 메모가 있는 기록만 보기"
             value={!!hideWithoutExerciseNotes ? "true" : "false"}
             onChange={onToggleHideExerciseNotes}
           />
           <MenuItemEditable
             type="boolean"
-            name="Hide entries without workout notes"
+            name="운동 전체 메모가 있는 기록만 보기"
             value={!!hideWithoutWorkoutNotes ? "true" : "false"}
             onChange={onToggleHideWorkoutNotes}
           />
@@ -209,7 +211,7 @@ const ExerciseHistoryRecord = memo((props: IExerciseHistoryRecordProps): JSX.Ele
                 const state = { ...entry.state };
                 const vars = entry.vars || {};
                 for (const key of ObjectUtils_keys(vars)) {
-                  const name = { rm1: "1 Rep Max" }[key] || key;
+                  const name = { rm1: "1회 최대 중량 (1RM)" }[key] || key;
                   state[name] = vars[key];
                 }
                 const volume = Weight_multiply(
@@ -230,7 +232,7 @@ const ExerciseHistoryRecord = memo((props: IExerciseHistoryRecordProps): JSX.Ele
                     {volume.value > 0 &&
                       (() => {
                         const builder = new StyledText();
-                        builder.add("Volume: ");
+                        builder.add("볼륨: ");
                         builder.add(Weight_print(volume), { fontWeight: "700" });
                         const built = builder.build();
                         return (
@@ -275,7 +277,7 @@ const ExerciseHistoryRecord = memo((props: IExerciseHistoryRecordProps): JSX.Ele
             )}
             {!!historyRecord.notes && (
               <Text className="text-sm text-text-secondary">
-                <Text className="text-sm font-bold">Workout: </Text>
+                <Text className="text-sm font-bold">운동 메모: </Text>
                 <Text className="text-sm">{historyRecord.notes}</Text>
               </Text>
             )}

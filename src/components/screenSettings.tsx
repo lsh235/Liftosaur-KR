@@ -1,4 +1,6 @@
 import { JSX, memo, useEffect, useRef, useState } from "react";
+import { Distribution_isLocalOnly, Distribution_localOnlyMessage } from "../utils/distribution";
+import { Dialog_alert } from "../utils/dialog";
 import { View, Pressable, Linking, Platform } from "react-native";
 import { Text } from "./primitives/text";
 import { IDispatch } from "../ducks/types";
@@ -94,6 +96,10 @@ function ScreenSettingsInner(props: IProps): JSX.Element {
   const currentBodyfat = Stats_getCurrentBodyfat(props.stats);
 
   useNavOptions({ navTitle: "내 정보", navHelpKey: "settings" });
+  const localOnly = Distribution_isLocalOnly();
+  const policyPending = (): void => {
+    Dialog_alert("한국 배포용 운영자 정보와 정식 정책은 준비 중입니다. 현재 후보는 계정·클라우드·결제를 제공하지 않으며, 운동 이미지 조회와 사용자가 여는 외부 링크는 인터넷을 이용할 수 있습니다. 앱 삭제 전 전체 데이터를 파일로 백업해 주세요.");
+  };
 
   return (
     <View className="px-gutter">
@@ -106,10 +112,11 @@ function ScreenSettingsInner(props: IProps): JSX.Element {
         }}
       />
       <GroupHeader name="계정" topPadding={true} />
+      {localOnly && <Text className="py-3 text-sm text-text-secondary">{Distribution_localOnlyMessage}</Text>}
       <MenuItem
         name="계정"
         value={
-          props.user?.email == null ? (
+          localOnly ? "기기에 저장" : props.user?.email == null ? (
             <Text className="text-text-error">로그인되지 않음</Text>
           ) : props.user?.email === "noemail@example.com" ? (
             "로그인됨"
@@ -126,7 +133,7 @@ function ScreenSettingsInner(props: IProps): JSX.Element {
         value={props.settings.nickname || ""}
         nextLine={
           <View className="pb-1" style={{ marginTop: -8 }}>
-            <Text className="text-xs text-text-secondary">로그인하면 공개 프로필 페이지에 표시됩니다.</Text>
+            <Text className="text-xs text-text-secondary">{localOnly ? "이 기기에 저장되는 이름입니다." : "로그인하면 공개 프로필 페이지에 표시됩니다."}</Text>
           </View>
         }
         onChange={(newValue) => {
@@ -139,7 +146,7 @@ function ScreenSettingsInner(props: IProps): JSX.Element {
           });
         }}
       />
-      {props.user && (
+      {!localOnly && props.user && (
         <MenuItemEditable
           type="boolean"
           name="프로필 페이지 공개"
@@ -188,7 +195,7 @@ function ScreenSettingsInner(props: IProps): JSX.Element {
         />
       )}
 
-      <MenuItem name="API 키" shouldShowRightArrow={true} onClick={() => props.dispatch(Thunk_pushScreen("apiKeys"))} />
+      {!localOnly && <MenuItem name="API 키" shouldShowRightArrow={true} onClick={() => props.dispatch(Thunk_pushScreen("apiKeys"))} />}
 
       <GroupHeader name="신체 정보" topPadding={true} />
       {currentBodyweight && (
@@ -478,7 +485,7 @@ function ScreenSettingsInner(props: IProps): JSX.Element {
           });
         }}
       />
-      {Features_isEnabled("affiliates", props.user?.id ?? props.tempUserId) && (
+      {!localOnly && Features_isEnabled("affiliates", props.user?.id ?? props.tempUserId) && (
         <>
           <GroupHeader name="Liftosaur 제휴 프로그램" topPadding={true} />
           <MenuItem
@@ -550,39 +557,56 @@ function ScreenSettingsInner(props: IProps): JSX.Element {
       <MenuItem name="업데이트 내역" onClick={() => WhatsNew_showWhatsNew(props.dispatch)} />
       <Pressable
         className="py-3 border-b border-border-neutral"
-        onPress={() => openExternal("mailto:info@liftosaur.com")}
+        onPress={() => openExternal(localOnly ? "https://github.com/lsh235/Liftosaur-KR/issues" : "mailto:info@liftosaur.com")}
       >
         <Text className="text-base text-text-primary">문의하기</Text>
       </Pressable>
       <Pressable
         className="py-3 border-b border-border-neutral"
-        onPress={() => openExternal("https://discord.com/invite/AAh3cvdBRs")}
+        onPress={() => openExternal(localOnly ? "https://github.com/lsh235/Liftosaur-KR" : "https://discord.com/invite/AAh3cvdBRs")}
       >
         <View className="flex-row items-center">
           <View className="pr-2">
             <IconDiscord />
           </View>
-          <Text className="text-base text-text-primary">Discord 커뮤니티</Text>
+          <Text className="text-base text-text-primary">{localOnly ? "프로젝트 저장소" : "Discord 커뮤니티"}</Text>
         </View>
       </Pressable>
       <Pressable
         className="py-3 border-b border-border-neutral"
-        onPress={() => openExternal("https://www.liftosaur.com/privacy.html")}
+        onPress={() => localOnly ? policyPending() : openExternal("https://www.liftosaur.com/privacy.html")}
       >
         <Text className="text-base text-text-primary">개인정보 처리방침</Text>
       </Pressable>
       <Pressable
         className="py-3 border-b border-border-neutral"
-        onPress={() => openExternal("https://www.liftosaur.com/terms.html")}
+        onPress={() => localOnly ? policyPending() : openExternal("https://www.liftosaur.com/terms.html")}
       >
         <Text className="text-base text-text-primary">이용 약관</Text>
       </Pressable>
-      <Pressable
-        className="py-3 border-b border-border-neutral"
-        onPress={() => openExternal("https://www.liftosaur.com/licenses.html")}
-      >
-        <Text className="text-base text-text-primary">오픈소스 라이선스</Text>
-      </Pressable>
+      {localOnly ? (
+        <>
+          <Pressable
+            className="py-3 border-b border-border-neutral"
+            onPress={() => openExternal("https://github.com/lsh235/Liftosaur-KR/blob/master/LICENSE")}
+          >
+            <Text className="text-base text-text-primary">앱 코드 라이선스</Text>
+          </Pressable>
+          <Pressable
+            className="py-3 border-b border-border-neutral"
+            onPress={() => openExternal("https://github.com/lsh235/Liftosaur-KR/blob/master/src/licenses.html")}
+          >
+            <Text className="text-base text-text-primary">제삼자 라이선스 고지</Text>
+          </Pressable>
+        </>
+      ) : (
+        <Pressable
+          className="py-3 border-b border-border-neutral"
+          onPress={() => openExternal("https://www.liftosaur.com/licenses.html")}
+        >
+          <Text className="text-base text-text-primary">오픈소스 라이선스</Text>
+        </Pressable>
+      )}
       <Pressable
         className="py-3 border-b border-border-neutral"
         onPress={() => openExternal("https://www.liftosaur.com/doc")}

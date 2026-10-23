@@ -27,6 +27,7 @@ import { track } from "../utils/posthog";
 import { Tailwind_semantic } from "../utils/tailwindConfig";
 import { AppleAuth_init, AppleAuth_signIn } from "../utils/appleAuth";
 import { Dialog_alert } from "../utils/dialog";
+import { Distribution_isLocalOnly, Distribution_localOnlyMessage } from "../utils/distribution";
 
 interface IAccountProps {
   account?: IAccount;
@@ -43,6 +44,15 @@ interface IAccountProps {
 const isWeb = Platform.OS === "web";
 
 export function Account(props: IAccountProps): JSX.Element {
+  if (Distribution_isLocalOnly()) {
+    return (
+      <View className="px-gutter py-4" testID="local-only-account">
+        <Text className="text-lg font-bold text-text-primary">기기에 저장하는 운동 기록</Text>
+        <Text className="mt-3 text-base text-text-secondary">{Distribution_localOnlyMessage}</Text>
+        <Text className="mt-3 text-sm text-text-secondary">기존 기기의 운동 기록은 유지됩니다. 앱 삭제 전 전체 데이터를 파일로 백업해 주세요.</Text>
+      </View>
+    );
+  }
   const service = new Service(props.client);
   return (
     <View style={{ minWidth: 256, maxWidth: 416, alignSelf: "center", width: "100%" }}>

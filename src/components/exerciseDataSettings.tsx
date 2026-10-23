@@ -4,7 +4,7 @@ import { Text } from "./primitives/text";
 import { lb } from "lens-shmens";
 import { IDispatch } from "../ducks/types";
 import {
-  equipmentName,
+  localizedEquipmentName,
   IExercise,
   Exercise_defaultRounding,
   Exercise_getIsUnilateral,
@@ -40,7 +40,7 @@ function ExerciseDataSettingsInner(props: IExerciseDataSettingsProps): JSX.Eleme
     <View className="my-2">
       <InputNumber
         type="number"
-        label="Default Rounding"
+        label="기본 중량 조정 단위"
         min={0}
         step={0.5}
         max={100}
@@ -49,28 +49,28 @@ function ExerciseDataSettingsInner(props: IExerciseDataSettingsProps): JSX.Eleme
           EditEquipment_setDefaultRoundingForExercise(props.dispatch, fullExercise, value);
         }}
       />
-      <Text className="text-xs text-right text-text-secondary">Used when Equipment is not set</Text>
+      <Text className="text-xs text-right text-text-secondary">기구를 지정하지 않았을 때 적용합니다</Text>
       {props.settings.gyms.length > 1 && (
         <View className="mt-2">
-          <GroupHeader name="Equipments for each Gym" />
+          <GroupHeader name="헬스장별 기구" />
         </View>
       )}
       {props.settings.gyms.map((gym, i) => {
         const equipment = Equipment_getEquipmentIdForExerciseType(props.settings, props.fullExercise, gym.id);
         const values: [string, string][] = [
-          ["", "None"],
+          ["", "미지정"],
           ...ObjectUtils_keys(gym.equipment)
             .filter((e) => !gym.equipment[e]?.isDeleted)
-            .map<[string, string]>((id) => [id, equipmentName(id, gym.equipment)]),
+            .map<[string, string]>((id) => [id, localizedEquipmentName(id, gym.equipment)]),
         ];
         return (
           <MenuItemEditable
             key={gym.id}
             type="select"
-            name={props.settings.gyms.length > 1 ? gym.name : "Equipment"}
+            name={props.settings.gyms.length > 1 ? gym.name : "기구"}
             underName={
               props.settings.gyms.length > 1 && props.settings.currentGymId === gym.id ? (
-                <Text className="text-xs leading-none text-text-secondary">current</Text>
+                <Text className="text-xs leading-none text-text-secondary">현재 헬스장</Text>
               ) : undefined
             }
             value={equipment ?? ""}
@@ -90,7 +90,7 @@ function ExerciseDataSettingsInner(props: IExerciseDataSettingsProps): JSX.Eleme
       })}
       <MenuItemEditable
         type="boolean"
-        name="Is Unilateral"
+        name="편측 운동"
         value={Exercise_getIsUnilateral(fullExercise, props.settings) ? "true" : "false"}
         onChange={(value) => {
           const isUnilateral = value === "true";
@@ -108,7 +108,7 @@ function ExerciseDataSettingsInner(props: IExerciseDataSettingsProps): JSX.Eleme
       />
       <MenuItemEditable
         type="boolean"
-        name="Two weights (count both)"
+        name="양쪽 중량을 합산해 볼륨 계산"
         value={Exercise_getVolumeMultiplier(fullExercise, props.settings) === 2 ? "true" : "false"}
         onChange={(value) => {
           const volumeMultiplier = value === "true" ? 2 : 1;
@@ -127,7 +127,7 @@ function ExerciseDataSettingsInner(props: IExerciseDataSettingsProps): JSX.Eleme
 
       {props.show1RM && (
         <ExerciseRM
-          name="1 Rep Max"
+          name="1회 최대 중량 (1RM)"
           rmKey="rm1"
           exercise={fullExercise}
           settings={props.settings}

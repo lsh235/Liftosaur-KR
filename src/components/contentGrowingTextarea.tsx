@@ -13,9 +13,26 @@ export function ContentGrowingTextarea({ value, onInput, className = "" }: ICont
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
   useLayoutEffect(() => {
-    mirrorRef.current!.textContent = localValue || " ";
-    const rect = mirrorRef.current!.getBoundingClientRect();
-    setDimensions({ width: rect.width, height: rect.height });
+    const mirror = mirrorRef.current;
+    if (!mirror) {
+      return;
+    }
+    mirror.textContent = localValue || " ";
+    const updateDimensions = (): void => {
+      const rect = mirror.getBoundingClientRect();
+      setDimensions((current) =>
+        current.width === rect.width && current.height === rect.height
+          ? current
+          : { width: rect.width, height: rect.height }
+      );
+    };
+    updateDimensions();
+    if (typeof ResizeObserver === "undefined") {
+      return;
+    }
+    const observer = new ResizeObserver(updateDimensions);
+    observer.observe(mirror);
+    return () => observer.disconnect();
   }, [localValue]);
 
   useLayoutEffect(() => {
@@ -41,7 +58,7 @@ export function ContentGrowingTextarea({ value, onInput, className = "" }: ICont
   };
 
   return (
-    <div className="relative inline-block align-text-top">
+    <div className="relative inline-block max-w-full align-text-top">
       <div
         ref={mirrorRef}
         className={`invisible whitespace-pre-wrap break-words inline-block ${className}`}

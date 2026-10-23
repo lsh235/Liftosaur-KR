@@ -1,4 +1,5 @@
 import { Platform } from "react-native";
+import { Distribution_isLocalOnly, Distribution_requireRemoteServices } from "./distribution";
 import {
   GoogleSignin,
   statusCodes,
@@ -23,6 +24,7 @@ const APPLE_REDIRECT_URI = "https://www.liftosaur.com/appleauthcallback-mobile.h
 const APPLE_DEEP_LINK_SCHEME = "com.liftosaur.www://apple-callback";
 
 export async function SignOut_google(): Promise<void> {
+  if (Distribution_isLocalOnly()) return;
   try {
     await GoogleSignin.signOut();
   } catch (e) {
@@ -31,6 +33,7 @@ export async function SignOut_google(): Promise<void> {
 }
 
 export async function SignIn_google(): Promise<IGoogleSignInResult | undefined> {
+  Distribution_requireRemoteServices();
   try {
     await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
     await GoogleSignin.signOut();
@@ -52,6 +55,7 @@ export async function SignIn_google(): Promise<IGoogleSignInResult | undefined> 
 }
 
 export async function SignIn_apple(): Promise<IAppleSignInResult | undefined> {
+  Distribution_requireRemoteServices();
   if (Platform.OS === "ios") {
     return SignIn_appleIos();
   }

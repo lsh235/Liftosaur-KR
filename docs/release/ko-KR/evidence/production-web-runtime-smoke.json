@@ -1,0 +1,44 @@
+{
+  "entryUrl": "http://127.0.0.1:34019/app/?skipintro=1&nosync=true",
+  "entryStatus": 200,
+  "responses": [
+    {
+      "url": "http://127.0.0.1:34019/app/?skipintro=1&nosync=true",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 11411,
+      "sha256": "2b1f8938909ddf9b6c99eb66fa03383d17cbbfcb7a6ea721a684c423e2aeebc1"
+    },
+    {
+      "url": "http://127.0.0.1:34019/consent.js?version=bb90ce46",
+      "status": 200,
+      "contentType": "text/javascript; charset=utf-8",
+      "bytes": 9345,
+      "sha256": "3df404a97892901e9042310692f72b391ea3b3f483f795b85eeb9e9bb7082957"
+    },
+    {
+      "url": "http://127.0.0.1:34019/app.js?version=bb90ce46",
+      "status": 200,
+      "contentType": "text/javascript; charset=utf-8",
+      "bytes": 2659436,
+      "sha256": "2cbcb7e59fc91813450b140a684b6f49809d8aba9b08b32502a070b00a723bcf"
+    },
+    {
+      "url": "http://127.0.0.1:34019/vendors.js?vendor=bb90ce46",
+      "status": 200,
+      "contentType": "text/javascript; charset=utf-8",
+      "bytes": 2137729,
+      "sha256": "bf77ae586bb6a9398bd2c38315474c67d10089aa8b332738f41bb67d5bda48f9"
+    }
+  ],
+  "appChildCount": 1,
+  "mountedHtmlBytes": 13152,
+  "exceptions": [],
+  "blockedExternalRequestCount": 5,
+  "blockedExternalHosts": [
+    "cdn.rollbar.com",
+    "appleid.cdn-apple.com",
+    "www.googletagmanager.com",
+    "www.liftosaur.com"
+  ]
+}

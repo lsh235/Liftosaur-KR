@@ -41,7 +41,7 @@ export function ProgramPreviewPlaygroundExerciseEditContent(
     <View style={{ minWidth: 240 }}>
       {!props.hideVariables && (
         <ExerciseRM
-          name="1 Rep Max"
+          name="1회 최대 중량 (1RM)"
           rmKey="rm1"
           exercise={exercise}
           settings={props.settings}
@@ -56,7 +56,7 @@ export function ProgramPreviewPlaygroundExerciseEditContent(
       )}
       {(hasStateVariables || props.hideVariables) && (
         <>
-          <Text className="mb-2 text-lg font-bold text-center">Edit state variables</Text>
+          <Text className="mb-2 text-lg font-bold text-center">운동 진행 변수 수정</Text>
           {hasStateVariables ? (
             <ProgramStateVariables
               settings={props.settings}
@@ -67,7 +67,7 @@ export function ProgramPreviewPlaygroundExerciseEditContent(
             />
           ) : (
             <View className="px-4 py-2">
-              <Text className="text-sm italic text-center text-text-secondary">No state variables</Text>
+              <Text className="text-sm italic text-center text-text-secondary">수정할 운동 진행 변수가 없습니다</Text>
             </View>
           )}
         </>
@@ -91,7 +91,7 @@ export function ProgramPreviewPlaygroundExerciseEditContent(
           data-testid="modal-edit-mode-save-statvars"
           testID="modal-edit-mode-save-statvars"
         >
-          Done
+          완료
         </Button>
       </View>
     </View>
@@ -131,7 +131,7 @@ function ProgramStateVariables(props: IStateProps): JSX.Element {
             nextLine={
               props.stateMetadata?.[stateKey]?.userPrompted ? (
                 <View style={{ marginTop: -12 }} className="mb-1">
-                  <Text className="text-xs text-text-secondary">User Prompted</Text>
+                  <Text className="text-xs text-text-secondary">운동 중 직접 입력</Text>
                 </View>
               ) : undefined
             }

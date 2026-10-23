@@ -3,6 +3,7 @@ import { WatchHost_isAvailable, WatchHost_send } from "./watchHost";
 import { AppAttribution_get } from "./appAttribution";
 import { EventManager_isAvailable, EventManager_log } from "./eventManager";
 import { AdminDebug_isDebugAccountId } from "../models/adminDebug";
+import { Distribution_isLocalOnly } from "./distribution";
 
 declare let __COMMIT_HASH__: string;
 
@@ -14,6 +15,7 @@ export function track(args: {
   googlename?: string;
   extra?: Record<string, string | number>;
 }): void {
+  if (Distribution_isLocalOnly()) return;
   if (typeof window === "undefined") {
     return;
   }
@@ -46,6 +48,7 @@ export function lg(
   tempUserId?: string,
   timestamp?: number
 ): void {
+  if (Distribution_isLocalOnly()) return;
   tempUserId =
     tempUserId ??
     (typeof globalThis !== "undefined" ? (globalThis as { tempUserId?: string }).tempUserId : undefined) ??

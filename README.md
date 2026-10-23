@@ -1,137 +1,69 @@
-# 🏋 Liftosaur: Open-source powerful weight lifting tracker PWA for coders.
+# Liftosaur-KR
 
-- Link: https://www.liftosaur.com
-- **[Features roadmap](https://github.com/astashov/liftosaur/discussions)**
-- **[Bugs](https://github.com/astashov/liftosaur/issues)**
+Liftosaur-KR은 [Liftosaur](https://github.com/astashov/liftosaur)를 바탕으로 만든 한국어 운동 기록 앱입니다. **한국어로 운동을 기록하고, 외부 AI가 만든 루틴을 파일로 가져온 뒤 실제 수행 기록을 Markdown으로 돌려주는 오프라인 우선 운동 데이터 도구**를 목표로 합니다. 앱 내부에서 외부 AI API를 직접 호출하지 않습니다.
 
-<img src="https://raw.github.com/astashov/liftosaur/master/screenshot2.png" alt="Liftosaur Screenshot" width="360" />
+현재 기술 스택은 Flutter가 아닌 **React Native + TypeScript** Android/iOS 앱과 Preact 웹 앱입니다. 기존 Liftoscript 엔진과 로컬 저장 구조를 사용합니다. 원본과 별도로 관리하는 포크이며, 원본 서비스 운영권이나 개별 이미지·상표의 사용 권리가 확보되었다는 뜻은 아닙니다.
 
-It's mobile app, that's available as:
+## 배포 상태와 설치
 
-- [PWA](https://www.liftosaur.com/app) - meaning you can open the page in a browser on your mobile phone, add it to a home screen, and it will behave exactly as a regular app.
-- [Android app](https://play.google.com/store/apps/details?id=com.liftosaur.www.twa?referrer=utm_source%3Dgithub) - thin Android app around this PWA with some native features added.
-- [iOS app](https://apps.apple.com/app/apple-store/id1661880849?pt=126680920&mt=8&ct=github) - thin iOS app around this PWA with some native features added.
+[APK 릴리스](https://github.com/lsh235/Liftosaur-KR/releases) · [문제 제보](https://github.com/lsh235/Liftosaur-KR/issues)
 
-The main idea is to make a weightlifting tracker app, that is flexible enough to implement pretty much any weightlifting routine. It would be a platform for your experiments in weightlifting, you can try any progression and deloading logic you want to see what suits you better. It automatically handles progressive overloads and deloads based on the logic you define. Any program should be possible to implement - Stronglifts 5x5, GZCLP, any 5/3/1s, any PPL, you name it.
+`v158.0`은 한글 글꼴·번역 개선 APK입니다. 한국 Google Play 정식 출시는 준비 중입니다. 서명 APK 빌드와 스토어 출시 적합성은 별도입니다. [출시 점검](docs/release/ko-KR/release-readiness.md), [진행 계획](docs/release/ko-KR/release-plan.md), [검증 기록](docs/release/ko-KR/verification.md)을 확인하세요.
 
-To describe the logic, there's a built-in scripting language called [Liftoscript](https://www.liftosaur.com/doc), which is a very simple programming language with JavaScript-like syntax. It has some built-in variables and some custom number types (e.g. `kg` and `lb`), but other than that it's pretty simple. E.g. Stronglifts 5x5 logic could look like this if written in Liftoscript:
+1. 릴리스의 `.apk`와 `.sha256` 파일을 내려받습니다. SHA-256으로 게시 파일과 다운로드 파일이 같은지 확인할 수 있습니다.
+2. Android에서 APK를 열어 설치합니다. 필요하면 사용 중인 브라우저·파일 앱의 ‘알 수 없는 앱 설치’를 허용합니다.
+3. 기존 **Liftosaur-KR**은 같은 서명의 더 높은 버전으로 업데이트합니다. 중요 기록은 먼저 설정의 전체 데이터 내보내기로 백업하세요.
 
-```js
-if (completedReps >= reps) {
-  state.weight = state.weight + 5lb
-} else {
-  state.failures = state.failures + 1
-}
-if (state.failures > 2) {
-  state.failures = 0
-  state.weight = state.weight * 0.9
-}
-```
+현재 앱 ID는 원본과 같은 `com.liftosaur.www.twa`입니다. 공식 앱과 서명이 다르면 공존·업데이트가 불가능합니다. **설치 실패를 해결하려고 기존 앱부터 삭제하지 마세요.** 삭제 전 전체 데이터 백업과 복원을 확인해야 합니다. 별도 Play 패키지를 도입하면 파일을 통한 데이터 이전이 필요합니다.
 
-# Features
+## AI 파일 흐름과 운동 일정
 
-- Built-in workout programs - 5/3/1, GZCLP, Starting Strength, etc
-- Any workout program is fully customizable - you can clone existing one and adjust it to your needs. Every single program is written using Liftoscript right in the app, so every bit of it could be changed.
-- Simple exercise editor if you don't want to mess with Liftoscript, that still allows to specify simple progression/deload logic.
-- Advanced exercise editor if you want to unleash the full power of Liftoscript.
-- Workout history
-- Offline mode, it doesn't need Internet to work (still needs though if you have an account and want to save progress).
-- Plates calculator right on the progress screen. Each weight is prefixed with plates you need to use to get to that weight, it looks like: `45/25/25/10 255lb` meaning you need to add 1x45lb, 2x25lb and 1x10lb plates on each side of the olympic barbell to get `255lb`. You define your plates inventory in Settings.
-- All weights are rounded according to your available bars and plates, which you set up in Settings.
-- Rest Timers - configurable globally and per exercise, with a Push Notification when the timer is expired (works only on native apps though).
-- Cloud storage - if you create an account, your progress will be saved on the server.
-- Graphs - see the visual progression of your lifts, define what Graphs you need on the Graphs screen.
-- Muscle map - see what muscles get activated in your day or in the whole program relatively to each other.
-- Exercise substitution based on similar activated muscles.
-- Custom exercises.
-- Warmup sets, which you can configure as a percentage of the weight of the first set, or just as an absolute lb or kg value. Each exercise has defaults, but you can change it.
-- "Playgrounds" when editing exercises, so you could test the logic or exercises.
-- Previews of each program available, with playgrounds, e.g. [Basic Beginner Routine](https://www.liftosaur.com/programs/basicBeginner).
-- If you did similar sets x reps for some exercise previously, it shows your last results. Same for AMRAPs.
-- Optional public profile page, e.g. this is [mine](https://www.liftosaur.com/profile/tiolnbjbleke).
-- Track bodyweight and other body measurements (biceps, chest, waist, etc)
-- Correlate bodyweight changes with lifts graphs
-- Web Editor to create programs
-- Shareable programs - you can build a program, generate a link, and import on another phone.
+설정의 **가져오기 / 내보내기 → AI에게 새 루틴 요청하는 프롬프트 복사**로 규격을 복사합니다. ChatGPT, Claude 등에서 만든 JSON/CSV를 앱에서 가져옵니다. **AI 피드백용 Markdown 내보내기**에는 수행 총평·통증 메모·다음 루틴 요청을 넣을 수 있습니다. 계획/실제 수행·날짜·볼륨·e1RM을 파일로 저장하거나 복사합니다.
 
-# 한국어: AI 운동 루틴 가져오기와 내보내기
-
-설정의 **가져오기 / 내보내기**에서 외부 AI가 작성한 주차별 운동 루틴을 JSON 또는 CSV로 가져올 수 있습니다. 앱은 외부 AI API를 호출하지 않습니다. **AI에게 새 루틴 요청하는 프롬프트 복사**로 규격을 복사해 ChatGPT, Claude 등에서 루틴을 만들고, 결과 파일을 앱에서 선택하세요. `target_weight`가 `0`인 세트는 개인 중량이 없는 것으로 처리되어 운동 중 직접 입력할 수 있습니다.
-
-JSON은 `program_name`, `duration_weeks`, `days_per_week`, `workouts`를 포함해야 합니다. 각 운동은 `weekly_progression`에 전체 주차를 포함하고 세트 유형은 `WARMUP`, `TOP`, `BACKOFF`, `STRAIGHT`, `DROP` 중 하나를 사용합니다. CSV는 한 줄에 한 세트를 기록하며 아래 헤더를 사용합니다.
+JSON의 필수 최상위 키는 `program_name`, `duration_weeks`, `days_per_week`, `workouts`입니다. 각 운동의 `weekly_progression`에 전체 주차를 포함하고 세트 유형은 `WARMUP`, `TOP`, `BACKOFF`, `STRAIGHT`, `DROP`을 사용합니다. `target_weight: 0`은 운동 중 개인 목표 중량을 입력하는 용도로 사용할 수 있습니다. CSV는 한 줄에 한 세트를 기록합니다.
 
 ```csv
 program_name,duration_weeks,days_per_week,weight_unit,day_index,day_name,exercise_order,exercise_name,target_muscle,rest_seconds,week,set_no,set_type,target_weight,target_reps
 ```
 
-앱에는 **6주 PHAT 평일 5일 샘플 루틴**도 포함되어 있습니다. 설정에서 샘플을 추가하면 6주 × 5일의 운동일과 주차별 세트가 생성됩니다. 샘플의 목표 중량은 비어 있으므로 운동 전에 본인에게 맞는 중량을 입력하세요.
+기본 PHAT 프리셋은 **6주 × 주 5일, 30세션·29개 운동 슬롯**의 상·하체 파워와 당기기·밀기·하체 근비대 루틴입니다. 주차별 예시 중량과 횟수는 본인 능력에 맞춰 조정합니다. 개인 처방 중량은 아닙니다. 시작일·운동 요일을 정하면 휴식일을 건너뛰고, 일정 미루기는 현재와 이후 미완료 세션을 다음 운동 가능일로 옮깁니다.
 
-**AI 피드백용 Markdown 내보내기**에서는 프로그램 총평, 통증 메모, 다음 루틴 요청을 입력할 수 있습니다. 파일에는 기록 기간과 완료 세션 수, 다관절 운동의 첫·마지막 기록 e1RM 비교, 세션별 목표와 실제 수행 및 볼륨이 담깁니다. 일정을 설정한 프로그램은 출석률과 일정 미루기 횟수도 포함합니다.
+운동 알림은 네이티브 앱의 알림 권한·정확한 알람·절전 설정에 영향을 받습니다. 예약 상한은 60개입니다. 최초부터 모든 이미지가 오프라인 제공된다는 뜻은 아니며 원격 이미지·캐시는 별도 검증합니다.
 
-프로그램 일정은 시작일과 운동 요일을 지정해 계산합니다. 운동일을 미루면 현재 세션과 이후 미완료 세션이 다음 지정 운동일로 이동하고 주말 등 선택하지 않은 날은 건너뜁니다. iOS/Android 앱에서는 일정 설정에서 운동 시간을 정하면 세션별 알림을 예약하며, 완료 또는 미루기 후 남은 알림을 다시 계산합니다. 알림은 최대 60개까지 미리 예약됩니다.
+## 개발과 검증
 
-# Implementation details
+Node.js 22와 npm을 사용합니다.
 
-It's a regular Preact/TypeScript app. State manager is custom, similar to Redux + Thunks, but using [lens-shmens](https://github.com/astashov/lens-shmens#why) to avoid Redux-like boilerplate. It's a PWA, so there's a simple service worker, that caches the network calls. The setup is similar to what's described in [this blog post](https://www.liftosaur.com/blog/posts/offline-mode-in-liftosaur/).
-
-I try to be efficient with the JavaScript size, and avoid heavy third-party libraries. As a result, the whole app weights ~200kb, where ~100kb are various third-party libs. The major third-party libs are:
-
-- [CodeMirror](https://codemirror.net/) for the code editor
-- [Preact](https://preactjs.com/) for a view layer
-- [Prism](https://prismjs.com/) for code highlighting
-- [uPlot](https://github.com/leeoniya/uPlot) for graphs
-- [Rollbar](https://rollbar.com/) for error reporting
-- [11ty](https://www.11ty.dev/) for the blog
-- [Cypress](https://www.cypress.io/) for integration tests
-- [Tailwind CSS](https://tailwindcss.com/) for CSS
-- [Jimp](https://github.com/oliver-moran/jimp) for generating dynamic `og:image` images (like [this](https://www.liftosaur.com/profileimage/tiolnbjbleke)) for social media
-
-For RPE multiplier calculations we use the formula from https://gitlab.com/openpowerlifting/plsource
-
-Server-side part is AWS Lambdas + DynamoDB + S3 + a bunch of other AWS services. DynamoDB is not a great choice for this app, I'd prefer a relational database here, frankly. But AWS Lambdas + DynamoDB + S3 are pretty cheap, easily scalable, fully managed with backups, so sticking with it for now.
-
-I deploy everything via AWS CDK, the setup is described in [this blog post](liftosaur.com/blog/posts/how-i-moved-liftosaur-from-cloudflare-workers-to-lambda/). I also created an [AWS CDK Lambda TypeScript starter](https://github.com/astashov/aws-cdk-lambda-typescript-starter), to simplify creating similar environment for pet projects.
-
-# How to run locally
-
-If you want to run liftosaur locally firstly ensure that you have Node 18 and npm installed
-
-Then comment out the
-
-```
-devServer:{ }
+```sh
+npm ci
+npm run ensure:localdomain
+npm run check
 ```
 
-block from the `webpack.config.js` file
+웹은 `npm start`로 실행합니다. `localdomain.js`와 `webpack.config.js`의 HTTPS 개발 도메인·인증서가 필요합니다. 기본 주소는 `local.liftosaur.com:8080`입니다. 개발 화면 실행과 백엔드 운영은 별도입니다.
 
-Run
+Android는 Java 17, SDK/Build Tools 36, NDK 27.1.12297006, CMake 3.22.1을 사용합니다. 개발 실행은 `npm run android`, 서명 배포는 GitHub Actions `Android APK Release`를 사용합니다. 키·비밀번호를 커밋하지 마세요. 로컬 Gradle의 debug 서명 대체 결과를 배포본으로 사용하지 마세요.
 
+```sh
+npm run check
+npm run onetest -- test/aiWorkoutProgram.test.ts test/aiFeedbackExport.test.ts test/programSchedule.test.ts test/workoutReminderScheduler.test.ts
+npm run test:render -- --runInBand
 ```
-$ npm install
-$ npm start
-```
 
-Then, open http://localhost:8080/app. That's it! But that will only give you offline-like experience, so there will be no local API server running.
+전체 단위 검사는 `npm test`, 웹 흐름 검사는 `npm run playwright`입니다. Playwright에는 설정된 HTTPS 서버와 브라우저가 필요합니다. `npm run build`는 원본 진단 서비스에 소스맵을 업로드하는 단계가 있으므로 업로드 의도 없이 실행하지 마세요. 로컬 웹 생성은 `npm run build:prepare`를 사용하고 생성물 변경을 별도 검토합니다.
 
-Running the server is a bit trickier, and frankly still tied to `liftosaur.com` domain, so probably would not be easy to run, you'd need to modify a bunch of things in `liftosaur-cdk/liftosaur-cdk.ts` file. If you still want to try, then you need to set up AWS account, add `AWS_ACCESS_KEY_ID`,`AWS_SECRET_ACCESS_KEY`,`AWS_REGION` env vars, and set the necessary permission policies for your user:
+## 다음 개발자·AI 에이전트에게
 
-- SecretsManagerReadWrite
-- AmazonDynamoDBFullAccess
-- AmazonEC2ContainerRegistryFullAccess
-- AmazonS3FullAccess
-- CloudFrontFullAccess
-- AmazonSESFullAccess
-- AmazonAPIGatewayAdministrator
-- AmazonSSMFullAccess
-- AmazonRoute53FullAccess
-- AWSCloudFormationFullAccess
-- AmazonElasticContainerRegistryPublicFullAccess
-- AWSLambdaFullAccess
+목적과 [출시 계획](docs/release/ko-KR/release-plan.md)을 먼저 확인하세요. 사용자 기록 보존, 한국어 가독성, AI 파일 왕복이 우선입니다. 원본 계정·서버·결제·진단은 독립 한국 운영 권한의 근거가 아니며, 로컬 전용 후보에서 연결을 차단하는 작업을 진행합니다. 건강정보 연동과 원격 미디어는 개별 데이터 흐름으로 검증합니다.
 
-Create new secrets in AWS Secrets Manager, with the names listed in `secretArns` variable in `liftosaur-cdk.ts`. Those could be pretty much any random strings.
+구조 탐색은 저장소 지침의 `codebase-memory` 스킬을 적용합니다. 그래프 도구가 없으면 관련 소스 읽기·검색으로 확인하고 전체 범위를 조사했다고 주장하지 마세요. 병렬 작업은 파일 소유권을 정하고 타인의 변경·사용자 파일을 보존합니다.
 
-Then, run `npm cdk-deploy`, that should create 2 environments - one for prod, one for dev. Again, there could be some things you want to change in `lifosaur-cdk.ts` to make it work. After that, run `npm start:server`, and it will start a local server.
+변경 결과에는 파일, 작업트리/SHA, 실행 범위·결과, 남은 문제를 남깁니다. 로컬 검사·모의 화면·Android 빌드/설치·사람의 화면 평가·스토어 승인을 `PASS/FAIL/NOT RUN`으로 구분합니다. Gate 실패는 원인 수정 후 최대 두 번 재검증하고 미해결이면 증거와 함께 보류합니다. 빌드 성공만으로 출시 완료를 선언하지 마세요.
 
-# Contributing
+검토된 파일 목록만 커밋하고 버전·태그·APK·소스를 맞춥니다. 통과 태그를 이동하지 않습니다. `v*` 태그 푸시는 APK 공개를 실행하므로 통합 판정 전에 생성하지 마세요. 스토어 공개와 운영자 명의 정책·결제 개시는 실제 운영자 판단이 필요합니다.
 
-If you want to propose a feature, or found a bug - [create an issue](https://github.com/astashov/liftosaur/issues) on Github.
+## 원본과 라이선스
+
+원본 저작자·기여자의 고지를 유지합니다. 코드 라이선스는 [GNU AGPL v3](LICENSE)이며 배포 파일에 대응하는 소스·변경 이력·빌드 방법을 함께 관리합니다. [원본 소스](https://github.com/astashov/liftosaur), [Liftoscript 문서](https://www.liftosaur.com/doc)를 참고하세요.
+
+코드 라이선스는 개별 운동 이미지·영상·상표의 권리 증명을 대신하지 않습니다. 외부 이미지 자동 수집·재배포·APK 내장은 파일별 출처·허가 확인 후 결정합니다. 제삼자 패키지 고지는 라이선스 생성 절차와 앱 라이선스 화면에서 관리합니다.

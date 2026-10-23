@@ -88,7 +88,9 @@ repositories {
     maven { url 'https://artifact.bytedance.com/repository/AwemeOpenSDK' }
 }
 
-def disableOta = (System.getenv("DISABLE_OTA") ?: "").toBoolean()
+// The KR APK never connects to the upstream cloud/diagnostic services.
+def localOnly = true
+def disableOta = localOnly || (System.getenv("DISABLE_OTA") ?: "").toBoolean()
 
 // AndroidInfoHelpers reads the dev server port from R.integer.react_native_dev_server_port, which
 // defaults to 8081 inside the react-android library. Worktrees run their own Metro, so override it
@@ -125,9 +127,10 @@ android {
         applicationId "com.liftosaur.www.twa"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 158
-        versionName "158.0"
+        versionCode 159
+        versionName "159.0"
         buildConfigField "boolean", "DISABLE_OTA", "${disableOta}"
+        buildConfigField "boolean", "LOCAL_ONLY", "${localOnly}"
     }
     buildFeatures {
         buildConfig true

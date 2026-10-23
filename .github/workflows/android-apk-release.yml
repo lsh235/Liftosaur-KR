@@ -80,20 +80,48 @@ jobs:
           ./gradlew --no-daemon -PreactNativeArchitectures=arm64-v8a,x86_64 :app:testDebugUnitTest :app:assembleRelease
 
       - name: Verify APK signature and metadata
+        id: verify_apk
         run: |
           APK=android/app/build/outputs/apk/release/app-release.apk
           EXPECTED_VERSION_CODE="$(sed -nE 's/^[[:space:]]*versionCode[[:space:]]+([0-9]+).*$/\1/p' android/app/build.gradle | head -n 1)"
           EXPECTED_VERSION_NAME="$(sed -nE 's/^[[:space:]]*versionName[[:space:]]+"([^"]+)".*$/\1/p' android/app/build.gradle | head -n 1)"
-          VERSION="${GITHUB_REF_NAME#v}"
-          test "$GITHUB_REF_NAME" = "v${EXPECTED_VERSION_NAME}"
+          if [ "$GITHUB_EVENT_NAME" = "push" ]; then
+            test "$GITHUB_REF_NAME" = "v${EXPECTED_VERSION_NAME}"
+            VERSION="${GITHUB_REF_NAME#v}"
+          else
+            VERSION="$EXPECTED_VERSION_NAME"
+            [[ "$VERSION" =~ ^[0-9]+\.[0-9]+(\.[0-9]+)?([.-][A-Za-z0-9.-]+)?$ ]]
+          fi
+          test -n "$EXPECTED_VERSION_CODE"
+          test -n "$EXPECTED_VERSION_NAME"
           test -s "$APK"
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose "$APK"
           apkanalyzer manifest application-id "$APK" | grep -Fx 'com.liftosaur.www.twa'
           apkanalyzer manifest version-code "$APK" | grep -Fx "$EXPECTED_VERSION_CODE"
+          apkanalyzer manifest version-name "$APK" | grep -Fx "$EXPECTED_VERSION_NAME"
           cp "$APK" "Liftosaur-KR-${VERSION}.apk"
           sha256sum "Liftosaur-KR-${VERSION}.apk" > "Liftosaur-KR-${VERSION}.apk.sha256"
+          echo "release_version=$VERSION" >> "$GITHUB_ENV"
+          echo "release_version=$VERSION" >> "$GITHUB_OUTPUT"
 
-      - name: Install and launch APK in Android emulator
+      - name: Download published v158 upgrade baseline
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p qa-artifacts
+          gh release download v158.0 \
+            --repo lsh235/Liftosaur-KR \
+            --pattern 'Liftosaur-KR-158.0.apk' \
+            --pattern 'Liftosaur-KR-158.0.apk.sha256' \
+            --dir qa-artifacts
+          (cd qa-artifacts && sha256sum --check Liftosaur-KR-158.0.apk.sha256)
+
+      - name: Generate validated synthetic v158 legacy-storage fixture
+        run: |
+          mkdir -p qa-artifacts/legacy-fixtures
+          TS_NODE_TRANSPILE_ONLY=1 npx ts-node scripts/qa/create-legacy-storage-fixtures.ts qa-artifacts/legacy-fixtures
+
+      - name: Install, upgrade, launch, and capture APK evidence in Android emulator
         uses: reactivecircus/android-emulator-runner@v2.38.0
         with:
           api-level: 36
@@ -102,26 +130,54 @@ jobs:
           profile: pixel_6
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
           disable-animations: true
-          script: |
-            adb install Liftosaur-KR-${GITHUB_REF_NAME#v}.apk
-            adb shell am start -n com.liftosaur.www.twa/.MainActivity
-            sleep 20
-            adb shell pidof -s com.liftosaur.www.twa
+          script: bash scripts/qa/ko-release-emulator.sh
+        env:
+          BASELINE_APK: qa-artifacts/Liftosaur-KR-158.0.apk
+          CANDIDATE_APK: Liftosaur-KR-${{ steps.verify_apk.outputs.release_version }}.apk
+          FIXTURE_DIR: qa-artifacts/legacy-fixtures
+          QA_ARTIFACTS_DIR: qa-artifacts/native-upgrade
+
+      - name: Upload candidate APK artifact
+        if: always() && github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v4
+        with:
+          name: Liftosaur-KR-${{ steps.verify_apk.outputs.release_version }}-candidate
+          path: |
+            Liftosaur-KR-${{ steps.verify_apk.outputs.release_version }}.apk
+            Liftosaur-KR-${{ steps.verify_apk.outputs.release_version }}.apk.sha256
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload Android install and screenshot evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Liftosaur-KR-${{ steps.verify_apk.outputs.release_version }}-android-evidence
+          path: qa-artifacts/native-upgrade/
+          if-no-files-found: warn
+          retention-days: 30
 
       - name: Publish GitHub Release
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          VERSION="${GITHUB_REF_NAME#v}"
+          VERSION="$release_version"
           cat > release-notes.md <<EOF
           ## 설치 및 다운로드
 
           - [Liftosaur-KR-${VERSION}.apk](https://github.com/${GITHUB_REPOSITORY}/releases/download/${GITHUB_REF_NAME}/Liftosaur-KR-${VERSION}.apk): ARM64 Android 기기와 x86_64 에뮬레이터용 APK입니다. 다운로드한 뒤 파일을 열어 설치하세요. 브라우저나 파일 앱에서 '알 수 없는 앱 설치' 허용이 필요할 수 있습니다.
           - [SHA-256 체크섬](https://github.com/${GITHUB_REPOSITORY}/releases/download/${GITHUB_REF_NAME}/Liftosaur-KR-${VERSION}.apk.sha256)
 
-          기존 공식 Liftosaur 앱과 서명 키가 달라 앱 위에 바로 설치되지 않을 수 있습니다. 이 경우 기존 앱을 삭제하고 설치해야 하며, 기존 앱을 삭제하면 그 앱에 저장된 데이터도 사라질 수 있습니다. 이후 Liftosaur-KR 업데이트는 이 릴리스의 서명 키를 사용합니다.
+          이 APK는 기존 한국어 Liftosaur-KR 158.0과 같은 Android 패키지 ID를 유지해 해당 앱의 업데이트 대상으로 빌드했습니다. 설치 전에 기존 데이터를 앱의 전체 내보내기 기능으로 백업하세요. Android가 서명 불일치로 업데이트를 거부하면 기존 앱을 삭제하지 말고, 앱과 기록을 그대로 보존한 뒤 문제를 제보해 주세요. 공식 Liftosaur 앱은 서명·패키지가 다를 수 있으므로 이 APK를 설치하기 위해 공식 앱을 삭제하지 마세요.
 
-          이 APK는 GitHub Actions에서 Android 단위 테스트를 통과했고, Android 에뮬레이터에 설치한 뒤 실행을 확인했습니다.
+          ## 이번 후보의 변경
+
+          - 코드/앱 버전: ${GITHUB_SHA} / ${VERSION} (Android versionCode $(sed -nE 's/^[[:space:]]*versionCode[[:space:]]+([0-9]+).*$/\1/p' android/app/build.gradle | head -n 1)).
+          - 네이티브 기본 배포를 로컬 기록 중심으로 제한하고, 클라우드 계정·구독 기능을 안내 화면으로 전환했습니다. 원격 운동 이미지는 계속 불러올 수 있습니다.
+          - 한국어 운동 기록·가져오기/내보내기 흐름을 개선했습니다. 앱 데이터 자동 이전이나 모든 데이터 복원은 보장하지 않습니다.
+
+          GitHub Actions는 Android 단위 검사, 서명·패키지·버전 메타데이터 검사, 합성 legacy 파일로 v158.0의 로컬 계정·운동 기록을 구성한 뒤 v159 업데이트와 화면 읽기를 시도합니다. 합성 자료는 실제 사용자가 만든 기록이 아닙니다. 이 절차는 사용자 기록에 대한 의미상 완전성 비교, 실제 기기 사용성 평가, 파일 백업 복원, Health Connect/알림 권한 검증을 대신하지 않습니다. 검증 로그와 캡처는 Actions 아티팩트를 확인하세요.
           EOF
           gh release create "$GITHUB_REF_NAME" \
             "Liftosaur-KR-${VERSION}.apk#Android APK" \

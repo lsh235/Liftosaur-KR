@@ -1,4 +1,6 @@
 import "mocha";
+import { readFileSync } from "fs";
+import { join } from "path";
 import { expect } from "chai";
 import {
   AiWorkoutProgram_buildPhatSeedJson,
@@ -93,6 +95,19 @@ describe("AI workout program import", () => {
         expect(nextWeekSets.data[0].evaluatedSetVariations[0].sets[0].label).to.equal("DROP");
       }
     }
+  });
+
+  it("preserves explicitly disabled rest timers instead of inheriting the app default", () => {
+    const routine = JSON.parse(jsonProgram());
+    routine.workouts[0].exercises[0].rest_seconds = 0;
+    const settings = Settings_build("kg");
+    const imported = AiWorkoutProgram_tryImport(JSON.stringify(routine), settings);
+    expect(imported?.success).to.equal(true);
+    if (!imported?.success) {
+      throw new Error("zero-rest import failed");
+    }
+    const record = Program_nextHistoryRecord(imported.data.program, settings, Stats_getEmpty(), 1);
+    expect(record.entries[0].sets[0].timer).to.equal(0);
   });
 
   it("imports valid JSON wrapped in a Markdown json code fence", () => {
@@ -457,67 +472,132 @@ describe("AI workout program import", () => {
     });
   });
 
-  it("provides a 6-week, 5-day PHAT sample and a Korean JSON-generation prompt", () => {
+  it("preserves all 30 sessions of the user's six-week PHAT targets through import and engine evaluation", () => {
     const baseSettings = Settings_build("kg");
     const seedJson = AiWorkoutProgram_buildPhatSeedJson();
     const seed = JSON.parse(seedJson);
-    const benchProgression = seed.workouts[0].exercises.find(
-      (exercise: { name: string }) => exercise.name === "Bench Press"
-    ).weekly_progression;
-    expect(
-      benchProgression.map(
-        (week: { sets: { type: string; target_reps: number }[] }) =>
-          week.sets.find((set) => set.type === "TOP")?.target_reps
-      )
-    ).to.deep.equal([3, 4, 5, 2, 5, 5]);
-    expect(
-      benchProgression.map((week: { sets: { type: string }[] }) => week.sets.filter((set) => set.type === "TOP").length)
-    ).to.deep.equal([2, 2, 2, 1, 2, 2]);
-    const lateralRaiseProgression = seed.workouts[2].exercises.find(
-      (exercise: { name: string }) => exercise.name === "Lateral Raise"
-    ).weekly_progression;
-    expect(
-      lateralRaiseProgression.map((week: { sets: { target_reps: number }[] }) => week.sets[0].target_reps)
-    ).to.deep.equal([15, 16, 17, 12, 17, 18]);
-    expect(seed.description).to.include("원 PHAT은 고정된 6주 계획");
-
+    expect(readFileSync(join(__dirname, "../examples/phat-6week-kr.json"), "utf8").trim()).to.equal(seedJson);
+    expect(seed.workouts.map((workout: { exercises: unknown[] }) => workout.exercises.length)).to.eql([6, 5, 6, 6, 6]);
+    // Reference: user's Week 1..6 Liftoscript supplied in this chat, transcribed
+    // independently by day/order as first work-set load/reps. Power backoffs below.
+    const reference = [
+      [
+        "90/4 90/5 92.5/4 92.5/5 95/4 95/5",
+        "60/5 60/6 65/5 65/6 70/5 70/6",
+        "37.5/6 37.5/7 40/6 40/7 42.5/5 42.5/6",
+        "56/6 56/8 63/6 63/7 63/8 70/6",
+        "30/8 30/9 30/10 32.5/8 32.5/9 35/8",
+        "30/8 30/9 30/10 32.5/8 32.5/9 35/8",
+      ],
+      [
+        "100/4 100/5 105/4 105/5 110/4 110/5",
+        "80/6 80/8 85/6 85/8 90/6 90/8",
+        "160/8 160/10 180/8 180/10 200/8 200/10",
+        "40/10 40/12 45/10 45/12 50/10 50/12",
+        "60/12 60/15 70/12 70/15 80/12 80/15",
+      ],
+      [
+        "48.9/10 48.9/11 48.9/12 56/8 56/9 56/10",
+        "48.9/10 48.9/11 48.9/12 56/8 56/9 56/10",
+        "23.75/15 26.25/12 26.25/15 28.75/12 28.75/14 28.75/15",
+        "30/12 30/15 35/12 35/15 40/12 40/15",
+        "12/10 12/12 14/10 14/11 14/12 16/10",
+        "12/12 14/10 14/12 16/10 16/11 16/12",
+      ],
+      [
+        "26/10 28/8 28/10 30/8 30/10 32/8",
+        "0/8 0/9 0/10 0/12 4/8 4/10",
+        "40/12 45/10 45/12 50/10 50/11 50/12",
+        "10/15 10/18 10/20 12/12 12/14 12/15",
+        "21.25/12 21.25/15 23.75/12 23.75/15 26.25/12 26.25/15",
+        "21.25/12 21.25/15 26.25/12 26.25/15 28.75/12 28.75/15",
+      ],
+      [
+        "80/10 80/12 90/10 90/12 100/10 100/12",
+        "12/10 12/12 16/10 16/12 20/10 20/12",
+        "45/12 45/15 50/12 50/15 55/12 55/15",
+        "40/12 40/15 45/12 45/15 50/12 50/15",
+        "40/15 40/18 45/15 45/18 50/15 50/18",
+        "0/15 0/15 0/18 0/18 0/20 0/20",
+      ],
+    ];
+    const backoffReference = [
+      "80/8 80/9 82.5/8 82.5/9 85/8 85/9",
+      "50/8 50/9 55/8 55/9 60/8 60/9",
+      "85/8 85/9 90/8 90/9 95/8 95/9",
+    ];
+    const counts = [
+      [5, 5, 4, 3, 3, 3],
+      [5, 4, 3, 3, 4],
+      [4, 4, 2, 4, 3, 3],
+      [4, 4, 3, 4, 3, 3],
+      [4, 3, 3, 4, 3, 3],
+    ];
+    const rests = [
+      [180, 180, 150, 120, 90, 90],
+      [210, 150, 120, 90, 90],
+      [120, 120, 90, 90, 90, 90],
+      [120, 120, 90, 90, 90, 90],
+      [150, 120, 90, 90, 60, 60],
+    ];
     const sample = AiWorkoutProgram_tryImport(seedJson, baseSettings);
     expect(sample?.success).to.equal(true);
-    if (sample?.success) {
-      const weeks = sample.data.program.planner?.weeks || [];
-      expect(weeks).to.have.length(6);
-      expect(weeks.every((week) => week.days.length === 5)).to.equal(true);
-      expect(weeks[0].days[0].exerciseText).to.include("TOP");
-      expect(weeks[0].days[0].exerciseText).to.include("?+");
-
-      const importedSettings = {
-        ...baseSettings,
-        exercises: { ...baseSettings.exercises, ...sample.data.customExercises },
-      };
-      const evaluated = Program_evaluate(sample.data.program, importedSettings);
-      expect(evaluated.errors).to.have.length(0);
-      expect(
-        Object.values(sample.data.customExercises).some(
-          (exercise) => exercise?.name === "Seated Cable Row" && exercise.defaultEquipment === "cable"
-        )
-      ).to.equal(true);
-      expect(
-        Object.values(sample.data.customExercises).some(
-          (exercise) => exercise?.name === "Barbell Curl" && exercise.defaultEquipment === "barbell"
-        )
-      ).to.equal(true);
-
-      for (let day = 1; day <= 30; day += 1) {
-        const record = Program_nextHistoryRecord(sample.data.program, importedSettings, Stats_getEmpty(), day);
-        expect(record.entries, `week/day ${day}`).to.have.length(5);
+    if (!sample?.success) {
+      throw new Error("seed import failed");
+    }
+    const importedSettings = {
+      ...baseSettings,
+      exercises: { ...baseSettings.exercises, ...sample.data.customExercises },
+    };
+    const evaluated = Program_evaluate(sample.data.program, importedSettings);
+    expect(evaluated.errors).to.have.length(0);
+    let totalSets = 0;
+    for (let week = 0; week < 6; week += 1) {
+      for (let day = 0; day < 5; day += 1) {
+        const record = Program_nextHistoryRecord(
+          sample.data.program,
+          importedSettings,
+          Stats_getEmpty(),
+          week * 5 + day + 1
+        );
+        expect(record.entries, `week ${week + 1} day ${day + 1}`).to.have.length(counts[day].length);
+        for (const [index, entry] of record.entries.entries()) {
+          const [weight, reps] = reference[day][index].split(" ")[week].split("/").map(Number);
+          const powerIndex = day === 0 && index < 2 ? index : day === 1 && index === 0 ? 2 : -1;
+          expect(entry.sets.length).to.equal(counts[day][index]);
+          totalSets += entry.sets.length;
+          for (const [setIndex, set] of entry.sets.entries()) {
+            const [expectedWeight, expectedReps] =
+              powerIndex >= 0 && setIndex >= 2
+                ? backoffReference[powerIndex].split(" ")[week].split("/").map(Number)
+                : [weight, reps];
+            expect(set.originalWeight, `w${week + 1} d${day + 1} ex${index + 1} set${setIndex + 1}`).to.eql(
+              Weight_build(expectedWeight, "kg")
+            );
+            expect(set.reps).to.equal(expectedReps);
+            expect(set.timer).to.equal(rests[day][index]);
+            expect(set.label).to.equal(powerIndex >= 0 ? (setIndex < 2 ? "TOP" : "BACKOFF") : "STRAIGHT");
+            expect(set.askWeight).to.equal(false);
+          }
+        }
       }
     }
+    expect(totalSets).to.equal(618);
+    const dips = Program_nextHistoryRecord(sample.data.program, importedSettings, Stats_getEmpty(), 4).entries[1]
+      .sets[0];
+    expect(dips.originalWeight).to.eql(Weight_build(0, "kg"));
+    expect(dips.weight).to.eql(Weight_build(0, "kg"));
+    const weightedDips = Program_nextHistoryRecord(sample.data.program, importedSettings, Stats_getEmpty(), 24)
+      .entries[1].sets[0];
+    expect(weightedDips.originalWeight).to.eql(Weight_build(4, "kg"));
+    const cableTarget = Program_nextHistoryRecord(sample.data.program, importedSettings, Stats_getEmpty(), 3).entries[0]
+      .sets[0];
+    expect(cableTarget.originalWeight).to.eql(Weight_build(48.9, "kg"));
+    expect(cableTarget.weight).not.to.eql(cableTarget.originalWeight); // Equipment availability can round the working load.
     const prompt = AiWorkoutProgram_buildPromptTemplate();
     expect(prompt).to.include("weekly_progression");
     expect(prompt).to.include("BACKOFF");
     expect(prompt).to.include("앱은 기록만으로 다음 주차 중량을 자동 변경하지 않아");
-    expect(prompt).to.include("모든 세트에서 5회를 달성하면 가능한 최소 단위로 증량하고 3회로 초기화");
     expect(prompt).to.include("전체 루틴 세트는 최대 50,000개");
-    expect(prompt).to.include("CSV로 만들 때는");
   });
 });

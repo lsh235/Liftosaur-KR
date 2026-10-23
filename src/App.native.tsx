@@ -3,6 +3,10 @@ import React, { useMemo, useRef, useState, useEffect } from "react";
 import { ActivityIndicator, AppState, InteractionManager, Linking, NativeModules, Platform, View } from "react-native";
 import { Client as RollbarClient } from "rollbar-react-native";
 import RB from "rollbar";
+import { Distribution_isLocalOnly, LocalStorageRecoveryError } from "./utils/distribution";
+import { Exporter_toFile } from "./utils/exporter";
+import { Text } from "./components/primitives/text";
+import { Button } from "./components/button";
 import { Analytics_initialize, Analytics_setUserId } from "./utils/analytics";
 import { RollbarUtils_config } from "./utils/rollbar";
 import { AppAttribution_get } from "./utils/appAttribution";
@@ -99,7 +103,7 @@ function rollbarClientAttribution(): Record<string, unknown> {
   return {};
 }
 
-const rollbarClient = new RollbarClient({
+const rollbarClient = Distribution_isLocalOnly() ? undefined : new RollbarClient({
   accessToken: "f29180c0746c4922996ff41dfc2527d2",
   captureUncaught: true,
   captureUnhandledRejections: true,
@@ -118,17 +122,17 @@ const rollbarClient = new RollbarClient({
 });
 
 const rollbarShim = {
-  error: (obj: unknown, extra?: unknown) => rollbarClient.error(obj as never, extra as never),
-  warning: (obj: unknown, extra?: unknown) => rollbarClient.warning(obj as never, extra as never),
-  warn: (obj: unknown, extra?: unknown) => rollbarClient.warning(obj as never, extra as never),
-  info: (obj: unknown, extra?: unknown) => rollbarClient.info(obj as never, extra as never),
-  debug: (obj: unknown, extra?: unknown) => rollbarClient.debug(obj as never, extra as never),
-  critical: (obj: unknown, extra?: unknown) => rollbarClient.critical(obj as never, extra as never),
-  log: (obj: unknown, extra?: unknown) => rollbarClient.log(obj as never, extra as never),
+  error: (obj: unknown, extra?: unknown) => rollbarClient?.error(obj as never, extra as never),
+  warning: (obj: unknown, extra?: unknown) => rollbarClient?.warning(obj as never, extra as never),
+  warn: (obj: unknown, extra?: unknown) => rollbarClient?.warning(obj as never, extra as never),
+  info: (obj: unknown, extra?: unknown) => rollbarClient?.info(obj as never, extra as never),
+  debug: (obj: unknown, extra?: unknown) => rollbarClient?.debug(obj as never, extra as never),
+  critical: (obj: unknown, extra?: unknown) => rollbarClient?.critical(obj as never, extra as never),
+  log: (obj: unknown, extra?: unknown) => rollbarClient?.log(obj as never, extra as never),
   configure: (config: { payload?: { person?: { id?: string; email?: string; username?: string } } }) => {
     const person = config?.payload?.person;
     if (person?.id) {
-      rollbarClient.setPerson(person.id, person.username ?? null, person.email ?? null);
+      rollbarClient?.setPerson(person.id, person.username ?? null, person.email ?? null);
     }
   },
 };
@@ -202,7 +206,7 @@ import { navigationRef } from "./navigation/navigationRef";
 import { ScreenRemovalCleanup_subscribe } from "./navigation/screenRemovalCleanup";
 import { navigateToModal } from "./navigation/navigationService";
 import { getCurrentScreenData } from "./navigation/navigationService";
-import { IndexedDBUtils_initializeForSafari } from "./utils/indexeddb";
+import { IndexedDBUtils_initializeForSafari, IndexedDBUtils_get, IndexedDBUtils_getAllKeys } from "./utils/indexeddb";
 import { DeviceId_get } from "./utils/deviceId";
 import { Persistence } from "./utils/persistence";
 import { useAppliedTheme } from "./utils/appliedTheme";
@@ -247,7 +251,7 @@ import {
   PerfScorecard_setContextProvider,
 } from "./utils/perfScorecard";
 
-GoogleSignin.configure({
+if (!Distribution_isLocalOnly()) GoogleSignin.configure({
   webClientId: "944666871420-p8kv124sgte8o0p6ev2ah6npudsl7e4f.apps.googleusercontent.com",
   iosClientId: "944666871420-of5rtcpja10vsp2jbe5m6amob7u5qvjq.apps.googleusercontent.com",
   offlineAccess: false,
@@ -314,9 +318,10 @@ export function AppRoot(props: { initialState: IState; env: IEnv }): React.JSX.E
   const lastScreenNameRef = useRef<string | undefined>(undefined);
 
   useEffect(() => {
+    dispatch(Thunk_syncHealthKit());
+    if (Distribution_isLocalOnly()) return;
     dispatch(Thunk_sync2({ force: true }));
     dispatch(Thunk_fetchInitial());
-    dispatch(Thunk_syncHealthKit());
     const userId = stateRef.current.user?.id || stateRef.current.storage.tempUserId;
     Subscriptions_cleanupOutdatedAppleReceipts(dispatch, userId, service, stateRef.current.storage.subscription);
     Subscriptions_cleanupOutdatedGooglePurchaseTokens(dispatch, userId, service, stateRef.current.storage.subscription);
@@ -400,7 +405,7 @@ export function AppRoot(props: { initialState: IState; env: IEnv }): React.JSX.E
 
   useEffect(() => {
     // A debug sandbox must not register the target-derived id with native analytics/attribution.
-    if (AdminDebug_isDebugAccountId(stateRef.current.storage.tempUserId)) {
+    if (Distribution_isLocalOnly() || AdminDebug_isDebugAccountId(stateRef.current.storage.tempUserId)) {
       return undefined;
     }
     return Analytics_initialize({
@@ -427,7 +432,7 @@ export function AppRoot(props: { initialState: IState; env: IEnv }): React.JSX.E
   // In a debug sandbox keep all native identity (AppsFlyer, Rollbar person, EventManager telemetry)
   // anonymous - the target-derived id must never leave the device. The `if (!personId) return`
   // guards in the effects below then skip every identity-emitting path.
-  const isDebugSandbox = AdminDebug_isDebugAccountId(state.storage.tempUserId);
+  const isDebugSandbox = Distribution_isLocalOnly() || AdminDebug_isDebugAccountId(state.storage.tempUserId);
   const personId = isDebugSandbox ? undefined : (state.user?.id ?? state.storage.tempUserId);
   const personEmail = state.user && !isDebugSandbox ? state.storage.email : undefined;
   useEffect(() => {
@@ -442,6 +447,7 @@ export function AppRoot(props: { initialState: IState; env: IEnv }): React.JSX.E
     // EventManager_initTelemetry is one-shot, so the callback must resolve identity from current
     // state at event time rather than closing over personId - otherwise a session that later enters
     // a debug sandbox keeps emitting telemetry under the stale (admin) identity.
+    if (Distribution_isLocalOnly()) return;
     EventManager_initTelemetry((event) => {
       const current = stateRef.current;
       if (AdminDebug_isDebugAccountId(current.storage.tempUserId)) {
@@ -509,7 +515,7 @@ export function AppRoot(props: { initialState: IState; env: IEnv }): React.JSX.E
 
   useEffect(() => {
     const iap = env.iap;
-    if (!iap) {
+    if (Distribution_isLocalOnly() || !iap) {
       return;
     }
     const unsubPurchase = iap.onPurchaseUpdated((purchase) => {
@@ -755,14 +761,25 @@ export function AppRoot(props: { initialState: IState; env: IEnv }): React.JSX.E
 
 export function App(): React.JSX.Element {
   const [initialState, setInitialState] = useState<IState | null>(null);
+  const [recovery, setRecovery] = useState<{ message: string; rawBackup?: string } | null>(null);
+  const [loadAttempt, setLoadAttempt] = useState(0);
   const [persistence] = useState(() => new Persistence());
   const [env] = useState(() => AppEnv_build(persistence));
 
   useEffect(() => {
+    let selectedKey: string | undefined;
+    setRecovery(null);
     async function load(): Promise<void> {
       await IndexedDBUtils_initializeForSafari();
       const key = await getIdbKey();
+      selectedKey = key;
       const localStorage = await persistence.load(key);
+      if (Distribution_isLocalOnly() && !localStorage?.storage) {
+        const keys = await IndexedDBUtils_getAllKeys();
+        if (keys.some((entry) => entry === key || entry.startsWith(`liftosaurshard:${key}:`))) {
+          throw new LocalStorageRecoveryError();
+        }
+      }
       const url = new URL(`${__HOST__}/app/`);
       const deviceId = await DeviceId_get();
       const state = await getInitialState(fetch, { localStorage, url, deviceId });
@@ -774,9 +791,42 @@ export function App(): React.JSX.Element {
       }
       setInitialState(state);
     }
-    load();
+    load().catch(async () => {
+      // Never mount the reducer/autosave against a default account after a read failure.
+      persistence.cancelSave();
+      let rawBackup: string | undefined;
+      try {
+        const keys = await IndexedDBUtils_getAllKeys();
+        const records: Record<string, unknown> = {};
+        for (const key of keys) {
+          if (key === selectedKey || key.startsWith(`liftosaurshard:${selectedKey}:`)) {
+            records[key] = await IndexedDBUtils_get(key);
+          }
+        }
+        if (Object.keys(records).length > 0) {
+          rawBackup = JSON.stringify({ format: "liftosaur-kr-recovery-v1", records }, null, 2);
+        }
+      } catch { /* Original storage remains untouched even if backup reading fails. */ }
+      setRecovery({ message: "기기에 저장된 운동 기록을 읽지 못했습니다. 원본 데이터는 삭제하거나 덮어쓰지 않았습니다.", rawBackup });
+    });
     Ota_init();
-  }, []);
+  }, [loadAttempt]);
+
+  if (recovery) {
+    return (
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <SafeAreaProvider initialMetrics={initialWindowMetrics}>
+          <View className="flex-1 justify-center px-gutter" testID="local-storage-recovery">
+            <Text className="text-xl font-bold">운동 기록 복구가 필요합니다</Text>
+            <Text className="mt-4 text-base">{recovery.message}</Text>
+            <Text className="mt-3 text-sm">앱을 삭제하지 마세요. 현재 계정의 원본 저장 조각을 파일로 내보낸 뒤 복구를 진행할 수 있습니다. 이 파일은 일반 루틴 가져오기용이 아니며 개인정보와 운동 기록을 포함할 수 있습니다. 로그인 보관함의 비밀키는 포함하지 않습니다.</Text>
+            {recovery.rawBackup && <View className="mt-4"><Button name="recovery-export" kind="purple" onClick={() => Exporter_toFile("Liftosaur-KR-recovery.json", recovery.rawBackup!)}>원본 데이터 파일로 내보내기</Button></View>}
+            <View className="mt-4"><Button name="recovery-retry" kind="grayv2" onClick={() => setLoadAttempt((attempt) => attempt + 1)}>다시 읽기</Button></View>
+          </View>
+        </SafeAreaProvider>
+      </GestureHandlerRootView>
+    );
+  }
 
   if (!initialState) {
     return (

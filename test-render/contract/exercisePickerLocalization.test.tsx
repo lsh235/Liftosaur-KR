@@ -85,10 +85,11 @@ describe("exercise picker filter Korean labels", () => {
       />
     );
 
-    expect(screen.getAllByLabelText("Bench Press, 바벨").length).toBeGreaterThan(0);
+    expect(screen.getAllByLabelText("벤치프레스, 바벨").length).toBeGreaterThan(0);
     expect(screen.getByLabelText("주동근: 큰가슴근 복장부분")).toBeTruthy();
     expect(screen.getByLabelText("협력근: 앞어깨세모근, 큰가슴근 빗장부분, 위팔세갈래근")).toBeTruthy();
     expect(screen.queryByLabelText("Bench Press, Barbell")).toBeNull();
+    expect(screen.getByTestId("custom-exercise-bench-press")).toBeTruthy();
   });
 
   it("shows Korean labels and the create title in the custom exercise form", async () => {

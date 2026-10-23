@@ -1,4 +1,5 @@
 import { Platform } from "react-native";
+import { Distribution_isLocalOnly } from "./distribution";
 import appsFlyer, { ConversionData } from "react-native-appsflyer";
 import { createMMKV } from "react-native-mmkv";
 import { IAttributionData } from "../models/state";
@@ -48,6 +49,7 @@ function landingPageFromDeepLink(data: Record<string, unknown>): string | undefi
 }
 
 export function Analytics_initialize(opts: IAnalyticsInitOptions): () => void {
+  if (Distribution_isLocalOnly()) return () => undefined;
   if (initialized) {
     return () => undefined;
   }
@@ -104,14 +106,17 @@ export function Analytics_initialize(opts: IAnalyticsInitOptions): () => void {
 }
 
 export function Analytics_setUserId(userId: string): void {
+  if (Distribution_isLocalOnly()) return;
   appsFlyer.setCustomerUserId(userId, () => undefined);
 }
 
 export function Analytics_trackFinishWorkout(): void {
+  if (Distribution_isLocalOnly()) return;
   appsFlyer.logEvent("af_add_to_cart", {}).catch(() => undefined);
 }
 
 export function Analytics_trackSignUp(): void {
+  if (Distribution_isLocalOnly()) return;
   appsFlyer.logEvent("af_complete_registration", {}).catch(() => undefined);
 }
 
@@ -133,6 +138,7 @@ function markPurchaseTracked(transactionId: string): void {
 }
 
 export function Analytics_trackPurchase(event: IAnalyticsPurchaseEvent): void {
+  if (Distribution_isLocalOnly()) return;
   // StoreKit re-delivers transactions across launches and replays old ones on restore, so
   // dedup by transaction id (persisted - re-deliveries span sessions) and drop transactions
   // that happened long ago (restores on a fresh install arrive with an empty dedup store).

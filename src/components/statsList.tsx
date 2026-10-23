@@ -160,11 +160,11 @@ export function StatsList(props: IProps): JSX.Element {
       />
       {Subscriptions_hasSubscription(props.subscription) && (
         <MenuItemEditable
-          name="Moving Average Window Size"
+          name="이동 평균 계산에 사용할 기록 수"
           type="select"
           value={movingAverageWindowSize?.toString() ?? ""}
           values={[
-            ["", "Off"],
+            ["", "사용 안 함"],
             ["2", "2"],
             ["3", "3"],
             ["4", "4"],
@@ -207,11 +207,11 @@ export function StatsList(props: IProps): JSX.Element {
       </View>
       {values.length === 0 ? (
         <Text className="py-12 text-xl text-center text-text-secondary">
-          No {Stats_name(selectedKey)} measurements added yet
+          아직 {Stats_name(selectedKey)} 측정 기록이 없습니다
         </Text>
       ) : (
         <>
-          <GroupHeader name="List of measurements" topPadding={false} />
+          <GroupHeader name="측정 기록 목록" topPadding={false} />
           {visibleValues.map((value) => (
             <MeasurementRow
               key={`${selectedKey}-${value.timestamp}`}
@@ -277,7 +277,7 @@ const MeasurementRow = reactMemo(function MeasurementRow(props: IMeasurementRowP
   );
 
   const onDelete = useCallback(async (): Promise<void> => {
-    if (await Dialog_confirm("Are you sure?")) {
+    if (await Dialog_confirm("이 측정 기록을 삭제할까요?")) {
       if (selectedKey === "weight") {
         EditStats_deleteWeightStat(dispatch, selectedKey, value.index, value.timestamp);
       } else if (selectedKey === "bodyfat") {
@@ -300,7 +300,14 @@ const MeasurementRow = reactMemo(function MeasurementRow(props: IMeasurementRowP
             {units}
           </Text>
         </View>
-        <Pressable className="p-3 nm-delete-stat" data-testid="delete-stat" testID="delete-stat" onPress={onDelete}>
+        <Pressable
+          className="p-3 nm-delete-stat"
+          data-testid="delete-stat"
+          testID="delete-stat"
+          accessibilityRole="button"
+          accessibilityLabel="측정 기록 삭제"
+          onPress={onDelete}
+        >
           <IconTrash />
         </Pressable>
       </View>

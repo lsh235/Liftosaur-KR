@@ -41,95 +41,95 @@ export function ModalStatsContent(props: IModalStatsProps): JSX.Element {
 
   return (
     <View className="py-4">
-      <GroupHeader name="Enabled measurement types" />
+      <GroupHeader name="기록할 신체 측정 항목" />
       <View data-testid="modal-stats" testID="modal-stats">
         <MenuItemEditable
           onChange={saveWeight("weight")}
-          name="Weight"
+          name="체중"
           type="boolean"
           value={`${statsEnabled.weight.weight}`}
         />
         <MenuItemEditable
           onChange={savePercentage("bodyfat")}
-          name="Bodyfat"
+          name="체지방률"
           type="boolean"
           value={`${statsEnabled.percentage.bodyfat}`}
         />
         <MenuItemEditable
           onChange={saveLength("neck")}
-          name="Neck"
+          name="목"
           type="boolean"
           value={`${statsEnabled.length.neck}`}
         />
         <MenuItemEditable
           onChange={saveLength("shoulders")}
-          name="Shoulders"
+          name="어깨"
           type="boolean"
           value={`${statsEnabled.length.shoulders}`}
         />
         <MenuItemEditable
           onChange={saveLength("bicepLeft")}
-          name="Bicep Left"
+          name="왼쪽 이두근"
           type="boolean"
           value={`${statsEnabled.length.bicepLeft}`}
         />
         <MenuItemEditable
           onChange={saveLength("bicepRight")}
-          name="Bicep Right"
+          name="오른쪽 이두근"
           type="boolean"
           value={`${statsEnabled.length.bicepRight}`}
         />
         <MenuItemEditable
           onChange={saveLength("forearmLeft")}
-          name="Forearm Left"
+          name="왼쪽 전완근"
           type="boolean"
           value={`${statsEnabled.length.forearmLeft}`}
         />
         <MenuItemEditable
           onChange={saveLength("forearmRight")}
-          name="Forearm Right"
+          name="오른쪽 전완근"
           type="boolean"
           value={`${statsEnabled.length.forearmRight}`}
         />
         <MenuItemEditable
           onChange={saveLength("chest")}
-          name="Chest"
+          name="가슴"
           type="boolean"
           value={`${statsEnabled.length.chest}`}
         />
         <MenuItemEditable
           onChange={saveLength("waist")}
-          name="Waist"
+          name="허리"
           type="boolean"
           value={`${statsEnabled.length.waist}`}
         />
         <MenuItemEditable
           onChange={saveLength("hips")}
-          name="Hips"
+          name="엉덩이"
           type="boolean"
           value={`${statsEnabled.length.hips}`}
         />
         <MenuItemEditable
           onChange={saveLength("thighLeft")}
-          name="Thigh Left"
+          name="왼쪽 허벅지"
           type="boolean"
           value={`${statsEnabled.length.thighLeft}`}
         />
         <MenuItemEditable
           onChange={saveLength("thighRight")}
-          name="Thigh Right"
+          name="오른쪽 허벅지"
           type="boolean"
           value={`${statsEnabled.length.thighRight}`}
         />
         <MenuItemEditable
           onChange={saveLength("calfLeft")}
-          name="Calf Left"
+          name="왼쪽 종아리"
           type="boolean"
           value={`${statsEnabled.length.calfLeft}`}
         />
         <MenuItemEditable
           onChange={saveLength("calfRight")}
-          name="Calf Right"
+          name="오른쪽 종아리"
           type="boolean"
           value={`${statsEnabled.length.calfRight}`}
         />

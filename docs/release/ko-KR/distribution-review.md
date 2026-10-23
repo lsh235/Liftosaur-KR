@@ -1,0 +1,101 @@
+# Korean Native Distribution Review
+
+## Scope and outcome
+
+Read-only source review of the Android local-only native distribution candidate at the shared working tree. The reviewed implementation is not a signed or installed release, and this review does not establish store-policy acceptance. The operator/contact/policy owner is still undecided, so general Korean store release remains **NO-GO** on external release facts.
+
+The two P1 native telemetry egress findings are **closed in source** by the current working tree. The focused regression uses the real native distribution profile and spies on global fetch. This is evidence for those specific JS paths; it is not a whole-process network-capture audit.
+
+## Findings and fixes
+
+| Severity | Finding | Source evidence | Status |
+|---|---|---|---|
+| P1 | Startup/local action logs fell through to raw `fetch` at `/api/log` because `EventManager_isAvailable()` is false in local-only mode. | `src/utils/log.ts` `LogUtils_log`; `src/utils/eventManager.native.ts` `EventManager_isAvailable`; startup call in `src/ducks/reducer.ts` `getInitialState`. | Fixed by an early `Distribution_isLocalOnly()` return in `LogUtils_log`. |
+| P1 | Native tier-2 performance events could send raw requests to `/api/_dev/perf` when sampling or `__PERF__` enabled tier 2. | `src/utils/perfTracker.native.ts` `PerfTracker_recordEvent`, `flushNow`, `PerfTracker_flush`; sampling decision in `src/utils/perfEnabled.ts`. | Fixed by gating record/flush and dropping pending data in local-only mode. |
+
+Regression evidence is in `test-render/contract/localOnlyProfile.test.tsx`: it calls `jest.unmock("../../src/utils/distribution")`, asserts `Distribution_isLocalOnly() === true`, directly imports `perfTracker.native`, invokes `LogUtils_log`, records and flushes a perf event, and asserts the global fetch spy was never called. The shared render setup defaults distribution to the upstream policy, so this test explicitly un-mocks that policy rather than inheriting the upstream-mode mock. Release owner reports the focused render and distribution/persistence suites passed; this reviewer did not execute tests or builds.
+
+## Bounded egress review
+
+- `src/api/service.ts` wraps the supplied fetch client with `Distribution_guardClient`; native local-only requests reject before the underlying fetch.
+- `src/utils/eventManager.native.ts` returns unavailable and guards its batch posting and telemetry callbacks in local-only mode.
+- `src/utils/log.ts` and `src/utils/perfTracker.native.ts` now guard their legacy raw-fetch routes as noted above.
+- `src/utils/rollbar.ts` disables Rollbar for local-only mode and its transform exits before posting exceptions. Android `MainApplication.onCreate` also skips native Rollbar initialization when `BuildConfig.LOCAL_ONLY` is true.
+- `src/utils/analytics.native.ts`, `src/utils/posthog.ts`, `src/utils/ota.native.ts`, `src/utils/signIn.native.ts`, and `src/utils/pushSyncClient.ts` have local-only guards. `src/App.native.tsx` skips Google sign-in configuration, cloud startup, purchase listeners, and native analytics/telemetry setup.
+- Android `AndroidManifest.xml` disables Firebase messaging auto-init and Firebase analytics/crash collection. Native FCM start/token delivery is guarded in `LiftosaurPushModule.kt` and `LiftosaurMessagingService.kt`.
+- Remaining direct fetches found by source search are service/telemetry paths covered above, web-only consent/dashboard/program routes, in-memory/data URI encoding, and asset image preload (`src/utils/imagePreloader.native.tsx`). Asset preloading may still contact the configured image host, so this evidence supports “account sync and product telemetry are blocked,” not “the process makes no network requests.”
+
+## Storage and local account safety
+
+- `src/App.native.tsx` loads storage before mounting `AppRoot`; on load/parse failure it displays a recovery screen, offers a raw shard export and retry, and does not mount the reducer/autosave against a fresh default account.
+- `src/ducks/reducer.ts` `getInitialState` rejects malformed local wrappers and invalid stored data before attempting any remote recovery path in local-only mode.
+- `src/ducks/thunks.ts` `Thunk_logOut` flushes the pending persistence queue and then awaits a full save of the current account snapshot before account create/switch callbacks proceed. Existing receipt/subscription records are not removed by local startup paths.
+- `src/components/screenAccount.tsx` retains local account create/switch/delete controls while hiding cloud login and cloud deletion flows; subscription UI explains the local-only restriction.
+
+## Platform and release limits
+
+The reviewed distribution guarantee is scoped to Android. `src/utils/distribution.native.ts` selects local-only for native targets generally, but iOS was not built or runtime-tested. `ios/Liftosaur/AppDelegate.swift` still initializes the Google on-device conversion manager timestamp, registers MetricKit, and updates Rollbar person identity from a cached user ID; `ios/Liftosaur/LiftosaurEventReporterImpl.swift` still registers for MetricKit and emits telemetry into the native bridge. These are unresolved iOS privacy/egress surfaces and should block any iOS local-only claim until independently reviewed and guarded. No iOS source was modified.
+
+No release signing, install, network capture, Play/App Store submission, policy review, or operator identity verification was performed. Metro/native target resolution and signed artifact contents remain release-owner QA responsibilities.
+
+## Integrated candidate review (2026-10-24)
+
+### Android release workflow
+
+`.github/workflows/android-apk-release.yml` still has two distinct paths: `workflow_dispatch` builds/verifies/emulator-installs and uploads a 14-day candidate artifact; only a pushed `v*` tag can invoke `gh release create`. The tag path checks the tag against Gradle `versionName`; both paths verify APK signature and package/version metadata. `contents: write` is declared for the whole workflow although candidate dispatch only uploads an artifact; reducing that permission to the publish step/job would be a useful least-privilege cleanup, but this review did not find an execution path that publishes on dispatch.
+
+Signing secrets keep the same names and setup used by the baseline workflow (`LIFTOSAUR_ANDROID_KEYSTORE_BASE64`, store password, alias, key password), so the source configuration preserves the established signing-key contract. `apksigner verify` proves the output has a valid signature, not that its certificate matches the previously released KR APK. Existing official Liftosaur APKs use a different signing key; the release notes explicitly warn users not to uninstall that app to install this candidate. The workflow compares v158/candidate signer SHA-256 digests and runs `adb install -r` with v159. **That native install/UI result remains NOT RUN pending CI.** The script now asserts selected synthetic weight/reps and bodyweight values on both versions, but full semantic retention of real user records remains NOT RUN even if CI passes.
+
+The current `scripts/qa/ko-release-emulator.sh` downloads/checks the v158 artifact in CI, compares APK signer SHA-256 digests, injects populated synthetic legacy JSON files before the v158 first launch, runs the UI checks on v158, then uses `adb install -r` for v159 and repeats those checks. `wait_for_app` requires a stable PID and foreground activity before capture. The generator uses current validated app models and removes the post-v158 schedule field; the fixture manifest clearly says this is synthetic data, not user-created data. This exercises the actual legacy-file-to-MMKV read/migration path and a subsequent in-place update. Current UI assertions confirm each account's program marker, switching, current bodyweight in Settings, completed history sets, and opening the seeded in-progress workout. For each account on v158 and v159, the helper now scrolls the rendered `ScreenExerciseStats` history until the native FastText accessibility label contains `2 × 8 × 20 kg`, with a completed-set test ID in the same visible hierarchy; bodyweight assertions require `68.4kg`/`74.2kg` in Settings. Source tracing confirms the displayed completed values flow through `ExerciseHistory` → `HistoryRecordSetsView` → `Reps_setToDisplaySet` from `completedReps`/`completedWeight`, not directly from fixture files or MMKV snapshots. This is bounded proof that those two displayed synthetic values survive legacy read and a normal in-place update. The reviewer has not executed the emulator workflow; these runtime assertions remain NOT RUN pending CI artifact evidence. The script captures MMKV files and hashes, but does not compare all records or establish full semantic equality. Real-user data preservation, export/import restoration, crash/power-loss durability, human usability/accessibility review, physical-device behavior, and scheduled local reminders remain NOT RUN. Wi-Fi and mobile data are explicitly disabled along with airplane mode, with system/network state dumps captured. The fixed v158/v159 labels are scoped to this candidate and should be updated before reuse.
+
+One initial issue found in the finalized fixture script (`run-as` against a release APK) was removed by the release owner; root-only file setup now precedes injection. This reviewer has not run the emulator/CI workflow. The signed install, rooted fixture injection, Android UI assertions, and capture claims therefore remain pending runtime evidence.
+
+Crash/power-loss durability also remains NOT RUN. `src/utils/indexeddb.native.ts` documents that MMKV has no multi-key transaction and an interrupted incremental save can leave mixed shards; its stated reconciliation assumption relies on sync. The local-only candidate disables that sync, so a successful normal update fixture does not establish crash-window durability. No storage-format change was assessed or requested in this review.
+
+### Data, services, and local reminders
+
+The candidate sets `localOnly = true`, which also forces `DISABLE_OTA`; local-only Rollbar, FCM, Firebase collection, auth, sync, and billing guards remain in place. The Manifest retains INTERNET for remote asset retrieval, Health Connect permissions, exact-alarm, boot restore, notification, foreground-service, and vibration permissions; it removes billing and advertising-ID permissions. Existing reminder code remains in the Android timer package, including boot/exact-alarm rescheduling and local workout reminder restoration. Source preservation is visible, but actual scheduled delivery after restart/timezone/permission changes remains NOT RUN on a device. `allowBackup=false` remains explicit, while the app-level recovery/export path is retained. The local account-switch path catches save failure, displays a Korean alert, and does not invoke the switch callback. Root reports the owner reran `npm run check` and the focused 9-test local profile suite successfully; this reviewer did not rerun them.
+
+### Resolved notices finding
+
+| Severity | Finding | Evidence | Required close evidence |
+|---|---|---|---|
+| P2 | The local-only Settings menu initially exposed only the app-code license and omitted a separate third-party notices link. | `src/components/screenSettings.tsx` now exposes “앱 코드 라이선스” (`LICENSE`) and “제삼자 라이선스 고지” (`src/licenses.html`) as distinct links. Both GitHub blob links require network access. | **Closed for discoverability** in source. The package-notice completeness gate remains separate and NOT RUN because generation used a cached native package list. |
+
+The package inventory is generated from cached `scripts/licenses/shipped-packages.json`; therefore third-party-notice completeness remains **NOT RUN**, even though Settings exposes both link types.
+
+### Resolved browser layout follow-up
+
+| Severity | Finding | Evidence | Close condition |
+|---|---|---|---|
+| P2 | Earlier 320px/1.3 browser capture wrapped long exercise names into a very narrow column. | Final `program-320-font-1_3.png` shows exercise names and set values in distinct columns with readable multiword wrapping; reviewed alongside final 320px, 430px, and schedule-selector captures. | **Closed for browser viewport layout.** Native Android text scaling and human accessibility/use review remain NOT RUN. |
+
+No other new P1 was found in the source review. Do not treat a source-only check as a substitute for the pending native artifact acceptance.
+
+### Official requirements rechecked
+
+- Google Play's current [target API requirements](https://support.google.com/googleplay/android-developer/answer/11926878?hl=en-en) state that new apps and updates must target API 36 from **2026-08-31**; the documented extension through **2026-11-01** applies to extension requests and is not needed to explain this candidate's configured target 36. The root-project SDK values and final merged APK still require artifact confirmation.
+- Google's [Health apps declaration instructions](https://support.google.com/googleplay/android-developer/answer/14738291?hl=en) say all developers with a published Play app must complete the form, including testing tracks and apps without health features. This workout/weight app must disclose its actual health-related functions; the declaration and privacy disclosures are console/operational gates, not proven by source code.
+- Google's [User Data policy](https://support.google.com/googleplay/android-developer/answer/10144311?hl=en) requires accurate disclosure of first/third-party SDK collection, use, sharing, consent, and security. Health data is sensitive, so final disclosures must match the built artifact and remaining remote image behavior.
+- Google's [South Korea distribution requirements](https://support.google.com/googleplay/android-developer/answer/6223646?hl=ko) confirm Korean-specific developer contact fields. The exact requirements depend on account creation date and account type; Korean personal accounts must provide and verify a public developer phone number, and paid/IAP distributions require business registration and e-commerce license details. The readiness document correctly leaves account facts unresolved; no operator or account details should be inferred.
+- The [Personal Information Protection Commission's guide page](https://pipc.go.kr/np/cop/bbs/selectBoardArticle.do?bbsId=BS217&mCode=D010000000&nttId=12018) confirms the title “개인정보 처리방침 작성지침(2026.4. 개정)” and publication date **2026-04-23**. This is guidance, not evidence that the candidate's legal compliance is determined.
+
+These official-source checks do not reveal an incorrect date or numeric claim in `release-readiness.md`. They reinforce that target API 36 is a current static pass while Health declaration, account identity/contact, user-data disclosures, and store approval remain release blockers/NOT RUN because the actual operator and Play account facts are undecided. No legal-compliance conclusion is made.
+
+## Staging candidates (explicit allowlist proposal)
+
+Candidate files for later review/staging are the current task changes below, subject to final diff inspection and successful native acceptance. This is not a staging action.
+
+- Android build/distribution: `.github/workflows/android-apk-release.yml`, `scripts/qa/ko-release-emulator.sh`, `scripts/qa/ko-release-ui.py`, `scripts/qa/create-legacy-storage-fixtures.ts`, `android/app/build.gradle`, `android/app/src/main/AndroidManifest.xml`, `android/app/src/main/java/com/liftosaur/www/twa/MainApplication.kt`, `android/app/src/main/java/com/liftosaur/www/twa/push/LiftosaurMessagingService.kt`, `android/app/src/main/java/com/liftosaur/www/twa/push/LiftosaurPushModule.kt`, `android/app/src/main/res/values/strings.xml`.
+- Product and notices: `README.md`, `src/components/screenSettings.tsx`, `examples/phat-6week-kr.json`.
+- Native distribution and recovery: `src/App.native.tsx`, `src/api/service.ts`, `src/ducks/reducer.ts`, `src/ducks/thunks.ts`, `src/types.ts`, `src/utils/analytics.native.ts`, `src/utils/distribution.native.ts`, `src/utils/distribution.ts`, `src/utils/distributionPolicy.ts`, `src/utils/eventManager.native.ts`, `src/utils/exporter.native.ts`, `src/utils/iap.native.ts`, `src/utils/log.ts`, `src/utils/ota.native.ts`, `src/utils/perfTracker.native.ts`, `src/utils/posthog.ts`, `src/utils/pushSyncClient.ts`, `src/utils/rollbar.ts`, `src/utils/signIn.native.ts`.
+- Korean model/UI and file flows: `src/components/account.tsx`, `src/components/contentGrowingTextarea.tsx`, `src/components/editProgram/programHeaderDisplay.ts`, `src/components/editProgram/screenProgram.tsx`, `src/components/exerciseAllTimePRs.tsx`, `src/components/exerciseDataSettings.tsx`, `src/components/exerciseHistory.tsx`, `src/components/exerciseImage.tsx`, `src/components/exercisePicker/bottomSheetExerciseImageLibrary.tsx`, `src/components/exercisePicker/exercisePickerExerciseItem.tsx`, `src/components/graphStats.tsx`, `src/components/importerProgram.tsx`, `src/components/modalGraphs.tsx`, `src/components/modalStats.tsx`, `src/components/personalRecords.tsx`, `src/components/preview/programPreviewPlaygroundDay.tsx`, `src/components/preview/programPreviewPlaygroundExercise.tsx`, `src/components/preview/programPreviewPlaygroundExerciseEditModal.tsx`, `src/components/preview/programPreviewTabExercise.tsx`, `src/components/screenAccount.tsx`, `src/components/screenSettings.tsx`, `src/components/screenSleepNutrition.tsx`, `src/components/screenSubscription.tsx`, `src/components/statsList.tsx`, `src/components/workout.tsx`, `src/components/workoutExerciseCard.tsx`, `src/models/exercise.ts`, `src/models/programSchedule.ts`, `src/models/stats.ts`, `src/utils/aiFeedbackExport.ts`, `src/utils/aiWorkoutProgram.ts`.
+- Focused tests: `test-render/contract/exercisePickerLocalization.test.tsx`, `test-render/contract/koReleaseUiImageLibrary.test.tsx`, `test-render/contract/localOnlyProfile.test.tsx`, `test-render/setup/nativeMocks.ts`, `test/aiFeedbackExport.test.ts`, `test/aiWorkoutProgram.test.ts`, `test/distribution.test.ts`, `test/koCoreOfflineFlow.test.ts`, `test/koReleaseUiDisplay.test.ts`, `test/programSchedule.test.ts`.
+- Native QA scripts: `scripts/qa/create-legacy-storage-fixtures.ts`, `scripts/qa/ko-release-emulator.sh`, `scripts/qa/ko-release-ui.py`.
+- Ignored review documents allowed for later explicit force-add: `docs/release/ko-KR/core-audit.md`, `docs/release/ko-KR/core-review.md`, `docs/release/ko-KR/distribution-review.md`, `docs/release/ko-KR/release-plan.md`, `docs/release/ko-KR/release-readiness.md`, `docs/release/ko-KR/ui-audit.md`, `docs/release/ko-KR/verification.md`.
+- Reproducible reference comparison helper: `docs/release/ko-KR/compare-phat-reference.py` (cited by `core-review.md`; include this exact ignored path).
+- Browser evidence candidate paths, visually reviewed after the layout fix: `docs/release/ko-KR/evidence/browser/program-320-font-1_3.png`, `docs/release/ko-KR/evidence/browser/program-320.png`, `docs/release/ko-KR/evidence/browser/program-430.png`, `docs/release/ko-KR/evidence/browser/schedule-selector-320.png`. These are web viewport captures, not Android evidence.
+
+Ignored-document/helper force-add allowlist only: `docs/release/ko-KR/compare-phat-reference.py`, `docs/release/ko-KR/core-audit.md`, `docs/release/ko-KR/core-review.md`, `docs/release/ko-KR/distribution-review.md`, `docs/release/ko-KR/release-plan.md`, `docs/release/ko-KR/release-readiness.md`, `docs/release/ko-KR/ui-audit.md`, and `docs/release/ko-KR/verification.md`. This does not authorize force-adding other ignored paths.
+
+Explicit exclusions from staging: generated `src/sitemap.xml`, all of `.playwright-cli/`, build outputs, `node_modules/`, signing keys/password files, `qa-artifacts/`, and all other files under the browser evidence directory beyond the four named files above. Do not stage other ignored files or newly generated files without a separate diff review.

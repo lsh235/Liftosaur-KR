@@ -280,3 +280,10 @@ jest.mock("react-native-fs", () => ({
   unlink: jest.fn().mockResolvedValue(undefined),
   readDir: jest.fn().mockResolvedValue([]),
 }));
+
+// Existing render contracts cover the original cloud product. KR native behavior has
+// dedicated tests that unmock this module and exercise the actual native policy.
+jest.mock("../../src/utils/distribution", () => {
+  const common = jest.requireActual("../../src/utils/distributionPolicy");
+  return { ...common, ...common.Distribution_createPolicy(false) };
+});

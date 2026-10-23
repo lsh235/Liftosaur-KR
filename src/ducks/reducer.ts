@@ -1,3 +1,4 @@
+import { Distribution_isLocalOnly, LocalStorageRecoveryError } from "../utils/distribution";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Reducer } from "react";
 import {
@@ -126,8 +127,12 @@ export async function getInitialState(
     try {
       storage = JSON.parse(args.rawStorage);
     } catch (e) {
+      if (Distribution_isLocalOnly()) throw new LocalStorageRecoveryError();
       storage = undefined;
     }
+  }
+  if (Distribution_isLocalOnly() && (args.localStorage != null || args.rawStorage != null) && !storage?.storage) {
+    throw new LocalStorageRecoveryError();
   }
   const notification: INotification | undefined =
     messageerror || messagesuccess
@@ -146,6 +151,7 @@ export async function getInitialState(
     if (maybeStorage.success) {
       finalStorage = maybeStorage.data;
     } else {
+      if (Distribution_isLocalOnly()) throw new LocalStorageRecoveryError();
       const service = new Service(client);
       const userid = (storage.storage?.tempUserId || `missing-${UidFactory_generateUid(8)}`) as string;
       const serverStorage = await service.getStorage(userid, undefined, undefined);

@@ -1,12 +1,11 @@
 import type { JSX } from "react";
 import { View } from "react-native";
 import { Text } from "./primitives/text";
-import { Exercise_fromKey, Exercise_get } from "../models/exercise";
+import { Exercise_fromKey, Exercise_get, Exercise_nameForDisplay } from "../models/exercise";
 import { Weight_display, Weight_build, Weight_getOneRepMax } from "../models/weight";
 import { History_getNumberOfPersonalRecords } from "../models/history";
 import { ISettings, ISet, IHistoryRecord } from "../types";
 import { ObjectUtils_keys } from "../utils/object";
-import { StringUtils_pluralize } from "../utils/string";
 import { IPersonalRecords } from "../models/history";
 import { Reps_avgUnilateralCompletedReps } from "../models/set";
 
@@ -25,7 +24,7 @@ export function PersonalRecords(props: IPersonalRecordsProps): JSX.Element {
   if (History_getNumberOfPersonalRecords(props.historyRecords, props.prs) === 0) {
     return (
       <View className="items-center px-4 pt-8 pb-4">
-        <Text>No new personal records this time</Text>
+        <Text>이번 운동에서는 최고 기록을 갱신하지 않았습니다</Text>
       </View>
     );
   }
@@ -55,10 +54,10 @@ export function PersonalRecords(props: IPersonalRecordsProps): JSX.Element {
 
   return (
     <View>
-      <Text className="pb-1 text-sm font-bold text-yellow-600">{"\u{1F3C6}"} Personal Records</Text>
+      <Text className="pb-1 text-sm font-bold text-yellow-600">{"\u{1F3C6}"} 개인 최고 기록</Text>
       {ObjectUtils_keys(items.maxWeight).length > 0 && (
         <>
-          <Text className="my-1 text-xs text-text-secondary">Max Weight</Text>
+          <Text className="my-1 text-xs text-text-secondary">최고 중량</Text>
           <View className="pb-2">
             {ObjectUtils_keys(items.maxWeight).map((exerciseKey) => {
               const exerciseType = Exercise_fromKey(exerciseKey);
@@ -67,20 +66,18 @@ export function PersonalRecords(props: IPersonalRecordsProps): JSX.Element {
                 return (
                   <View key={`${exerciseKey}_${i}`} className="mb-1">
                     <Text>
-                      <Text className="text-sm font-bold">{exercise.name}</Text>
+                      <Text className="text-sm font-bold">{Exercise_nameForDisplay(exercise)}</Text>
                       <Text className="text-sm">: </Text>
                       <Text className="text-sm font-bold text-text-success">
                         {Weight_display(
                           item.set.completedWeight ?? item.set.weight ?? Weight_build(0, props.settings.units)
                         )}
                       </Text>
-                      <Text className="text-sm">
-                        , {item.set.completedReps || 0} {StringUtils_pluralize("rep", item.set.completedReps || 0)}
-                      </Text>
+                      <Text className="text-sm">, {item.set.completedReps || 0}회</Text>
                     </Text>
                     {item.prev != null && (
                       <Text className="text-xs italic text-text-secondarysubtle">
-                        (was {item.prev.completedReps || 0} {"\u00D7"}{" "}
+                        (이전 {item.prev.completedReps || 0} {"\u00D7"}{" "}
                         {Weight_display(
                           item.prev.completedWeight ?? item.prev.weight ?? Weight_build(0, props.settings.units)
                         )}
@@ -96,7 +93,7 @@ export function PersonalRecords(props: IPersonalRecordsProps): JSX.Element {
       )}
       {ObjectUtils_keys(items.max1RM).length > 0 && (
         <>
-          <Text className="my-1 text-xs text-text-secondary">Max Estimated One Rep Max</Text>
+          <Text className="my-1 text-xs text-text-secondary">최고 추정 1RM</Text>
           <View className="pb-2">
             {ObjectUtils_keys(items.max1RM).map((exerciseKey) => {
               const exerciseType = Exercise_fromKey(exerciseKey);
@@ -119,7 +116,7 @@ export function PersonalRecords(props: IPersonalRecordsProps): JSX.Element {
                 return (
                   <View key={`${exerciseKey}_${i}`} className="mb-1">
                     <Text>
-                      <Text className="text-sm font-bold">{exercise.name}</Text>
+                      <Text className="text-sm font-bold">{Exercise_nameForDisplay(exercise)}</Text>
                       <Text className="text-sm">: </Text>
                       <Text className="text-sm font-bold text-text-success">{Weight_display(estimated1RM)}</Text>
                       <Text className="text-sm">
@@ -133,7 +130,7 @@ export function PersonalRecords(props: IPersonalRecordsProps): JSX.Element {
                     </Text>
                     {item.prev != null && previous1RM && (
                       <Text className="text-xs italic text-text-secondarysubtle">
-                        (was <Text className="text-xs font-bold">{Weight_display(previous1RM)}</Text>,{" "}
+                        (이전 <Text className="text-xs font-bold">{Weight_display(previous1RM)}</Text>,{" "}
                         {Reps_avgUnilateralCompletedReps(item.prev) || 0} {"\u00D7"}{" "}
                         {Weight_display(
                           item.prev.completedWeight ?? item.prev.weight ?? Weight_build(0, props.settings.units)

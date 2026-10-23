@@ -2,8 +2,14 @@ import { JSX, Fragment, memo, useMemo } from "react";
 import { View, Pressable } from "react-native";
 import { Text } from "./primitives/text";
 
-import { equipmentName, Exercise_toKey, Exercise_get, Exercise_fromKey } from "../models/exercise";
-import { StringUtils_capitalize, StringUtils_dashcase } from "../utils/string";
+import {
+  localizedEquipmentName,
+  Exercise_nameForDisplay,
+  Exercise_toKey,
+  Exercise_get,
+  Exercise_fromKey,
+} from "../models/exercise";
+import { StringUtils_dashcase } from "../utils/string";
 import { useTrackedState, useTrackedDispatch, untrack } from "../navigation/TrackedStateContext";
 import { usePerfRenderCount } from "../utils/usePerfRenderCount";
 import { History_findAllMaxSetsPerId } from "../models/history";
@@ -37,7 +43,9 @@ import { lb } from "lens-shmens";
 import { IconCloseCircle } from "./icons/iconCloseCircle";
 import { ExerciseImage } from "./exerciseImage";
 import { CollectionUtils_sort } from "../utils/collection";
-import { Muscle_getAvailableMuscleGroups, Muscle_getMuscleGroupName } from "../models/muscle";
+import { Muscle_getAvailableMuscleGroups } from "../models/muscle";
+
+import { ExercisePickerUtils_getMuscleGroupName } from "./exercisePicker/exercisePickerUtils";
 
 interface IModalGraphsProps {
   isHidden: boolean;
@@ -110,12 +118,12 @@ export function ModalGraphsContent(props: IModalGraphsProps): JSX.Element {
 
   return (
     <View className="py-4">
-      <GroupHeader name="Settings" isExpanded={true}>
+      <GroupHeader name="설정" isExpanded={true}>
         <MenuItemEditable
           type="select"
-          name="Default exercise graph type"
+          name="운동 그래프 기본 표시"
           value={settings.graphsSettings.defaultType || "weight"}
-          values={graphExerciseSelectedTypes.map((t) => [t, StringUtils_capitalize(t)])}
+          values={graphExerciseSelectedTypes.map((t) => [t, { weight: "중량", volume: "볼륨", sets: "세트 수" }[t]])}
           onChange={(v) => {
             if (v) {
               updateSettings(
@@ -131,9 +139,9 @@ export function ModalGraphsContent(props: IModalGraphsProps): JSX.Element {
         />
         <MenuItemEditable
           type="select"
-          name="Default muscle group graph type"
+          name="근육별 그래프 기본 표시"
           value={settings.graphsSettings.defaultMuscleGroupType || "volume"}
-          values={graphMuscleGroupSelectedTypes.map((t) => [t, StringUtils_capitalize(t)])}
+          values={graphMuscleGroupSelectedTypes.map((t) => [t, { weight: "중량", volume: "볼륨", sets: "세트 수" }[t]])}
           onChange={(v) => {
             if (v) {
               updateSettings(
@@ -149,7 +157,7 @@ export function ModalGraphsContent(props: IModalGraphsProps): JSX.Element {
         />
         <MenuItemEditable
           type="boolean"
-          name="Same range for X axis for all graphs"
+          name="모든 그래프에 같은 날짜 범위 적용"
           value={settings.graphsSettings.isSameXAxis ? "true" : "false"}
           onChange={(v) =>
             updateSettings(
@@ -165,7 +173,7 @@ export function ModalGraphsContent(props: IModalGraphsProps): JSX.Element {
         {hasBodyweight && (
           <MenuItemEditable
             type="boolean"
-            name="Add bodyweight to all graphs"
+            name="모든 그래프에 체중 표시"
             value={settings.graphsSettings.isWithBodyweight ? "true" : "false"}
             onChange={(v) =>
               updateSettings(
@@ -181,7 +189,7 @@ export function ModalGraphsContent(props: IModalGraphsProps): JSX.Element {
         )}
         <MenuItemEditable
           type="boolean"
-          name="Add calculated 1RM to graphs"
+          name="추정 1RM 표시"
           value={settings.graphsSettings.isWithOneRm ? "true" : "false"}
           onChange={(v) =>
             updateSettings(
@@ -196,7 +204,7 @@ export function ModalGraphsContent(props: IModalGraphsProps): JSX.Element {
         />
         <MenuItemEditable
           type="boolean"
-          name="Add program lines to graphs"
+          name="프로그램 변경 시점 표시"
           value={settings.graphsSettings.isWithProgramLines ? "true" : "false"}
           onChange={(v) =>
             updateSettings(
@@ -211,7 +219,7 @@ export function ModalGraphsContent(props: IModalGraphsProps): JSX.Element {
         />
       </GroupHeader>
       <View className="relative" data-testid="modal-graphs" testID="modal-graphs">
-        {graphs.length > 0 && <GroupHeader topPadding={true} name="Selected Graphs" />}
+        {graphs.length > 0 && <GroupHeader topPadding={true} name="선택한 그래프" />}
         <DraggableList2
           items={graphs}
           element={(graph, i, handle) => {
@@ -256,7 +264,7 @@ export function ModalGraphsContent(props: IModalGraphsProps): JSX.Element {
         />
         {exercises.length > 0 && (
           <>
-            <GroupHeader topPadding={true} name="Available Exercise Graphs" />
+            <GroupHeader topPadding={true} name="추가할 수 있는 운동 그래프" />
             {exercises.map((e) => {
               return (
                 <Pressable
@@ -274,7 +282,7 @@ export function ModalGraphsContent(props: IModalGraphsProps): JSX.Element {
         )}
         {availableMuscleGroups.length > 0 && (
           <>
-            <GroupHeader name="Available Muscle Groups Graphs" topPadding={true} />
+            <GroupHeader name="추가할 수 있는 근육별 그래프" topPadding={true} />
             {availableMuscleGroups.map((muscleGroup) => {
               return (
                 <Pressable
@@ -290,7 +298,7 @@ export function ModalGraphsContent(props: IModalGraphsProps): JSX.Element {
             })}
           </>
         )}
-        {hasAvailableStats && <GroupHeader name="Available Stats Graphs" topPadding={true} />}
+        {hasAvailableStats && <GroupHeader name="추가할 수 있는 신체 측정 그래프" topPadding={true} />}
         {statsWeightKeys.map((statsKey) => {
           return (
             <MenuItem
@@ -319,9 +327,7 @@ export function ModalGraphsContent(props: IModalGraphsProps): JSX.Element {
           );
         })}
         {!hasAvailableStats && exercises.length === 0 && graphs.length === 0 && (
-          <Text className="mt-3 text-base italic text-text-secondary">
-            You haven't tracked any workouts or measurements yet.
-          </Text>
+          <Text className="mt-3 text-base italic text-text-secondary">아직 운동이나 신체 측정 기록이 없습니다.</Text>
         )}
       </View>
     </View>
@@ -339,8 +345,8 @@ const ExercisePreview = memo(function ExercisePreviewInner(props: {
         <ExerciseImage settings={props.settings} className="w-full" exerciseType={e} size="small" />
       </View>
       <View className="flex-1 py-2">
-        <Text className="text-text-primary">{e.name}</Text>
-        <Text className="text-xs text-text-secondary">{equipmentName(e.equipment)}</Text>
+        <Text className="text-text-primary">{Exercise_nameForDisplay(e)}</Text>
+        <Text className="text-xs text-text-secondary">{localizedEquipmentName(e.equipment)}</Text>
       </View>
     </Fragment>
   );
@@ -360,7 +366,12 @@ const MuscleGroupPreview = memo(function MuscleGroupPreviewInner(props: {
 }): JSX.Element {
   return (
     <View className="flex-1 py-3">
-      <Text className="text-sm">{Muscle_getMuscleGroupName(props.muscleGroup, props.settings)} Weekly Volume</Text>
+      <Text className="text-sm">
+        {props.muscleGroup === "total"
+          ? "전체"
+          : ExercisePickerUtils_getMuscleGroupName(props.muscleGroup, props.settings)}{" "}
+        주간 볼륨
+      </Text>
     </View>
   );
 });

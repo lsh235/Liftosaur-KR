@@ -27,10 +27,10 @@ function ExerciseAllTimePRsInner(props: IExerciseAllTimePRsProps): JSX.Element {
       testID="exercise-stats-pr"
       className="px-4 py-2 bg-background-cardpurple rounded-2xl"
     >
-      <GroupHeader topPadding={false} name="🏆 Personal Records" />
+      <GroupHeader topPadding={false} name="🏆 개인 최고 기록" />
       {maxWeight && (
         <MenuItem
-          name="Max Weight"
+          name="최고 중량"
           expandName={true}
           onClick={() => {
             trackClick("exercise-pr-record");
@@ -63,7 +63,7 @@ function ExerciseAllTimePRsInner(props: IExerciseAllTimePRsProps): JSX.Element {
               props.dispatch(Thunk_editHistoryRecord(max1RM.historyRecord));
             }
           }}
-          name="Max 1RM"
+          name="최고 추정 1RM"
           value={
             <View>
               <Text className="text-text-primary text-right" data-testid="one-rm-value" testID="one-rm-value">

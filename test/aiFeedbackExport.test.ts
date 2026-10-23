@@ -49,6 +49,18 @@ function record(week: number, timestamp: number, weight: number, day: number = w
 }
 
 describe("AI feedback Markdown export", () => {
+  it("retains fractional imported targets, adjusted equipment loads and actual weights separately", () => {
+    const workout = record(1, new Date("2026-01-05T10:00:00Z").getTime(), 80);
+    workout.entries[0].sets = [set("fractional", 20, 12, "STRAIGHT")];
+    const target = workout.entries[0].sets[0];
+    target.originalWeight = Weight_build(21.25, "kg");
+    target.completedWeight = Weight_build(23.75, "kg");
+    const markdown = AiFeedbackExport_buildMarkdown([workout], Settings_build("kg"), "");
+    expect(markdown).to.include("목표 21.25kg × 12회 (기구 조정 20kg) → 실제 23.75kg × 12회 @RPE 8 · ✅ 목표 초과");
+    expect(markdown).to.include("세션 볼륨(워밍업 제외, 실제 중량 기록 기준): 285kg");
+    target.completedWeight = Weight_build(20, "kg");
+    expect(AiFeedbackExport_buildMarkdown([workout], Settings_build("kg"), "")).to.include("⚠️ 목표 미달");
+  });
   it("summarizes progression and exports detailed target-versus-actual logs with the user's note", () => {
     const firstTimestamp = new Date("2026-01-05T10:00:00Z").getTime();
     const finalTimestamp = new Date("2026-02-09T10:00:00Z").getTime();
@@ -334,7 +346,7 @@ describe("AI feedback Markdown export", () => {
     const markdown = AiFeedbackExport_buildMarkdown([workout], settings, "");
     const progressionRow = markdown.split("\n").find((line) => line.startsWith("| Press"));
 
-    expect(progressionRow).to.include(String.raw`| Press \\\| Variant, Barbell |`);
+    expect(progressionRow).to.include(String.raw`| Press \\\| Variant, 바벨 |`);
   });
 
   it("keeps imported names and titles from breaking the Markdown report structure", () => {
@@ -358,8 +370,8 @@ describe("AI feedback Markdown export", () => {
     expect(markdown).to.include("# 리포트 \\# injected title");
     expect(markdown).to.include("## 프로그램: PHAT \\#\\# injected section");
     expect(markdown).to.include("월요일 \\#\\#\\# injected session");
-    expect(markdown).to.include("- **Press \\*variant\\* \\# injected heading, Barbell**");
-    expect(markdown).to.include("| Press \\*variant\\* \\# injected heading, Barbell |");
+    expect(markdown).to.include("- **Press \\*variant\\* \\# injected heading, 바벨**");
+    expect(markdown).to.include("| Press \\*variant\\* \\# injected heading, 바벨 |");
     expect(markdown).to.include("세트 메모 # injected note heading");
     expect(markdown.split("\n")).not.to.include("# injected title");
     expect(markdown.split("\n")).not.to.include("## injected section");

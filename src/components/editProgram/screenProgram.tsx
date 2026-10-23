@@ -14,11 +14,10 @@ import {
   IEvaluatedProgram,
   Program_evaluate,
   Program_dayAverageTimeMs,
-  Program_daysRange,
-  Program_exerciseRange,
+  Program_getProgramDayUsedExercises,
   Program_getDayName,
 } from "../../models/program";
-import { StringUtils_dashcase, StringUtils_pluralize } from "../../utils/string";
+import { StringUtils_dashcase } from "../../utils/string";
 import { IconCalendarSmall } from "../icons/iconCalendarSmall";
 import { TimeUtils_formatHOrMin } from "../../utils/time";
 import { IconTimerSmall } from "../icons/iconTimerSmall";
@@ -52,6 +51,7 @@ import { PerfTracker_recordEvent, PerfTracker_getSessionId } from "../../utils/p
 import { PerfEnabled_tier2 } from "../../utils/perfEnabled";
 import { PerfProfiler } from "../../utils/perfProfiler";
 import { HermesProfile_captureOnce } from "../../utils/hermesProfile";
+import { ScreenProgram_rangeForDisplay } from "./programHeaderDisplay";
 
 function onProfile(
   id: string,
@@ -79,7 +79,7 @@ function onProfile(
 const TAB_LABELS = EditProgram_tabLabels;
 const EDIT_TAB_INDEX = TAB_LABELS.indexOf("Edit");
 const EMPTY_EVAL: ReturnType<typeof PlannerProgram_evaluate> = { evaluatedWeeks: [], exerciseFullNames: [] };
-const TAB_LABELS_RO: readonly string[] = TAB_LABELS;
+const TAB_LABELS_RO: readonly string[] = ["미리보기", "편집", "연습"];
 const PLAYGROUND_TABS_PROPS = {
   topPadding: "0.25rem",
   className: "gap-2 px-4",
@@ -207,7 +207,7 @@ export const ScreenProgram = memo(function ScreenProgram(props: IProps): JSX.Ele
 
   const navOptions = useMemo(
     () => ({
-      navTitle: "Program",
+      navTitle: "프로그램",
       navHelpTourId: programTourConfig.id,
       navRightButtons,
     }),
@@ -566,10 +566,16 @@ const EditProgramHeader = memo(function EditProgramHeader(props: IEditProgramHea
   const evaluatedProgram = props.evaluatedProgram;
   const time = Program_dayAverageTimeMs(evaluatedProgram, props.settings);
   const duration = TimeUtils_formatHOrMin(time);
+  const dayCounts = evaluatedProgram.weeks.map((week) => week.days.length);
+  const exerciseCounts = evaluatedProgram.weeks.flatMap((week) =>
+    week.days.map((day) => Program_getProgramDayUsedExercises(day).length)
+  );
+  const dayRange = ScreenProgram_rangeForDisplay(dayCounts);
+  const exerciseRange = ScreenProgram_rangeForDisplay(exerciseCounts);
   return (
     <View className="px-gutter">
       <View className="flex-row items-center gap-2">
-        <View className="flex-1">
+        <View className="flex-1 min-w-0">
           <ContentGrowingTextarea
             className="text-base font-bold"
             value={evaluatedProgram.name}
@@ -595,9 +601,7 @@ const EditProgramHeader = memo(function EditProgramHeader(props: IEditProgramHea
         <View className="flex-row items-center my-1">
           <IconCalendarSmall className="mr-1" />
           <Text className="text-xs text-text-secondary">
-            {evaluatedProgram.weeks.length > 1 &&
-              `${evaluatedProgram.weeks.length} ${StringUtils_pluralize("week", evaluatedProgram.weeks.length)}, `}
-            {Program_daysRange(evaluatedProgram)}, {Program_exerciseRange(evaluatedProgram)}
+            {evaluatedProgram.weeks.length}주, 주 {dayRange}일, 하루 {exerciseRange}개 운동
           </Text>
         </View>
         <View className="flex-row items-center">
@@ -605,12 +609,12 @@ const EditProgramHeader = memo(function EditProgramHeader(props: IEditProgramHea
             <IconTimerSmall />
           </View>
           <Text className="pl-1 text-xs text-text-secondary">
-            {duration.value} {duration.unit}
+            {duration.value} {duration.unit === "h" ? "시간" : "분"}
           </Text>
         </View>
       </View>
       <View className="flex-row items-center mt-1">
-        <Text className="text-xs font-bold text-text-secondary">Next Day: </Text>
+        <Text className="text-xs font-bold text-text-secondary">다음 운동일: </Text>
         <LinkButton
           data-testid="change-program-day"
           testID="change-program-day"

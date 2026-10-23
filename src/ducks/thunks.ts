@@ -1,3 +1,4 @@
+import { Distribution_isLocalOnly } from "../utils/distribution";
 import { IThunk, IDispatch } from "./types";
 import type { NavigationAction } from "@react-navigation/native";
 import { IScreen, IScreenData, IScreenParams } from "../models/screen";
@@ -342,6 +343,7 @@ export function Thunk_log(action: string, detail?: string): IThunk {
 
 export function Thunk_verifySubscriptionKey(): IThunk {
   return async (dispatch, getState, env) => {
+    if (Distribution_isLocalOnly()) return;
     const state = getState();
     const key = state.storage.subscription.key;
     if (state.nosync || key == null) {
@@ -361,6 +363,25 @@ export function Thunk_verifySubscriptionKey(): IThunk {
 
 export function Thunk_logOut(cb?: () => void): IThunk {
   return async (dispatch, getState, env) => {
+    if (Distribution_isLocalOnly()) {
+      if (cb) {
+        // Drain the debounce before switching accounts, then persist the current snapshot.
+        // Unlike the best-effort queue flush, saveFull rejects when a write fails.
+        try {
+          await env.persistence.flushSave();
+          const current = getState();
+          await env.persistence.saveFull(`liftosaur_${current.storage.tempUserId}`, {
+            storage: current.storage,
+            lastSynced: current.lastSynced,
+          });
+        } catch {
+          Dialog_alert("현재 로컬 계정을 저장하지 못했습니다. 저장 공간을 확인한 뒤 다시 시도하세요. 현재 계정과 운동 기록은 그대로 유지됩니다.");
+          return;
+        }
+        await cb();
+      }
+      return;
+    }
     dispatch(Thunk_postevent("log-out"));
     if (getState().user?.id) {
       const isDebugAccount = AdminDebug_isDebugAccountId(getState().storage.tempUserId);
@@ -771,6 +792,10 @@ export function Thunk_syncHealthKit(cb?: () => void): IThunk {
 
 export function Thunk_sync2(args?: { force?: boolean; cb?: () => void; log?: boolean }): IThunk {
   return async (dispatch, getState, env) => {
+    if (Distribution_isLocalOnly()) {
+      args?.cb?.();
+      return;
+    }
     if (args?.log) {
       dispatch(
         Thunk_postevent("sync2-enter", {
@@ -1294,6 +1319,7 @@ export function Thunk_handleWatchStorageMerge(storageJson: string, isLiveActivit
 
 export function Thunk_fetchStorage(storageId?: string): IThunk {
   return async (dispatch, getState, env) => {
+    if (Distribution_isLocalOnly()) return;
     if (getState().errors.corruptedstorage == null) {
       const result = await load(dispatch, "Loading from cloud", () => {
         const state = getState();
@@ -1337,7 +1363,8 @@ export function Thunk_setProgramSchedule(
       weekdays,
       existingIsComplete ? 0 : (program.schedule?.completedSessions ?? 0),
       existingIsComplete ? 0 : (program.schedule?.shiftCount ?? 0),
-      reminderTime ?? program.schedule?.reminderTime
+      reminderTime ?? program.schedule?.reminderTime,
+      existingIsComplete ? undefined : program.schedule?.completedSessionDates
     );
     if (!ProgramSchedule_isValid(schedule) || totalSessions === 0) {
       Dialog_alert("시작일, 운동 요일, 알림 시간을 확인하세요. 알림 시간은 HH:MM 형식이어야 합니다.");
@@ -2332,6 +2359,7 @@ export function Thunk_fetchInitial(): IThunk {
     if (getState().storage.whatsNew == null) {
       WhatsNew_updateStorage(dispatch);
     }
+    if (Distribution_isLocalOnly()) return;
     dispatch(Thunk_fetchPrograms());
     // A debug sandbox must not verify the target's subscription receipts or restore IAPs.
     if (AdminDebug_isDebugAccountId(getState().storage.tempUserId)) {

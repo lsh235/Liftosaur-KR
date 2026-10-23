@@ -1,4 +1,5 @@
 import { JSX, useEffect, useState } from "react";
+import { Distribution_isLocalOnly, Distribution_localOnlyMessage } from "../utils/distribution";
 import { View, Pressable, Platform, AppState } from "react-native";
 import { Text } from "./primitives/text";
 import { IDispatch } from "../ducks/types";
@@ -57,6 +58,7 @@ export function ScreenAccount(props: IProps): JSX.Element {
   const [otherAccounts, setOtherAccounts] = useState<IAccount[]>([]);
   const [isOtherAccountsEditMode, setIsOtherAccountsEditMode] = useState<boolean>(false);
 
+  const localOnly = Distribution_isLocalOnly();
   const currentAccountId = props.userId || props.storage.tempUserId;
   const currentAccount: IAccount = {
     id: currentAccountId,
@@ -81,6 +83,7 @@ export function ScreenAccount(props: IProps): JSX.Element {
   }, [currentAccountId]);
 
   useEffect(() => {
+    if (localOnly) return;
     props.dispatch(Thunk_iapRefreshActiveSubscriptions());
     // Re-check on foreground so a cancel/change made in the system subscription manager (App Store /
     // Google Play) — e.g. after tapping "Cancel subscription" here — is reflected when the user returns.
@@ -116,7 +119,7 @@ export function ScreenAccount(props: IProps): JSX.Element {
     }
   }, []);
 
-  useNavOptions({ navTitle: "Account", navHelpKey: "account" });
+  useNavOptions({ navTitle: "계정", navHelpKey: "account" });
 
   const premiumCard = buildPremiumCard(plan);
 
@@ -136,6 +139,7 @@ export function ScreenAccount(props: IProps): JSX.Element {
   return (
     <View className="px-gutter">
       <GroupHeader name="현재 계정" />
+      {localOnly && <Text className="py-3 text-sm text-text-secondary">{Distribution_localOnlyMessage}</Text>}
       <MenuItem
         isBorderless={true}
         expandName={true}
@@ -162,7 +166,9 @@ export function ScreenAccount(props: IProps): JSX.Element {
             {currentAccount.name ? (
               <Text className="-mt-1 text-xs text-text-secondary">{`id: ${currentAccount.id}`}</Text>
             ) : null}
-            {props.email ? (
+            {localOnly ? (
+              <Text className="text-xs text-text-secondary">이 기기에 저장된 계정 · 클라우드 연결 꺼짐</Text>
+            ) : props.email ? (
               props.email === "noemail@example.com" ? null : (
                 <Text className="text-xs text-text-secondary">
                   로그인 계정: <Text className="text-sm font-bold text-text-secondary">{props.email}</Text>
@@ -174,7 +180,7 @@ export function ScreenAccount(props: IProps): JSX.Element {
           </View>
         }
       />
-      {props.email ? (
+      {!localOnly && (props.email ? (
         <View className="items-center">
           <Button
             name="account-sign-out"
@@ -220,7 +226,8 @@ export function ScreenAccount(props: IProps): JSX.Element {
           </Pressable>
           <EmailAuthButton onPress={() => navigateToModal("emailAuthModal")} />
         </View>
-      )}
+      ))}
+      {!localOnly && <>
       <GroupHeader name="🌟 Liftosaur 프리미엄" topPadding={true} />
       {isLoadingSubscription ? (
         <MenuItem name="구독 정보를 확인하고 있습니다…" expandName={true} value={<IconSpinner width={18} height={18} />} />
@@ -251,6 +258,7 @@ export function ScreenAccount(props: IProps): JSX.Element {
           )}
         </>
       )}
+      </>}
       <GroupHeader
         name="다른 로컬 계정"
         topPadding={true}
@@ -363,7 +371,7 @@ export function ScreenAccount(props: IProps): JSX.Element {
           현재 로컬 계정 삭제
         </Button>
       </View>
-      {props.email && (
+      {!localOnly && props.email && (
         <View>
           <Button
             name="account-delete-remote"
