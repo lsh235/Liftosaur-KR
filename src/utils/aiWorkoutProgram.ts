@@ -257,16 +257,20 @@ function numberAt(
     errors.push(pathLabel(path + "." + key) + " 값은 유효한 숫자여야 합니다.");
     return undefined;
   }
+  let valid = true;
   if (options.integer && !Number.isInteger(value)) {
     errors.push(pathLabel(path + "." + key) + " 값은 정수여야 합니다.");
+    valid = false;
   }
   if (options.min != null && value < options.min) {
     errors.push(pathLabel(path + "." + key) + " 값은 " + options.min + " 이상이어야 합니다.");
+    valid = false;
   }
   if (options.max != null && value > options.max) {
     errors.push(pathLabel(path + "." + key) + " 값은 " + options.max + " 이하여야 합니다.");
+    valid = false;
   }
-  return value;
+  return valid ? value : undefined;
 }
 
 function validateProgram(value: unknown): { program?: IAIProgram; errors: string[] } {

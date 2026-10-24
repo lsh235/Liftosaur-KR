@@ -62,6 +62,23 @@ Android 단위 검사에는 NotificationPermissionTest·TimerAlarmReschedulerTes
 
 이번 build가 새로 변경한 추적 생성 파일 `scripts/licenses/shipped-packages.json`, `src/licenses.html`, `src/sitemap.xml`은 build 전 상태와 비교해 복원했다. 이 후속 검사 결과는 C1 native workflow evidence와 구분하며, 공개/스토어 준비 승인으로 해석하지 않는다.
 
+## AI 가져오기 반복 경계 수정 후보 (HEAD 129f09db + 미커밋 importer 수정, 2026-10-24)
+
+| 검사 | 결과 | 범위 / 제한 |
+| --- | --- | --- |
+| focused importer | PASS | `npm run onetest -- test/aiWorkoutProgram.test.ts`: 27 passing. 기존 PHAT·유효 JSON/CSV·0kg/0초 경로 포함. 큰 수 입력 회귀는 별도 child process에서 실행하며 제한시간은 10초. |
+| 타입 검사 | PASS | `npm run check`, exit 0. |
+| 전체 모델/단위 | PASS | `npm test`: 2,851 passing, exit 0. 기존 Node module-type/Buffer 경고 및 의도된 실패 경로 로그. |
+| 전체 렌더 계약 | PASS | `npm run test:render -- --runInBand`: 22 suites passed; 98 passed, 16 skipped. 완료 후 Jest open-handle 경고, exit 0. |
+| 재현 corpus | PASS (bounded sample) | 이전 임시 payload 파일이 없어 결정적 200건 corpus를 재구성해 12초 child timeout으로 검사: 1,399ms, 12 accepted/188 rejected, missing outcomes 0. PHAT seed·minimal JSON·CSV 정상 입력은 accepted. 이 corpus는 기존 200건 파일과 동일하다고 주장하지 않으며 fuzz나 native picker 검증이 아니다. 입력/결과/요약은 `/tmp/ko-ai-import-bounded-retest/{payloads.json,results.json,assessment.json}`. |
+| safe production build | PASS | `npm run build:prepare`: webpack production compile 성공. stale Browserslist, Eleventy invalid `main`, webpack `Compilation.assets` deprecation 및 asset/entrypoint 크기 경고. 일반 업로드 포함 `npm run build`는 실행하지 않음. 라이선스 생성은 RN bundle map 부재로 cached package list 사용, 미설치 2개 제외 경고. |
+| production dist runtime smoke | PASS (정적 마운트만) | `node scripts/qa/ko-release-web-runtime-smoke.mjs`: `/app/`, app/vendors/consent JS HTTP 200, UTF-8, `#app` child 1개/13,152 HTML bytes, CDP exceptions 0. 외부 요청 5건 차단; API/로그인/실기기 동작 검증 아님. |
+| Android C4 APK/UI 흐름 | NOT RUN | 이 수정 후보의 APK 및 Android 앱 UI 회귀는 실행하지 않았다. C3 attempt 2 KVM preflight는 통과했지만 P1 발견 뒤 Android build 중 의도적으로 취소되어 C3 APK/UI가 완료되지 않았다. 이전 C1 emulator 실패는 새 후보의 증거로 승계하지 않는다. |
+| generated tracked files | 복원 | 이번 build로 바뀐 `scripts/licenses/shipped-packages.json`, `src/licenses.html`, `src/sitemap.xml`은 build 전 clean 상태와 비교한 뒤 복원했다. `.playwright-cli/`는 그대로 보존했다. |
+| Git/CI/public release | NOT RUN | 커밋/푸시, CI dispatch, 서명물, release tag 또는 public release 작업 없음. 다음 후보 커밋/dispatch는 coordinator 승인 대기. |
+
+이 후보는 source-level invalid-number propagation 수정에 한정된다. 정해진 validation loops의 지연 문제를 처리했으며 parser 전체 fuzz, 네이티브 file picker, Android APK 및 실제 기기 흐름의 증거를 뜻하지 않는다.
+
 ## 환경 수정 및 백업 검사 후보 (HEAD 1b6fb19c + 미커밋 QA, 2026-10-24)
 
 이 시점의 제품 코드는 C2 commit `1b6fb19c`와 동일하다. 이후 변경은 QA helper, workflow, focused test와 검증 문서에 한정되며 제품 구현은 바뀌지 않았다. 아래 결과는 이 공유 작업 트리 시점의 검사로, 이전 C1/C2 표의 수치와 번들 근거를 대체하지 않는다.

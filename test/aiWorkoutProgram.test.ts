@@ -1,6 +1,7 @@
 import "mocha";
 import { readFileSync } from "fs";
 import { join } from "path";
+import { spawnSync } from "child_process";
 import { expect } from "chai";
 import {
   AiWorkoutProgram_buildPhatSeedJson,
@@ -53,6 +54,32 @@ function jsonProgram(): string {
       },
     ],
   });
+}
+
+function expectBoundedInvalidImports(payloads: string[]): void {
+  const script = [
+    `const { AiWorkoutProgram_tryImport } = require(${JSON.stringify(join(process.cwd(), "src/utils/aiWorkoutProgram"))});`,
+    `const payloads = ${JSON.stringify(payloads)};`,
+    `const results = payloads.map((payload) => AiWorkoutProgram_tryImport(payload));`,
+    "process.stdout.write(JSON.stringify(results));",
+  ].join("\n");
+  const result = spawnSync(process.execPath, ["-r", "./register-rn-web.js", "-r", "ts-node/register", "-e", script], {
+    cwd: process.cwd(),
+    encoding: "utf8",
+    env: { ...process.env, TS_NODE_TRANSPILE_ONLY: "1" },
+    killSignal: "SIGKILL",
+    maxBuffer: 1024 * 1024,
+    timeout: 10000,
+  });
+
+  expect(result.error, "bounded importer child process").to.equal(undefined);
+  expect(result.status, result.stderr).to.equal(0);
+  const outcomes = JSON.parse(result.stdout);
+  expect(outcomes).to.have.length(payloads.length);
+  for (const outcome of outcomes) {
+    expect(outcome?.success).to.equal(false);
+    expect(outcome?.error?.join("\n")).to.match(/정수|이상|이하/);
+  }
 }
 
 function withTurkishLocaleCaseMapping<T>(callback: () => T): T {
@@ -108,6 +135,68 @@ describe("AI workout program import", () => {
     }
     const record = Program_nextHistoryRecord(imported.data.program, settings, Stats_getEmpty(), 1);
     expect(record.entries[0].sets[0].timer).to.equal(0);
+  });
+
+  it("rejects invalid JSON week/day bounds before using them for validation loops", () => {
+    const cases = [
+      ["duration_weeks", 53],
+      ["duration_weeks", 1.5],
+      ["duration_weeks", -1],
+      ["days_per_week", 8],
+      ["days_per_week", 1.5],
+      ["days_per_week", -1],
+    ] as const;
+
+    for (const [field, value] of cases) {
+      const input = JSON.parse(jsonProgram());
+      input[field] = value;
+      const result = AiWorkoutProgram_tryImport(JSON.stringify(input), Settings_build("kg"));
+
+      expect(result?.success, `${field}=${value}`).to.equal(false);
+      if (result && !result.success) {
+        expect(result.error.join("\n"), `${field}=${value}`).to.match(/정수|이상|이하/);
+      }
+    }
+  });
+
+  it("rejects invalid CSV week/day bounds with a localized validation error", () => {
+    const cases = [
+      ["duration_weeks", "53"],
+      ["duration_weeks", "1.5"],
+      ["duration_weeks", "-1"],
+      ["days_per_week", "8"],
+      ["days_per_week", "1.5"],
+      ["days_per_week", "-1"],
+    ] as const;
+    const header =
+      "program_name,duration_weeks,days_per_week,weight_unit,day_index,day_name,exercise_order,exercise_name,target_muscle,rest_seconds,week,set_no,set_type,target_weight,target_reps";
+
+    for (const [field, value] of cases) {
+      const values = ["CSV 루틴", "1", "1", "kg", "1", "월요일", "1", "Bench Press", "", "0", "1", "1", "TOP", "0", "5"];
+      values[field === "duration_weeks" ? 1 : 2] = value;
+      const result = AiWorkoutProgram_tryImport([header, values.join(",")].join("\n"), Settings_build("kg"));
+
+      expect(result?.success, `${field}=${value}`).to.equal(false);
+      if (result && !result.success) {
+        expect(result.error.join("\n"), `${field}=${value}`).to.match(/정수|이상|이하/);
+      }
+    }
+  });
+
+  it("bounds very large JSON and CSV week/day values in an isolated child process", () => {
+    const jsonPayloads = [Number.MAX_SAFE_INTEGER, 1e100].flatMap((value) => [
+      JSON.stringify({ ...JSON.parse(jsonProgram()), duration_weeks: value }),
+      JSON.stringify({ ...JSON.parse(jsonProgram()), days_per_week: value }),
+    ]);
+    const header =
+      "program_name,duration_weeks,days_per_week,weight_unit,day_index,day_name,exercise_order,exercise_name,target_muscle,rest_seconds,week,set_no,set_type,target_weight,target_reps";
+    const csvPayloads = [String(Number.MAX_SAFE_INTEGER), "1e100"].flatMap((value) => {
+      const durationValues = ["CSV 루틴", value, "1", "kg", "1", "월요일", "1", "Bench Press", "", "0", "1", "1", "TOP", "0", "5"];
+      const daysValues = ["CSV 루틴", "1", value, "kg", "1", "월요일", "1", "Bench Press", "", "0", "1", "1", "TOP", "0", "5"];
+      return [durationValues, daysValues].map((values) => [header, values.join(",")].join("\n"));
+    });
+
+    expectBoundedInvalidImports([...jsonPayloads, ...csvPayloads]);
   });
 
   it("imports valid JSON wrapped in a Markdown json code fence", () => {
