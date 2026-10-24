@@ -108,6 +108,35 @@ def scroll_until_text(needle: str, exact: bool = False) -> tuple[ET.Element, ET.
     raise RuntimeError(f"Could not scroll to visible text: {needle}")
 
 
+def settings_screen_visible(root: ET.Element) -> bool:
+    # These body markers distinguish ScreenSettings from the persistent footer
+    # label "내 정보" and from first-launch/onboarding overlays.
+    return find_text(root, "신체 정보", exact=True) is not None and find_text(root, "체중", exact=True) is not None
+
+
+def wait_settings_screen(timeout: int = 15) -> ET.Element:
+    deadline = time.monotonic() + timeout
+    last_root: ET.Element | None = None
+    while time.monotonic() < deadline:
+        last_root = hierarchy()
+        if settings_screen_visible(last_root):
+            return last_root
+        time.sleep(1)
+
+    visible_text = []
+    if last_root is not None:
+        for node in last_root.iter("node"):
+            value = node.attrib.get("text", "") or node.attrib.get("content-desc", "")
+            if value and value not in visible_text:
+                visible_text.append(value)
+    summary = ", ".join(visible_text[:20]) or "<no visible text>"
+    raise RuntimeError(
+        "Settings screen did not become visible after tapping 내 정보: expected body markers "
+        "'신체 정보' and '체중'. A hear-about-us/onboarding or another modal may have intercepted "
+        f"the tap. Current visible text: {summary}"
+    )
+
+
 def switch_account(account_id: str, expected_program: str) -> None:
     tap_text("내 정보", exact=True)
     tap_clickable_text("계정", exact=True)
@@ -154,6 +183,7 @@ def open_fixture_workout() -> None:
 
 def assert_measurement(value: str, label: str) -> None:
     tap_text("내 정보", exact=True)
+    wait_settings_screen()
     root, node = scroll_until_text(value)
     save_hierarchy(root, f"{label}-measurement")
     print(f"PASS: settings UI displays fixture measurement value {value}: {node.attrib.get('text', '')}")

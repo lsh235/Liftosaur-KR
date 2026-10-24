@@ -6,7 +6,30 @@ import { Settings_build } from "../../src/models/settings";
 import { Stats_getEmpty } from "../../src/models/stats";
 import { Storage_get, Storage_getDefault } from "../../src/models/storage";
 import { Weight_build } from "../../src/models/weight";
+import { Tour_stepHelpFlag } from "../../src/components/tour/tourTypes";
 import { IHistoryRecord, IProgram, IStorage } from "../../src/types";
+
+function seenEveryTour(): string[] {
+  // Keep in sync with the workout/program step IDs in tourConfigs. Importing
+  // the JSX configs here would pull the React Native UI runtime into this
+  // standalone Node fixture generator.
+  const steps = {
+    workout: [
+      "howItWorks",
+      "completingSets",
+      "swipeSets",
+      "whatIs1RM",
+      "whatIsRPE",
+      "equipment",
+      "editingProgram",
+      "progressionPreview",
+    ],
+    program: ["structure", "updates", "text", "liftoscript", "addExercise", "editExercise", "playground"],
+  };
+  return Object.entries(steps).flatMap(([tourId, stepIds]) =>
+    stepIds.map((stepId) => Tour_stepHelpFlag(tourId, stepId))
+  );
+}
 
 function stripPost158Fields(value: unknown): unknown {
   if (Array.isArray(value)) {
@@ -70,6 +93,10 @@ function buildStorage(accountId: string, suffix: string, bodyweight: number): IS
       },
     },
     settings: { ...settings, theme: "dark" },
+    // Match test-render fixtures: the seeded first launch must reach app tabs
+    // instead of opening onboarding or the hear-about-us survey over them.
+    helps: seenEveryTour(),
+    hearAboutUs: { done: true, requests: [] },
   };
   const compatible = stripPost158Fields(storage) as IStorage;
   const validated = Storage_get(compatible as unknown as Record<string, unknown>);
@@ -105,6 +132,10 @@ fs.writeFileSync(
       completedSetsPerExercise: 2,
       measurementsKg: { primary: 68.4, secondary: 74.2 },
       post158FieldRemoved: "completedSessionDates",
+      onboarding: {
+        completedTourHelpFlags: seenEveryTour().length,
+        hearAboutUsDone: true,
+      },
     },
     null,
     2

@@ -73,7 +73,7 @@ Android 단위 검사에는 NotificationPermissionTest·TimerAlarmReschedulerTes
 | 재현 corpus | PASS (bounded sample) | 이전 임시 payload 파일이 없어 결정적 200건 corpus를 재구성해 12초 child timeout으로 검사: 1,399ms, 12 accepted/188 rejected, missing outcomes 0. PHAT seed·minimal JSON·CSV 정상 입력은 accepted. 이 corpus는 기존 200건 파일과 동일하다고 주장하지 않으며 fuzz나 native picker 검증이 아니다. 입력/결과/요약은 `/tmp/ko-ai-import-bounded-retest/{payloads.json,results.json,assessment.json}`. |
 | safe production build | PASS | `npm run build:prepare`: webpack production compile 성공. stale Browserslist, Eleventy invalid `main`, webpack `Compilation.assets` deprecation 및 asset/entrypoint 크기 경고. 일반 업로드 포함 `npm run build`는 실행하지 않음. 라이선스 생성은 RN bundle map 부재로 cached package list 사용, 미설치 2개 제외 경고. |
 | production dist runtime smoke | PASS (정적 마운트만) | `node scripts/qa/ko-release-web-runtime-smoke.mjs`: `/app/`, app/vendors/consent JS HTTP 200, UTF-8, `#app` child 1개/13,152 HTML bytes, CDP exceptions 0. 외부 요청 5건 차단; API/로그인/실기기 동작 검증 아님. |
-| Android C4 APK/UI 흐름 | NOT RUN | 이 수정 후보의 APK 및 Android 앱 UI 회귀는 실행하지 않았다. C3 attempt 2 KVM preflight는 통과했지만 P1 발견 뒤 Android build 중 의도적으로 취소되어 C3 APK/UI가 완료되지 않았다. 이전 C1 emulator 실패는 새 후보의 증거로 승계하지 않는다. |
+| Android C4 APK/UI 흐름 | FAIL (partial) | [C4 run 40046971887](https://github.com/lsh235/Liftosaur-KR/actions/runs/40046971887)은 emulator boot 및 v158 baseline APK install/launch, initial fixture marker, 일부 screenshot/XML 수집까지 확인했으나 첫 `assert-measurement`에서 survey overlay가 Settings navigation을 가로막아 실패했다. Candidate v159 APK는 build/signature-check/upload됐지만 실패 전에 설치하지 않았으며 `adb install -r` candidate upgrade는 발생하지 않았다. 필수 증거와 native upgrade 검증은 미완료. 이는 QA fixture/helper 설정 문제이며 앱 데이터 손실 회귀의 증거가 아니다. C3 APK/UI는 Android build 중 취소되어 미완료였고 C1 emulator 실패는 새 후보 PASS로 승계하지 않는다. |
 | generated tracked files | 복원 | 이번 build로 바뀐 `scripts/licenses/shipped-packages.json`, `src/licenses.html`, `src/sitemap.xml`은 build 전 clean 상태와 비교한 뒤 복원했다. `.playwright-cli/`는 그대로 보존했다. |
 | Git/CI/public release | NOT RUN | 커밋/푸시, CI dispatch, 서명물, release tag 또는 public release 작업 없음. 다음 후보 커밋/dispatch는 coordinator 승인 대기. |
 
@@ -90,3 +90,11 @@ Android 단위 검사에는 NotificationPermissionTest·TimerAlarmReschedulerTes
 | 최신 타입 검사 | PASS | 백업 회귀 보강 뒤 `npm run check` exit 0. |
 | Android emulator / app UI 재실행 | NOT RUN | C1 run 40004012987은 emulator boot/KVM 단계에서 실패했고 app UI는 시작되지 않았다. 이번 QA/workflow 후보에 대한 재실행은 하지 않았다. C1 결과를 새 후보 PASS로 승계하지 않는다. |
 | diff 검사 | PASS | 변경 시점의 `git diff --check` 통과. Git commit/push 및 CI 실행은 하지 않았다. |
+
+## Android QA fixture onboarding/assertion follow-up (2026-10-24)
+
+| 검사 | 결과 | 범위 / 제한 |
+| --- | --- | --- |
+| 합성 v158 fixture 생성 | PASS | `create-legacy-storage-fixtures.ts` 실행 결과 두 계정 모두 `hearAboutUs.done=true`, 완료 tour-help flag 15개(운동 8/프로그램 7), `completedSessionDates` 제거를 확인. 각 fixture는 생성기 안의 `Storage_get` 검증도 통과. output: `/tmp/ko-release-fixture.dBsrPt`. |
+| Settings visibility gate | PASS (synthetic XML) | Python AST/compile 검사 및 합성 hierarchy 검사: `신체 정보`+`체중`이 있는 Settings 화면은 통과하고 hear-about-us hierarchy는 거부. 모달이 남아 있는 경우 visible-text 진단과 onboarding/modal 가능성을 포함한 오류를 내며, 예상 측정값 조회가 Settings 확인 뒤에만 실행됨을 mock 순서로 확인. |
+| Android C4 fixture/UI rerun | FAIL (partial; before local helper fix) | C4 run 40046971887은 v158 baseline APK만 install/launch했고 initial fixture marker와 screenshot/XML은 수집했지만 survey overlay가 Settings 진입을 막아 첫 측정값 assertion에서 실패했다. Candidate v159는 build/signature-check/upload됐으나 install 전 실패하여 `adb install -r` upgrade는 발생하지 않았다. 이후 fixture generator와 Settings visibility gate는 로컬 생성/XML 검사만 통과했으며 Android에서 재실행하지 않았다. 다음 separately scoped fresh-source run은 C5이며, required native upgrade evidence remains NOT RUN. |
