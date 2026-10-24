@@ -108,6 +108,40 @@ def scroll_until_text(needle: str, exact: bool = False) -> tuple[ET.Element, ET.
     raise RuntimeError(f"Could not scroll to visible text: {needle}")
 
 
+def normalize_history_label(value: str) -> str:
+    # FastText's native accessibility label may omit the gap before the unit.
+    return " ".join(value.split()).replace(" kg", "kg")
+
+
+def find_completed_history_label(root: ET.Element, expected: str) -> ET.Element | None:
+    expected_normalized = normalize_history_label(expected)
+    label = None
+    label_length = None
+    for node in root.iter("node"):
+        value = node.attrib.get("text", "") or node.attrib.get("content-desc", "")
+        normalized_value = normalize_history_label(value)
+        if normalized_value == expected_normalized:
+            label = node
+            break
+        if expected_normalized in normalized_value and (label_length is None or len(normalized_value) < label_length):
+            label = node
+            label_length = len(normalized_value)
+    if label is None or find_id(root, "history-entry-sets-completed") is None:
+        return None
+    return label
+
+
+def scroll_until_completed_history_label(needle: str) -> tuple[ET.Element, ET.Element]:
+    for _ in range(8):
+        root = hierarchy()
+        node = find_completed_history_label(root, needle)
+        if node is not None:
+            return root, node
+        adb("shell", "input", "swipe", "520", "1550", "520", "420", "350")
+        time.sleep(0.5)
+    raise RuntimeError(f"Could not find completed history row with label: {needle}")
+
+
 def settings_screen_visible(root: ET.Element) -> bool:
     # These body markers distinguish ScreenSettings from the persistent footer
     # label "내 정보" and from first-launch/onboarding overlays.
@@ -198,9 +232,7 @@ def assert_completed_history_set(label: str) -> None:
     except RuntimeError:
         root, exercise = scroll_until_text("벤트")
     tap_node(clickable_ancestor(root, exercise))
-    root, _ = scroll_until_text("2 × 8 × 20 kg")
-    if find_id(root, "history-entry-sets-completed") is None:
-        raise RuntimeError("The completed workout history did not show two sets of 8 reps at 20 kg")
+    root, _ = scroll_until_completed_history_label("2 × 8 × 20 kg")
     save_hierarchy(root, f"{label}-completed-history-2x8x20kg")
     print("PASS: exercise history UI displays 2 × 8 × 20 kg in a completed-set row")
     tap_text("홈", exact=True)
