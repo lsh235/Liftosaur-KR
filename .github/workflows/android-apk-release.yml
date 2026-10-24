@@ -491,6 +491,9 @@ jobs:
       - name: Install JavaScript dependencies
         run: npm ci
 
+      - name: Generate markdown modules required by the legacy fixture
+        run: npm run build:markdown
+
       - name: Generate validated synthetic v158 legacy-storage fixture
         run: |
           mkdir -p qa-artifacts/legacy-fixtures
