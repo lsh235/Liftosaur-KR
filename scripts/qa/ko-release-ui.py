@@ -109,26 +109,34 @@ def scroll_until_text(needle: str, exact: bool = False) -> tuple[ET.Element, ET.
 
 
 def normalize_history_label(value: str) -> str:
-    # FastText's native accessibility label may omit the gap before the unit.
-    return " ".join(value.split()).replace(" kg", "kg")
+    # FastText's native accessibility label may omit spaces around the unit or
+    # separators. Compare the displayed token sequence independent of spacing.
+    return "".join(value.split())
 
 
 def find_completed_history_label(root: ET.Element, expected: str) -> ET.Element | None:
     expected_normalized = normalize_history_label(expected)
-    label = None
-    label_length = None
-    for node in root.iter("node"):
-        value = node.attrib.get("text", "") or node.attrib.get("content-desc", "")
-        normalized_value = normalize_history_label(value)
-        if normalized_value == expected_normalized:
-            label = node
-            break
-        if expected_normalized in normalized_value and (label_length is None or len(normalized_value) < label_length):
-            label = node
-            label_length = len(normalized_value)
-    if label is None or find_id(root, "history-entry-sets-completed") is None:
-        return None
-    return label
+    for row in root.iter("node"):
+        resource_id = row.attrib.get("resource-id", "")
+        if not resource_id.startswith("menu-item-"):
+            continue
+        value = row.attrib.get("content-desc", "")
+        label_segments = {normalize_history_label(segment) for segment in value.split(",")}
+        # Bind the value and status to the same known synthetic history card.
+        # A completed-set marker elsewhere in the screen must not validate an
+        # unrelated row with the same displayed number.
+        if (
+            expected_normalized not in label_segments
+            or "한국어 기록 보존 검증" not in value
+            or "Week 1 - Workout A" not in value
+        ):
+            continue
+        if any(
+            child.attrib.get("resource-id", "").endswith("history-entry-sets-completed")
+            for child in row.iter("node")
+        ):
+            return row
+    return None
 
 
 def scroll_until_completed_history_label(needle: str) -> tuple[ET.Element, ET.Element]:

@@ -2,6 +2,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { basicBeginnerProgram } from "../../src/programs/basicBeginnerProgram";
 import { Program_nextHistoryRecord } from "../../src/models/program";
+import { Reps_isCompletedSet } from "../../src/models/set";
 import { Settings_build } from "../../src/models/settings";
 import { Stats_getEmpty } from "../../src/models/stats";
 import { Storage_get, Storage_getDefault } from "../../src/models/storage";
@@ -47,9 +48,35 @@ function stripPost158Fields(value: unknown): unknown {
 
 function buildStorage(accountId: string, suffix: string, bodyweight: number): IStorage {
   const settings = Settings_build("kg");
+  const planner = basicBeginnerProgram.planner;
+  const firstWorkout = planner?.weeks[0]?.days[0];
+  const originalRow = "Bent Over Row / 2x5, 1x5+ / 95lb";
+  if (!planner || !firstWorkout?.exerciseText.includes(originalRow)) {
+    throw new Error("Could not find the basic beginner first-workout row used by the legacy fixture");
+  }
   const program: IProgram = {
     ...basicBeginnerProgram,
     name: `한국어 기록 보존 검증 ${suffix} - 장비와 운동 이름이 작은 화면에서 잘리는지 확인하기 위한 긴 루틴 제목`,
+    // Keep the synthetic recorded 20 kg load at or above the programmed load.
+    // Otherwise HistoryRecordSets correctly classifies it as an incomplete row.
+    planner: {
+      ...planner,
+      weeks: planner.weeks.map((week, weekIndex) =>
+        weekIndex !== 0
+          ? week
+          : {
+              ...week,
+              days: week.days.map((day, dayIndex) =>
+                dayIndex !== 0
+                  ? day
+                  : {
+                      ...day,
+                      exerciseText: day.exerciseText.replace(originalRow, "Bent Over Row / 2x5, 1x5+ / 20kg"),
+                    }
+              ),
+            }
+      ),
+    },
   };
   const startTime = Date.parse("2026-10-20T09:30:00.000Z");
   const next = Program_nextHistoryRecord(program, settings, Stats_getEmpty(), 0);
@@ -76,6 +103,9 @@ function buildStorage(accountId: string, suffix: string, bodyweight: number): IS
       })),
     })),
   };
+  if (!record.entries[0]?.sets.slice(0, 2).every(Reps_isCompletedSet)) {
+    throw new Error("The first fixture history entry must contain two semantically completed sets");
+  }
 
   const storage: IStorage = {
     ...Storage_getDefault(),
