@@ -16,9 +16,9 @@ export function ResetPasswordHtml(props: IProps): JSX.Element {
       css={["resetpassword"]}
       js={["resetpassword"]}
       maxWidth={1200}
-      title="Reset Password | Liftosaur"
+      title="Reset Password | TigerFit"
       canonical="https://www.liftosaur.com/resetpassword"
-      description="Set a new password for your Liftosaur account"
+      description="Set a new password for your TigerFit account"
       ogUrl="https://www.liftosaur.com/resetpassword"
       postHead={<meta name="robots" content="noindex" />}
       data={data}

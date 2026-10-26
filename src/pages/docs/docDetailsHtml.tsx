@@ -13,9 +13,9 @@ interface IProps {
 export function DocDetailsHtml(props: IProps): JSX.Element {
   const { client, isLoggedIn, ...data } = props;
   const { doc } = props;
-  const title = `${doc.title} - Liftosaur Documentation`;
+  const title = `${doc.title} - TigerFit Documentation`;
   const url = `https://www.liftosaur.com/doc/${doc.id}`;
-  const description = doc.shortDescription || `${doc.title} - Liftosaur documentation.`;
+  const description = doc.shortDescription || `${doc.title} - TigerFit documentation.`;
 
   const jsonLd: IJsonLd[] = [
     {

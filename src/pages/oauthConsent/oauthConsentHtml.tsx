@@ -31,7 +31,7 @@ export function OauthConsentHtml(props: IProps): JSX.Element {
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="robots" content="noindex" />
-        <title>{`Authorize ${clientName} | Liftosaur`}</title>
+        <title>{`Authorize ${clientName} | TigerFit`}</title>
         <link rel="shortcut icon" type="image/x-icon" href="/icons/favicon.ico" />
         <link rel="apple-touch-icon" href="/icons/icon512.png" />
         <link rel="stylesheet" type="text/css" href={`/oauthconsent.css?version=${version}`} />
@@ -41,14 +41,14 @@ export function OauthConsentHtml(props: IProps): JSX.Element {
           <div className="w-full max-w-md rounded-3xl bg-background-default p-8 shadow-lg">
             <div className="flex items-center gap-2 mb-6">
               <span className="w-10 h-10 rounded-lg overflow-hidden inline-block">
-                <img src="/images/icon.svg" alt="Liftosaur Logo" width={40} height={40} className="w-10 h-10" />
+                <img src="/images/tigerfit-icon.png" alt="TigerFit" width={40} height={40} className="w-10 h-10" />
               </span>
-              <span className="text-xl font-bold text-text-primary">Liftosaur</span>
+              <span className="text-xl font-bold text-text-primary">TigerFit</span>
             </div>
             <h1 className="text-2xl font-bold text-text-primary mb-3">Authorize access</h1>
             <p className="text-base text-text-secondary leading-relaxed mb-4">
               <span className="font-semibold text-text-primary">{clientName}</span> is requesting access to your
-              Liftosaur account. If you approve, it will be able to:
+              TigerFit account. If you approve, it will be able to:
             </p>
             <ul className="text-sm text-text-secondary leading-relaxed list-disc pl-5 mb-5">
               <li className="mb-1.5">Read and write your workout programs</li>
@@ -57,7 +57,7 @@ export function OauthConsentHtml(props: IProps): JSX.Element {
             </ul>
             <div className="rounded-lg bg-background-cardyellow border border-border-cardyellow p-3 mb-6">
               <p className="text-sm text-text-cardyellow mb-1">
-                Liftosaur hasn&apos;t verified this application. The name above is provided by the app itself. If you
+                TigerFit hasn&apos;t verified this application. The name above is provided by the app itself. If you
                 allow it, you&apos;ll be sent to:
               </p>
               <p className="text-sm font-semibold text-text-cardyellow break-all">{redirectHost}</p>

@@ -9,8 +9,8 @@ export function AffiliatesContent(props: IAffiliatesContentProps): JSX.Element {
     <section className="p-4">
       <h1 className="text-2xl font-bold">Affiliate Program</h1>
       <p className="mt-4">
-        Liftosaur offers an affiliate program. If you're a coach, a trainer, or an influencer, you can earn commission
-        by offering your weightlifting program on Liftosaur.
+        TigerFit offers an affiliate program. If you're a coach, a trainer, or an influencer, you can earn commission
+        by offering your weightlifting program on TigerFit.
       </p>
 
       <p className="mt-4">
@@ -25,7 +25,7 @@ export function AffiliatesContent(props: IAffiliatesContentProps): JSX.Element {
           <a target="_blank" className="font-bold underline text-text-link" href="https://www.liftosaur.com/program">
             liftosaur.com/program
           </a>
-          ), or on a phone (by installing the <strong>Liftosaur</strong> app and creating a program there)
+          ), or on a phone (by installing the <strong>TigerFit</strong> app and creating a program there)
         </li>
         <li>You copy the link to the program.</li>
         <li>You share the link with your users/customers/clients/fans.</li>

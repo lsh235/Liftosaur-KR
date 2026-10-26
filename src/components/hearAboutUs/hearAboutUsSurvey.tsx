@@ -5,7 +5,7 @@ import { Text } from "../primitives/text";
 import { Button } from "../button";
 import { LinkButton } from "../linkButton";
 import { Tailwind_semantic } from "../../utils/tailwindConfig";
-import { ImagePreloader_uri } from "../../utils/imagePreloader";
+import { BundledImages_resolve } from "../../utils/bundledImages";
 import { IconReddit } from "../icons/iconReddit";
 import { IconAi } from "../icons/iconAi";
 import { IconUser } from "../icons/iconUser";
@@ -88,10 +88,10 @@ function sourceIcon(source: IHearAboutUsSource, color: string): ReactNode {
 function Mascot({ size }: { size: number }): JSX.Element {
   return (
     <Image
-      source={{ uri: ImagePreloader_uri("/images/dino-scope.png") }}
+      source={BundledImages_resolve("/images/tigerfit-mascot.png")}
       style={{ width: size, height: size }}
       resizeMode="contain"
-      accessibilityLabel="Liftosaur mascot with a telescope"
+      accessibilityLabel="TigerFit mascot"
     />
   );
 }
@@ -187,7 +187,7 @@ export function HearAboutUsSurvey(props: IProps): JSX.Element {
           <Mascot size={64} />
           <View className="flex-1">
             {!isScreen && (
-              <Text className="mb-1 text-xl font-bold text-text-primary">How did you hear about Liftosaur?</Text>
+              <Text className="mb-1 text-xl font-bold text-text-primary">How did you hear about TigerFit?</Text>
             )}
             <Text className="text-sm font-semibold text-text-secondary">
               It'd really help us out - just a tap or two.

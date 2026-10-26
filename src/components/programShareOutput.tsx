@@ -1,6 +1,5 @@
 import { JSX, ReactNode, Ref, forwardRef, useState } from "react";
-import { View, LayoutChangeEvent } from "react-native";
-import { SvgUri } from "./primitives/svg";
+import { View, LayoutChangeEvent, Image } from "react-native";
 import { ISettings, IPlannerProgram, IPlannerProgramWeek, IPlannerProgramDay } from "../types";
 import { PlannerProgram_evaluate } from "../pages/planner/models/plannerProgram";
 import { StringUtils_pluralize } from "../utils/string";
@@ -18,7 +17,7 @@ import { CollectionUtils_compact, CollectionUtils_inGroupsOf } from "../utils/co
 import { ProgramQrCode } from "./programQrCode";
 import { Equipment_currentEquipment } from "../models/equipment";
 import { Text } from "./primitives/text";
-import { HostConfig_resolveUrl } from "../utils/hostConfig";
+import { BundledImages_resolve } from "../utils/bundledImages";
 import { n } from "../utils/math";
 
 export interface IProgramShareOutputOptions {
@@ -151,8 +150,11 @@ export const ProgramShareOutput = forwardRef((props: IProgramShareOutputProps, r
           );
         })}
         <View className="flex-row items-center justify-end mt-1">
-          <SvgUri uri={HostConfig_resolveUrl("/images/logo.svg")} width={24} height={24} style={{ marginRight: 4 }} />
-          <Text className="text-sm font-bold">Liftosaur</Text>
+          <Image
+            source={BundledImages_resolve("/images/tigerfit-icon.png")}
+            style={{ width: 24, height: 24, marginRight: 4 }}
+          />
+          <Text className="text-sm font-bold">TigerFit</Text>
         </View>
       </View>
     </View>

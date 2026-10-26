@@ -24,7 +24,7 @@ export function FeaturesListContent(props: IFeaturesListContentProps): JSX.Eleme
         <span className="mx-1">/</span>
         <span className="text-text-primary">Features</span>
       </nav>
-      <h1 className="mb-2 text-3xl font-bold">Liftosaur Features</h1>
+      <h1 className="mb-2 text-3xl font-bold">TigerFit Features</h1>
       <p className="mb-8 text-text-secondary">
         Everything the app does, one page per feature, with screenshots. For the Liftoscript language, the API and the
         MCP server, see the{" "}

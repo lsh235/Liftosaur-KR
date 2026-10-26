@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>Liftosaur</string>
+	<string>TigerFit</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -47,7 +47,7 @@
 		<string>snssdk1233</string>
 	</array>
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>Liftosaur needs to add the workout image to your photo library so it can be shared to Instagram Feed and TikTok.</string>
+	<string>TigerFit needs to add the workout image to your photo library so it can be shared to Instagram Feed and TikTok.</string>
 	<key>TikTokClientKey</key>
 	<string>awotgboh9ncnqq9w</string>
 	<key>LSRequiresIPhoneOS</key>
@@ -60,13 +60,13 @@
 		<true/>
 	</dict>
 	<key>NSCameraUsageDescription</key>
-	<string>Liftosaur needs access to your camera to take photos for use as workout share backgrounds.</string>
+	<string>TigerFit needs access to your camera to take photos for use as workout share backgrounds.</string>
 	<key>NSHealthShareUsageDescription</key>
-	<string>Liftosaur reads your bodyweight, body fat, waist, sleep, and nutrition (calories and protein) from Apple Health to show them alongside your workouts.</string>
+	<string>TigerFit reads your bodyweight, body fat, waist, sleep, and nutrition (calories and protein) from Apple Health to show them alongside your workouts.</string>
 	<key>NSHealthUpdateUsageDescription</key>
-	<string>Liftosaur writes your bodyweight, body fat, and waist measurements, plus completed workouts and their active energy, to Apple Health.</string>
+	<string>TigerFit writes your bodyweight, body fat, and waist measurements, plus completed workouts and their active energy, to Apple Health.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Liftosaur needs access to your photo library to pick photos for use as workout share backgrounds.</string>
+	<string>TigerFit needs access to your photo library to pick photos for use as workout share backgrounds.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string/>
 	<key>NSAdvertisingAttributionReportEndpoint</key>

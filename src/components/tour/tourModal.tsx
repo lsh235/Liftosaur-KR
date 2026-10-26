@@ -10,6 +10,7 @@ import { IconCloseCircleOutline } from "../icons/iconCloseCircleOutline";
 import { tourConfigs } from "./tourConfigs";
 import { ImagePreloader_preload, ImagePreloader_uri } from "../../utils/imagePreloader";
 import { HostConfig_resolveUrl } from "../../utils/hostConfig";
+import { BundledImages_resolve } from "../../utils/bundledImages";
 import { BundledImages_svgXml } from "../../utils/bundledImages";
 
 interface ITourModalProps {
@@ -39,7 +40,12 @@ function DinoImage({ filename, height }: { filename: string; height: number }): 
     }
     return <SvgUri uri={HostConfig_resolveUrl(path)} width={200} height={height} />;
   }
-  return <Image source={{ uri: ImagePreloader_uri(path) }} style={{ height, width: 200, resizeMode: "contain" }} />;
+  return (
+    <Image
+      source={filename === "tigerfit-mascot.png" ? BundledImages_resolve(path) : { uri: ImagePreloader_uri(path) }}
+      style={{ height, width: 200, resizeMode: "contain" }}
+    />
+  );
 }
 
 export function TourModalContent(props: ITourModalProps): JSX.Element | null {
@@ -61,7 +67,9 @@ export function TourModalContent(props: ITourModalProps): JSX.Element | null {
 
   useEffect(() => {
     for (const step of config.steps) {
-      ImagePreloader_preload(`/images/${step.dino}`);
+      if (step.dino !== "tigerfit-mascot.png") {
+        ImagePreloader_preload(`/images/${step.dino}`);
+      }
     }
   }, []);
 

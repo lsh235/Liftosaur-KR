@@ -1,26 +1,26 @@
 {
-  "images" : [
+  "images": [
     {
-      "filename" : "dino.png",
-      "idiom" : "universal",
-      "scale" : "1x"
+      "filename": "tigerfit-mascot.png",
+      "idiom": "universal",
+      "scale": "1x"
     },
     {
-      "filename" : "dino@2x.png",
-      "idiom" : "universal",
-      "scale" : "2x"
+      "filename": "tigerfit-mascot@2x.png",
+      "idiom": "universal",
+      "scale": "2x"
     },
     {
-      "filename" : "dino@3x.png",
-      "idiom" : "universal",
-      "scale" : "3x"
+      "filename": "tigerfit-mascot@3x.png",
+      "idiom": "universal",
+      "scale": "3x"
     }
   ],
-  "info" : {
-    "author" : "xcode",
-    "version" : 1
+  "info": {
+    "author": "xcode",
+    "version": 1
   },
-  "properties" : {
-    "template-rendering-intent" : "template"
+  "properties": {
+    "template-rendering-intent": "template"
   }
 }

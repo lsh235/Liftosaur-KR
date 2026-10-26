@@ -13,7 +13,7 @@ interface IProps {
 export function ProgramsPageHtml(props: IProps): JSX.Element {
   const { client, account, ...data } = props;
   const count = props.programs.length;
-  const title = `${count}+ Free Weightlifting Programs & Workout Plans | Liftosaur`;
+  const title = `${count}+ Free Weightlifting Programs & Workout Plans | TigerFit`;
   const url = "https://www.liftosaur.com/programs";
   const description = `Browse ${count}+ free weightlifting programs including GZCLP, 5/3/1, nSuns, PPL, and more. Filter by experience level, frequency, and goals. Run any program with automatic progressive overload tracking.`;
 

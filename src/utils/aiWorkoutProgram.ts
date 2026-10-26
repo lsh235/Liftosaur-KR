@@ -843,9 +843,9 @@ export function AiWorkoutProgram_tryImport(
 
 export function AiWorkoutProgram_buildPromptTemplate(): string {
   return [
-    "# Liftosaur 한국어 운동 프로그램 생성 요청",
+    "# TigerFit 한국어 운동 프로그램 생성 요청",
     "",
-    "운동 프로그램을 설계하는 코치로서 아래 JSON 규격을 지켜 프로그램을 만들어 줘. Liftosaur 앱은 파일을 로컬에서 가져오며 앱 내부에서 AI API를 호출하지 않아.",
+    "운동 프로그램을 설계하는 코치로서 아래 JSON 규격을 지켜 프로그램을 만들어 줘. TigerFit 앱은 파일을 로컬에서 가져오며 앱 내부에서 AI API를 호출하지 않아.",
     "응답은 JSON 객체 하나만 출력하고 Markdown 코드 펜스나 설명은 붙이지 마.",
     "workouts에는 days_per_week와 같은 수의 운동일을 넣고, 각 운동의 weekly_progression에는 1주차부터 duration_weeks까지 모든 주를 빠짐없이 넣어.",
     "",

@@ -157,7 +157,7 @@ class Notification(private val context: Context, private val activity: Activity?
                     delaySeconds,
                     false,
                     false,
-                    "Liftosaur",
+                    "TigerFit",
                     reminder.optString("title", "오늘의 운동"),
                     reminder.optString("body", "오늘의 루틴을 시작할 시간입니다."),
                     0.0f,

@@ -162,7 +162,7 @@ export function ConsentBanner_showBanner(mode: IConsentMode, onChoice: IChoiceHa
   const text = el(
     "div",
     { flex: "1 1 280px", minWidth: "240px", fontSize: "13px", color: "var(--color-text-primary)", lineHeight: "1.4" },
-    "Liftosaur uses cookies for analytics and to measure how our pages and ads bring people to the app. "
+    "TigerFit uses cookies for analytics and to measure how our pages and ads bring people to the app. "
   );
   const links = el("span", {});
   const policy = el(

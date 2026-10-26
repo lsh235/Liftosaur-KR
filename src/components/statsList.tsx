@@ -30,10 +30,7 @@ import { Button } from "./button";
 import { Thunk_pushScreen } from "../ducks/thunks";
 import { updateSettings } from "../models/state";
 import { lb } from "lens-shmens";
-import { ImagePreloader_dynoflex } from "../utils/imagePreloader";
-import { HostConfig_resolveUrl } from "../utils/hostConfig";
-import { BundledImages_svgXml } from "../utils/bundledImages";
-import { SvgXml } from "./primitives/svg";
+import { BundledImages_resolve } from "../utils/bundledImages";
 import { Dialog_confirm } from "../utils/dialog";
 import { DatePicker } from "./datePicker";
 
@@ -96,14 +93,12 @@ export function StatsList(props: IProps): JSX.Element {
     return (
       <View>
         <View className="flex-row items-center justify-center pt-16">
-          {Platform.OS === "web" ? (
-            <Image
-              source={{ uri: HostConfig_resolveUrl(ImagePreloader_dynoflex) }}
-              style={{ width: 180, height: 232 }}
-            />
-          ) : (
-            <SvgXml xml={BundledImages_svgXml(ImagePreloader_dynoflex) ?? ""} width={180} height={232} />
-          )}
+          <Image
+            source={BundledImages_resolve("/images/tigerfit-mascot.png")}
+            style={{ width: 180, height: 232 }}
+            resizeMode="contain"
+            accessibilityLabel="TigerFit mascot"
+          />
         </View>
         <Text className="pt-4 pb-6 text-sm text-center text-text-secondary">아직 측정 기록이 없습니다</Text>
         <View className="items-center">

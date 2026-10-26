@@ -19,7 +19,7 @@ export function ProgramDetailsUpsell(props: IProgramDetailsUpsellProps): JSX.Ele
       style={{ maxWidth: props.maxWidth }}
     >
       <div className="flex-1">
-        You can use this program on <strong>Liftosaur</strong> - a weightlifting tracker app!
+        You can use this program on <strong>TigerFit</strong> - a weightlifting tracker app!
         <ul className="pl-4 mt-2 list-disc">
           <li>Log your workouts there, and have a history of all your workouts on your phone</li>
           <li>

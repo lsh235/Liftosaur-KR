@@ -15,7 +15,7 @@ import { TimeUtils_formatHHMM } from "../utils/time";
 import { ObjectUtils_keys } from "../utils/object";
 import { StringUtils_pluralize } from "../utils/string";
 import { HistoryRecordSetsView } from "./historyRecordSets";
-import { HostConfig_resolveUrl } from "../utils/hostConfig";
+import { BundledImages_resolve } from "../utils/bundledImages";
 import { n } from "../utils/math";
 
 interface IWorkoutShareOutputProps {
@@ -42,10 +42,10 @@ export function WorkoutShareOutput(props: IWorkoutShareOutputProps): JSX.Element
       <View className="flex-row items-end">
         <View className="flex-row items-start gap-2 mx-2">
           <Image
-            source={{ uri: HostConfig_resolveUrl("/images/icon512.png") }}
+            source={BundledImages_resolve("/images/tigerfit-icon.png")}
             className="w-scaled-6 h-scaled-6 rounded-md"
           />
-          <Text className="text-lg font-bold text-white">Liftosaur</Text>
+          <Text className="text-lg font-bold text-white">TigerFit</Text>
         </View>
         {numberOfRecordPrs > 0 && (
           <View className="pr-2 ml-auto items-end">

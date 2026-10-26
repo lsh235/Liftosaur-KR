@@ -15,7 +15,7 @@ import { IconLink } from "./icons/iconLink";
 import { emptyProgramId, Program_selectProgramAndGoHome } from "../models/program";
 import { IconEquipmentKettlebell } from "./icons/iconEquipmentKettlebell";
 import { Tailwind_semantic } from "../utils/tailwindConfig";
-import { ImagePreloader_uri } from "../utils/imagePreloader";
+import { BundledImages_resolve } from "../utils/bundledImages";
 import { useTrackClick } from "../utils/clickTracking";
 import { FileImport_pickFile } from "../utils/fileImport";
 import { FILE_IMPORT_PROGRAM_MAX_SIZE_BYTES } from "../utils/fileImportLimits";
@@ -89,7 +89,7 @@ export function ScreenProgramSelect(props: IScreenProgramSelectProps): JSX.Eleme
       <View className="flex-1 px-gutter pt-8 pb-4">
         <View className="items-center p-4">
           <Image
-            source={{ uri: ImagePreloader_uri("/images/dino-scope.png") }}
+            source={BundledImages_resolve("/images/tigerfit-mascot.png")}
             style={{ width: 208, height: 208 }}
             resizeMode="contain"
           />

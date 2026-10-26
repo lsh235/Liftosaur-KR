@@ -48,7 +48,7 @@ export function IapHelpers_setLoading(
 
 export function IapHelpers_alertAlreadySubscribed(): void {
   Dialog_alert(
-    `You already have an active Liftosaur Premium purchase on this account. Manage or change your plan from your ${StoreRuntime_storeName()} subscriptions.`
+    `You already have an active TigerFit Premium purchase on this account. Manage or change your plan from your ${StoreRuntime_storeName()} subscriptions.`
   );
 }
 

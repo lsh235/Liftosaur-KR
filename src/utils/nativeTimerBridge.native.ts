@@ -11,7 +11,7 @@ const workoutReminderPermissionHandlers = WorkoutReminderScheduler_buildPermissi
   () => {
     Alert.alert(
       "운동 알림 권한이 필요합니다",
-      "iPhone 설정에서 Liftosaur 알림을 허용하면 예약한 운동 알림을 받을 수 있습니다.",
+      "iPhone 설정에서 TigerFit 알림을 허용하면 예약한 운동 알림을 받을 수 있습니다.",
       [
         { text: "나중에", style: "cancel" },
         {

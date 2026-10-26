@@ -10,7 +10,7 @@ struct LiftosaurComplicationProvider: TimelineProvider {
     func placeholder(in context: Context) -> LiftosaurComplicationEntry {
         LiftosaurComplicationEntry(
             date: Date(),
-            info: ComplicationInfo(isOngoing: false, programName: "Liftosaur", dayName: "Day 1")
+            info: ComplicationInfo(isOngoing: false, programName: "TigerFit", dayName: "Day 1")
         )
     }
 
@@ -56,7 +56,7 @@ struct LiftosaurComplicationView: View {
         HStack(spacing: 6) {
             dino
                 .frame(width: 24, height: 24)
-            Text("Liftosaur")
+            Text("TigerFit")
                 .font(.headline)
             Spacer(minLength: 0)
         }
@@ -69,25 +69,23 @@ struct LiftosaurComplicationView: View {
             dino
                 .padding(8)
         case .accessoryCorner:
-            // The corner slot rejects raster images (renders a placeholder square),
-            // so use the custom SF Symbol, with the day name as the curved label.
-            Image("DinoSymbol")
+            // Use the TigerFit mascot in the corner slot, with the day name as the curved label.
+            dino
                 .resizable()
                 .scaledToFit()
                 .frame(width: 26, height: 26)
                 .widgetAccentable()
-                .widgetLabel(info?.dayName ?? "Liftosaur")
+                .widgetLabel(info?.dayName ?? "TigerFit")
         case .accessoryInline:
             Label {
                 if let info = info {
                     Text(info.dayName)
                 } else {
-                    Text("Liftosaur")
+                    Text("TigerFit")
                 }
             } icon: {
-                // accessoryInline only renders SF Symbols, not raster images,
-                // so use the custom-symbol dino here.
-                Image("DinoSymbol")
+                // Reuse the TigerFit mascot for the inline complication as well.
+                dino
             }
         case .accessoryRectangular:
             if let info = info {
@@ -131,8 +129,8 @@ struct LiftosaurComplication: Widget {
                     ComplicationBackground()
                 }
         }
-        .configurationDisplayName("Liftosaur")
-        .description("Open Liftosaur to start or continue your workout.")
+        .configurationDisplayName("TigerFit")
+        .description("Open TigerFit to start or continue your workout.")
         .supportedFamilies([
             .accessoryCircular,
             .accessoryCorner,

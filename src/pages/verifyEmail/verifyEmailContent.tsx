@@ -42,7 +42,7 @@ export function VerifyEmailContent(props: IVerifyEmailContentProps): JSX.Element
               <div className="flex flex-col items-center">
                 <div className="text-center text-text-secondary">Email verified!</div>
                 <a className="mt-4 font-bold underline text-text-link" href="/">
-                  Back to Liftosaur
+                  Back to TigerFit
                 </a>
               </div>
             ) : (

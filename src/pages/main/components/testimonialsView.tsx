@@ -143,7 +143,7 @@ export function TestimonialsView(props: { testimonials: ITestimonial[] }): JSX.E
       <div className="flex items-center justify-center gap-3 px-4 mb-4">
         <h2 className="text-3xl font-bold md:text-4xl">Athletes</h2>
         <IconHeart size={32} color={Tailwind_semantic().icon.red} />
-        <h2 className="text-3xl font-bold md:text-4xl">Liftosaur</h2>
+        <h2 className="text-3xl font-bold md:text-4xl">TigerFit</h2>
       </div>
       <div className="flex justify-center gap-2 px-4 mb-8">
         <button

@@ -97,7 +97,7 @@ export function ModalAffiliateContent(props: IModalAffiliateContentProps): JSX.E
         <View style={{ gap: 4 }}>
           <Bullet>Promote your programs ethically and honestly</Bullet>
           <Bullet>Not engage in spam or misleading marketing practices</Bullet>
-          <Bullet>Allow Liftosaur to track affiliate relationships and process payments</Bullet>
+          <Bullet>Allow TigerFit to track affiliate relationships and process payments</Bullet>
           <Bullet>Provide valid payment information for receiving commissions</Bullet>
         </View>
       </View>

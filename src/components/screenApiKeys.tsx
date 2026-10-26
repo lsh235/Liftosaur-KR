@@ -87,7 +87,7 @@ export function ScreenApiKeys(props: IProps): JSX.Element {
       {!isLoggedIn ? (
         <View className="py-8">
           <Text className="mb-4 text-center text-text-secondary">
-            API 키를 사용하면 Liftosaur를 외부 도구, LLM, MCP 서버와 연동할 수 있습니다. 운동 기록과 프로그램을 조회·수정하고
+            API 키를 사용하면 TigerFit를 외부 도구, LLM, MCP 서버와 연동할 수 있습니다. 운동 기록과 프로그램을 조회·수정하고
             플레이그라운드 API로 운동을 시뮬레이션할 수 있습니다.
           </Text>
           <Text className="text-center text-text-secondary">API 키를 관리하려면 먼저 로그인하세요.</Text>
@@ -100,7 +100,7 @@ export function ScreenApiKeys(props: IProps): JSX.Element {
       ) : !isSubscribed ? (
         <View className="py-8">
           <Text className="mb-4 text-center text-text-secondary">
-            API 키를 사용하면 Liftosaur를 외부 도구, LLM, MCP 서버와 연동할 수 있습니다. 운동 기록과 프로그램을 조회·수정하고
+            API 키를 사용하면 TigerFit를 외부 도구, LLM, MCP 서버와 연동할 수 있습니다. 운동 기록과 프로그램을 조회·수정하고
             플레이그라운드 API로 운동을 시뮬레이션할 수 있습니다.
           </Text>
           <View className="items-center">

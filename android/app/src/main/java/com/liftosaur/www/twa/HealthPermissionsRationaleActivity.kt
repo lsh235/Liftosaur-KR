@@ -14,7 +14,7 @@ class HealthPermissionsRationaleActivity : AppCompatActivity() {
         val toolbar: Toolbar = findViewById(R.id.toolbar)
         setSupportActionBar(toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.title = "Liftosaur Health Connect Privacy"
+        supportActionBar?.title = "TigerFit Health Connect Privacy"
 
         val webView: WebView = findViewById(R.id.webView)
         webView.webViewClient = WebViewClient()

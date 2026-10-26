@@ -65,7 +65,7 @@ export function ResetPasswordContent(props: IResetPasswordContentProps): JSX.Ele
                   Password updated! You can now sign in with your new password.
                 </div>
                 <a className="mt-4 font-bold underline text-text-link" href="/login">
-                  Back to Liftosaur
+                  Back to TigerFit
                 </a>
               </div>
             ) : (

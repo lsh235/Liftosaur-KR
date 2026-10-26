@@ -13,10 +13,10 @@ interface IProps {
 
 export function FeaturesListHtml(props: IProps): JSX.Element {
   const { client, isLoggedIn, ...data } = props;
-  const title = "Features - Liftosaur";
+  const title = "Features - TigerFit";
   const url = "https://www.liftosaur.com/features";
   const description =
-    "Every Liftosaur feature explained with screenshots: workout tracking, rest timers, programs, Liftoscript, graphs, Apple Watch, and more.";
+    "Every TigerFit feature explained with screenshots: workout tracking, rest timers, programs, Liftoscript, graphs, Apple Watch, and more.";
 
   const jsonLd: IJsonLd[] = [
     {
@@ -25,7 +25,7 @@ export function FeaturesListHtml(props: IProps): JSX.Element {
     },
     {
       type: "ItemList",
-      name: "Liftosaur Features",
+      name: "TigerFit Features",
       items: props.features.map((feature) => ({
         name: feature.title,
         url: `https://www.liftosaur.com/features/${feature.id}`,
@@ -44,7 +44,7 @@ export function FeaturesListHtml(props: IProps): JSX.Element {
       description={description}
       ogDescription={description}
       ogUrl={url}
-      ogImage="https://www.liftosaur.com/images/logo-square.png"
+      ogImage="https://www.liftosaur.com/images/tigerfit-logo.png"
       jsonLd={jsonLd}
       data={data}
       client={client}

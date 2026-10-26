@@ -15,7 +15,7 @@ interface IProps {
 export function UserDashboardHtml(props: IProps): JSX.Element {
   const { client, ...data } = props;
   const url = "https://www.liftosaur.com/dashboard/user";
-  const title = `User Dashboard | Liftosaur`;
+  const title = `User Dashboard | TigerFit`;
 
   return (
     <Page

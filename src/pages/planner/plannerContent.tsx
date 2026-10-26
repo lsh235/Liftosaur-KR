@@ -486,7 +486,7 @@ export function PlannerContent(props: IPlannerContentProps): JSX.Element {
                   [lbProgram.p("name").record(v), lb<IPlannerState>().p("current").p("program").p("name").record(v)],
                   "Update program name"
                 );
-                document.title = `Liftosaur: Weight Lifting Tracking App | ${HtmlUtils_escapeHtml(v)}`;
+                document.title = `TigerFit: Weight Lifting Tracking App | ${HtmlUtils_escapeHtml(v)}`;
               }}
             />
           </h1>

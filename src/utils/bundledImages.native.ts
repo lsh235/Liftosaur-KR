@@ -8,6 +8,9 @@ const bundledRaster: Record<string, ImageSourcePropType> = {
   "/images/slide-3-image.png": require("../../assets/bundledImages/slide-3-image.png"),
   "/images/slide-4-image.png": require("../../assets/bundledImages/slide-4-image.png"),
   "/images/slide-5-image.png": require("../../assets/bundledImages/slide-5-image.png"),
+  "/images/tigerfit-logo.png": require("../../assets/bundledImages/tigerfit-logo.png"),
+  "/images/tigerfit-icon.png": require("../../assets/bundledImages/tigerfit-icon.png"),
+  "/images/tigerfit-mascot.png": require("../../assets/bundledImages/tigerfit-mascot.png"),
 };
 
 export function BundledImages_resolve(path: string): ImageSourcePropType {

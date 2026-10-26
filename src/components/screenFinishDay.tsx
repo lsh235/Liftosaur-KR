@@ -1,7 +1,5 @@
 import { JSX, useState } from "react";
-import { View, Pressable, Platform } from "react-native";
-import { SvgUri, SvgXml } from "react-native-svg";
-import { BundledImages_svgXml } from "../utils/bundledImages";
+import { View, Pressable, Platform, Image } from "react-native";
 import { Text } from "./primitives/text";
 import { IDispatch } from "../ducks/types";
 import { Dialog_alert } from "../utils/dialog";
@@ -37,8 +35,7 @@ import { InternalLink } from "../internalLink";
 import { LinkButton } from "./linkButton";
 import { IconTiktok } from "./icons/iconTiktok";
 import { PersonalRecords } from "./personalRecords";
-import { ImagePreloader_dynohappy } from "../utils/imagePreloader";
-import { HostConfig_resolveUrl } from "../utils/hostConfig";
+import { BundledImages_resolve } from "../utils/bundledImages";
 import { n } from "../utils/math";
 import { Muscle_getMuscleGroupName } from "../models/muscle";
 import { IconDoc } from "./icons/iconDoc";
@@ -96,11 +93,12 @@ export function ScreenFinishDay(props: IProps): JSX.Element {
     <>
       <View className="px-gutter pb-6">
         <View className="flex-row items-center justify-center pb-2">
-          {Platform.OS === "web" ? (
-            <SvgUri uri={HostConfig_resolveUrl(ImagePreloader_dynohappy)} width={170} height={150} />
-          ) : (
-            <SvgXml xml={BundledImages_svgXml(ImagePreloader_dynohappy) ?? ""} width={170} height={150} />
-          )}
+          <Image
+            source={BundledImages_resolve("/images/tigerfit-mascot.png")}
+            style={{ width: 170, height: 150 }}
+            resizeMode="contain"
+            accessibilityLabel="TigerFit mascot"
+          />
         </View>
         <View className="items-center px-gutter pb-2">
           <Text className="text-sm text-text-secondary">{record.programName}</Text>

@@ -31,11 +31,11 @@ export function FooterPage(props: IProps): JSX.Element {
         <div className="px-6 mx-auto" style={{ maxWidth }}>
           <div className="flex flex-col md:flex-row md:items-center md:gap-10">
             <div className="hidden pt-8 md:block shrink-0">
-              <img src="/images/logo.svg" alt="" style={{ height: "200px" }} />
+              <img src="/images/tigerfit-logo.png" alt="" style={{ height: "200px" }} />
             </div>
 
             <div className="shrink-0">
-              <div className="pt-8 text-3xl font-bold text-text-alwayswhite md:pt-0">Liftosaur</div>
+              <div className="pt-8 text-3xl font-bold text-text-alwayswhite md:pt-0">TigerFit</div>
               <div className="flex items-center gap-4 mt-5">
                 <span className="text-sm text-text-alwayswhite">Follow us:</span>
                 <a
@@ -90,7 +90,7 @@ export function FooterPage(props: IProps): JSX.Element {
           </div>
 
           <div className="mt-8 md:hidden">
-            <img src="/images/logo.svg" alt="" style={{ height: "200px" }} />
+            <img src="/images/tigerfit-logo.png" alt="" style={{ height: "200px" }} />
           </div>
         </div>
       </div>

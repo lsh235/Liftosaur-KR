@@ -16,9 +16,9 @@ interface IProps {
 export function FeatureDetailsHtml(props: IProps): JSX.Element {
   const { client, isLoggedIn, ...data } = props;
   const { feature } = props;
-  const title = `${feature.title} - Liftosaur Features`;
+  const title = `${feature.title} - TigerFit Features`;
   const url = `https://www.liftosaur.com/features/${feature.id}`;
-  const description = feature.shortDescription || `${feature.title} in the Liftosaur weightlifting app.`;
+  const description = feature.shortDescription || `${feature.title} in the TigerFit weightlifting app.`;
   const firstShot = feature.screenshots?.[0];
   const image = firstShot ? `https://www.liftosaur.com${Features_screenshotUrl(feature.id, firstShot)}` : undefined;
 

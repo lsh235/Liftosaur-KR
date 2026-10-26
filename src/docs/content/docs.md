@@ -54,7 +54,7 @@ This means that when we finish a day, we're going to add 5lb to the previous val
 
 You can use any state variables you defined, both in "Finish Day Script" or in the expressions for weight or number of reps for an exercise, by prefixing them with `state.`, like you see in the example above.
 
-You may notice that the weight value gets rounded if you use some math operators. Liftosaur always rounds the weight so you could get it using your available plates. So, please make sure the "Available Equipment" in "Settings" correctly reflect the plates you have access to in your gym.
+You may notice that the weight value gets rounded if you use some math operators. TigerFit always rounds the weight so you could get it using your available plates. So, please make sure the "Available Equipment" in "Settings" correctly reflect the plates you have access to in your gym.
 
 Under "Finish Day Script" there's a Playground section. There, you could see the "State Changes" section, which should show something like `weight: 50lb -> 55lb` - it should how the state variable are going to change after we finish the day. It says that the `weight` state variable will be increased by `5lb`, which is exactly what we want.
 

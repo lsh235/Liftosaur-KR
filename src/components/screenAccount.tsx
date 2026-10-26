@@ -228,7 +228,7 @@ export function ScreenAccount(props: IProps): JSX.Element {
         </View>
       ))}
       {!localOnly && <>
-      <GroupHeader name="🌟 Liftosaur 프리미엄" topPadding={true} />
+      <GroupHeader name="🌟 TigerFit 프리미엄" topPadding={true} />
       {isLoadingSubscription ? (
         <MenuItem name="구독 정보를 확인하고 있습니다…" expandName={true} value={<IconSpinner width={18} height={18} />} />
       ) : (

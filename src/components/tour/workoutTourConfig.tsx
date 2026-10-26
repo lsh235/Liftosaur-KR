@@ -41,8 +41,8 @@ export const workoutTourConfig: ITourConfig = {
   steps: [
     {
       id: "howItWorks",
-      title: "Liftosaur 사용법",
-      dino: "dinocoach.svg",
+      title: "TigerFit 사용법",
+      dino: "tigerfit-mascot.png",
       content: () => (
         <>
           <Text className={`mb-2 ${paraCn}`}>

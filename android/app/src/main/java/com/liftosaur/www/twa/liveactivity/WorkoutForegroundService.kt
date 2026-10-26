@@ -45,7 +45,7 @@ class WorkoutForegroundService : Service() {
         return NotificationCompat.Builder(this, LiveUpdateManager.LIVE_UPDATE_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle("Workout in progress")
-            .setContentText("Liftosaur is tracking your workout")
+            .setContentText("TigerFit is tracking your workout")
             .setContentIntent(pendingIntent)
             .setOngoing(true)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)

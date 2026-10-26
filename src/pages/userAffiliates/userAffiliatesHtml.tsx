@@ -26,11 +26,11 @@ export function UserAffiliatesHtml(props: IUserAffiliatesHtmlProps): JSX.Element
       css={["useraffiliates"]}
       js={["useraffiliates"]}
       maxWidth={1200}
-      title="Affiliate Program | Liftosaur"
+      title="Affiliate Program | TigerFit"
       canonical={`https://www.liftosaur.com/user/affiliates`}
       isLoggedIn={!!props.account}
       url={`/user/affiliates`}
-      ogTitle="Liftosaur: Affiliate Program"
+      ogTitle="TigerFit: Affiliate Program"
       description="Track your affiliate program earnings and statistics"
       ogUrl={`https://www.liftosaur.com/user/affiliates`}
       data={data}

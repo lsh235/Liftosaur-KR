@@ -16,7 +16,7 @@ export function RepMaxHtml(props: IProps): JSX.Element {
   const repsNum = data.reps != null ? data.reps : 1;
   const repsLabel = repsWord ? `${StringUtils_capitalize(repsWord)} ` : "";
   const url = `https://www.liftosaur.com/${repsWord ? `${repsWord}-` : ""}rep-max-calculator`;
-  const title = `${repsLabel}Rep Max Calculator (${repsNum}RM) - Free & Accurate | Liftosaur`;
+  const title = `${repsLabel}Rep Max Calculator (${repsNum}RM) - Free & Accurate | TigerFit`;
   const description = `Free ${repsNum}RM calculator. Enter your weight and reps to instantly calculate your ${repsWord || ""} rep max for bench press, squat, deadlift & all lifts. Uses RPE-based tables for accurate results.`;
 
   const jsonLd: IJsonLd[] = [
@@ -26,7 +26,7 @@ export function RepMaxHtml(props: IProps): JSX.Element {
     },
     {
       type: "SoftwareApplication",
-      name: `${repsLabel}Rep Max Calculator - Liftosaur`,
+      name: `${repsLabel}Rep Max Calculator - TigerFit`,
       applicationCategory: "HealthApplication",
       operatingSystem: "iOS, Android, Web",
       url,

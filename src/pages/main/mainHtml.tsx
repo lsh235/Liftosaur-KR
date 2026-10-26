@@ -13,14 +13,14 @@ interface IProps {
 export function MainHtml(props: IProps): JSX.Element {
   const { client, isLoggedIn, ...data } = props;
 
-  const title = "Liftosaur - Free Workout Tracker & Gym Planner App (iOS/Android)";
+  const title = "TigerFit - Free Workout Tracker & Gym Planner App (iOS/Android)";
   const description =
     "Free workout tracker & planner for iOS, Android & web. Build custom lifting programs with Liftoscript or use 50+ built-in routines like GZCLP, 5/3/1, PPL. Track progress with automatic progressive overload.";
 
   const jsonLd: IJsonLd[] = [
     {
       type: "SoftwareApplication",
-      name: "Liftosaur",
+      name: "TigerFit",
       applicationCategory: "HealthApplication",
       operatingSystem: "iOS, Android, Web",
       url: "https://www.liftosaur.com",

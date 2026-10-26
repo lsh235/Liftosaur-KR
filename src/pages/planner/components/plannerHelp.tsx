@@ -46,8 +46,8 @@ export function PlannerHelp(props: { onClose: () => void }): JSX.Element {
         !
       </p>
       <p className="mb-2">
-        When you're done, you can convert this program to Liftosaur program, and run what you planned in the gym, using
-        the <strong>Liftosaur app</strong>!
+        When you're done, you can convert this program to TigerFit and run your planned workouts in the gym with the
+        <strong>TigerFit app</strong>!
       </p>
       <button
         className="absolute nm-planner-help-close"

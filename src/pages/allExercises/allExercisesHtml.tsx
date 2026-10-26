@@ -9,7 +9,7 @@ interface IProps {
 
 export function AllExercisesHtml(props: IProps): JSX.Element {
   const { client, isLoggedIn, ...data } = props;
-  const title = `All exercises | Liftosaur`;
+  const title = `All exercises | TigerFit`;
   const url = `https://www.liftosaur.com/exercises`;
 
   const jsonLd: IJsonLd[] = [

@@ -1,7 +1,7 @@
 {
-  "short_name": "Liftosaur",
-  "name": "Liftosaur: Weight lifting tracking app",
-  "description": "Weather forecast information",
+  "short_name": "TigerFit",
+  "name": "TigerFit: Weight lifting tracking app",
+  "description": "Track strength training, follow flexible workout routines, and monitor your progress with TigerFit.",
   "icons": [
     {
       "src": "/icons/icon192.png",

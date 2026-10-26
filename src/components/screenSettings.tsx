@@ -487,7 +487,7 @@ function ScreenSettingsInner(props: IProps): JSX.Element {
       />
       {!localOnly && Features_isEnabled("affiliates", props.user?.id ?? props.tempUserId) && (
         <>
-          <GroupHeader name="Liftosaur 제휴 프로그램" topPadding={true} />
+          <GroupHeader name="TigerFit 제휴 프로그램" topPadding={true} />
           <MenuItem
             expandName={true}
             name="제휴 프로그램 참여"

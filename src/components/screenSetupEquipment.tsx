@@ -13,7 +13,7 @@ import { EquipmentList, equipmentToIcon } from "./equipmentList";
 import { Equipment_getCurrentGym, Equipment_getEquipmentData, Equipment_getEquipmentOfGym } from "../models/equipment";
 import { lb } from "lens-shmens";
 import { ObjectUtils_keys } from "../utils/object";
-import { ImagePreloader_uri } from "../utils/imagePreloader";
+import { BundledImages_resolve } from "../utils/bundledImages";
 import { Tailwind_colors, Tailwind_semantic } from "../utils/tailwindConfig";
 import { navigateToModal } from "../navigation/navigationService";
 import { ExercisePickerUtils_getEquipmentName } from "./exercisePicker/exercisePickerUtils";
@@ -53,7 +53,7 @@ export function ScreenSetupEquipment(props: IScreenSetupEquipmentProps): JSX.Ele
       <ScrollView className="flex-1" contentContainerClassName="px-4 pt-8 pb-4">
         <View className="items-center p-4">
           <Image
-            source={{ uri: ImagePreloader_uri("/images/dinoequipment.png") }}
+            source={BundledImages_resolve("/images/tigerfit-mascot.png")}
             className="h-60"
             style={{ width: 240, height: 240 }}
             resizeMode="contain"
@@ -184,7 +184,7 @@ export function ScreenSetupPlates(props: IScreenSetupPlatesProps): JSX.Element {
       >
         <View className="items-center p-4">
           <Image
-            source={{ uri: ImagePreloader_uri("/images/dinoplates.png") }}
+            source={BundledImages_resolve("/images/tigerfit-mascot.png")}
             style={{ width: 220, height: 208 }}
             resizeMode="contain"
           />

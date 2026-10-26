@@ -475,7 +475,7 @@ export function EmailAuthForm(props: IEmailAuthFormProps): JSX.Element {
       setError(emailAuthErrorMessages[result.error] || "문제가 발생했습니다. 다시 시도하세요");
     } else if (result.confirmationSent) {
       setInfo(
-        "이 이메일로 만든 Liftosaur 계정이 있습니다. 비밀번호 설정 링크를 이메일로 보냈습니다. 받은 편지함을 확인하세요."
+        "이 이메일로 만든 TigerFit 계정이 있습니다. 비밀번호 설정 링크를 이메일로 보냈습니다. 받은 편지함을 확인하세요."
       );
     }
   }

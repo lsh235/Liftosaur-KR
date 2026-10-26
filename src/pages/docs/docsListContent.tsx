@@ -29,7 +29,7 @@ export function DocsListContent(props: IDocsListContentProps): JSX.Element {
         <span className="text-text-primary">Documentation</span>
       </nav>
       <h1 className="mb-2 text-3xl font-bold">Documentation</h1>
-      <p className="mb-8 text-text-secondary">Learn how to use Liftosaur and its features.</p>
+      <p className="mb-8 text-text-secondary">Learn how to use TigerFit and its features.</p>
       <div className="mb-8">
         <a
           href="/features"

@@ -149,7 +149,7 @@ class LiftosaurShareModule(reactContext: ReactApplicationContext) :
             val intent = Intent(Intent.ACTION_SEND).apply {
                 type = "text/plain"
                 putExtra(Intent.EXTRA_STREAM, uri)
-                putExtra(Intent.EXTRA_SUBJECT, "Liftosaur logs")
+                putExtra(Intent.EXTRA_SUBJECT, "TigerFit logs")
                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             }
             val chooser = Intent.createChooser(intent, "Share device logs").apply {

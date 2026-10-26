@@ -24,8 +24,8 @@ export function ProgramHtml(props: IProps): JSX.Element {
   const programName = data.exportedProgram?.program?.name;
   const title =
     programName != null
-      ? `${HtmlUtils_escapeHtml(programName)} | Workout Editor | Liftosaur`
-      : "Weightlifting Workout Planner | Liftosaur";
+      ? `${HtmlUtils_escapeHtml(programName)} | Workout Editor | TigerFit`
+      : "Weightlifting Workout Planner | TigerFit";
   const url = "https://www.liftosaur.com" + (data.exportedProgram?.program?.planner ? "/planner" : "/program");
 
   return (

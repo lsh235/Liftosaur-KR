@@ -143,10 +143,10 @@ class LiftosaurTimerModule(reactContext: ReactApplicationContext) :
             val vibration = params.getBoolean("vibration")
             val ignoreDoNotDisturb = params.getBoolean("ignoreDoNotDisturb")
 
-            val titleVal = if (title.isNullOrEmpty()) "Liftosaur" else title
+            val titleVal = if (title.isNullOrEmpty()) "TigerFit" else title
             val subtitleVal = if (!subtitleHeader.isNullOrEmpty() && !subtitle.isNullOrEmpty()) {
                 "$subtitleHeader: $subtitle"
-            } else "Liftosaur"
+            } else "TigerFit"
             val bodyVal = if (!bodyHeader.isNullOrEmpty() && !body.isNullOrEmpty()) {
                 "$bodyHeader: $body"
             } else "It's time for the next set!"
@@ -245,7 +245,7 @@ class LiftosaurTimerModule(reactContext: ReactApplicationContext) :
                     delaySeconds,
                     false,
                     false,
-                    "Liftosaur",
+                    "TigerFit",
                     reminder.optString("title", "오늘의 운동"),
                     reminder.optString("body", "오늘의 루틴을 시작할 시간입니다."),
                     0.0f,

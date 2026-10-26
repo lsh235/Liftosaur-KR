@@ -39,5 +39,5 @@ export function TourConfigs_imagesForCurrentScreen(state: IState): string[] {
   if (!tourId) {
     return [];
   }
-  return tourConfigs[tourId].steps.map((s) => `/images/${s.dino}`);
+  return tourConfigs[tourId].steps.filter((s) => s.dino !== "tigerfit-mascot.png").map((s) => `/images/${s.dino}`);
 }

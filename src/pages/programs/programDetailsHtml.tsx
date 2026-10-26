@@ -18,7 +18,7 @@ interface IProps {
 export function ProgramDetailsHtml(props: IProps): JSX.Element {
   const { program, indexEntry } = props;
   const { client, isLoggedIn, ...data } = props;
-  const title = `${program.name} Workout Program - Free Tracker & Guide | Liftosaur`;
+  const title = `${program.name} Workout Program - Free Tracker & Guide | TigerFit`;
   const url = `https://www.liftosaur.com/programs/${program.id}`;
   const description = buildMetaDescription(program, indexEntry);
   const faqEntries = props.faq ? parseFaqMarkdown(props.faq) : [];
@@ -83,9 +83,9 @@ export function parseFaqMarkdown(faqMd: string): IJsonLdFAQEntry[] {
 function buildMetaDescription(program: IProgram, indexEntry?: IProgramIndexEntry): string {
   const short = indexEntry?.shortDescription || program.shortDescription || program.description;
   if (!short) {
-    return `${program.name} workout program - exercises, sets, reps, muscles worked, and progressive overload. Free on Liftosaur.`;
+    return `${program.name} workout program - exercises, sets, reps, muscles worked, and progressive overload. Free on TigerFit.`;
   }
-  const suffix = ` Free on Liftosaur.`;
+  const suffix = ` Free on TigerFit.`;
   const maxLen = 155 - suffix.length;
   const trimmed = short.length > maxLen ? short.substring(0, maxLen - 3) + "..." : short;
   return trimmed + suffix;
@@ -120,7 +120,7 @@ function buildJsonLd(
 
   const app: IJsonLd = {
     type: "SoftwareApplication",
-    name: `Liftosaur - ${program.name} Tracker`,
+    name: `TigerFit - ${program.name} Tracker`,
     applicationCategory: "HealthApplication",
     operatingSystem: "iOS, Android, Web",
     url: "https://www.liftosaur.com",

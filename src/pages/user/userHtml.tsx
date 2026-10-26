@@ -11,7 +11,7 @@ interface IProps {
 
 export function UserHtml(props: IProps): JSX.Element {
   const username = props.data.settings.nickname;
-  const title = username ? `${username} Profile Page | Liftosaur` : "Profile Page | Liftosaur";
+  const title = username ? `${username} Profile Page | TigerFit` : "Profile Page | TigerFit";
   const url = `https://www.liftosaur.com/profile/${props.userId}`;
   return (
     <Page

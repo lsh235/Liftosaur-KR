@@ -15,7 +15,7 @@ export function AdminHtml(props: IProps): JSX.Element {
   return (
     <html lang="en">
       <head>
-        <title>Liftosaur: Weight Lifting Tracking App | Admin</title>
+        <title>TigerFit: Weight Lifting Tracking App | Admin</title>
         <link rel="stylesheet" type="text/css" href="/admin.css?version=xxxxxxxx" />
         <meta charSet="UTF-8" />
         <link rel="preconnect" href="https://api3.liftosaur.com" />
@@ -33,8 +33,8 @@ export function AdminHtml(props: IProps): JSX.Element {
           <nav className="top-nav">
             <div className="top-nav-left">
               <a href="/" className="top-nav-logo">
-                <img src="/images/logo.svg" alt="Liftosaur Logo" />
-                <span>Liftosaur</span>
+                <img src="/images/tigerfit-icon.png" alt="TigerFit" />
+                <span>TigerFit</span>
               </a>
             </div>
             <div className="top-nav-right">

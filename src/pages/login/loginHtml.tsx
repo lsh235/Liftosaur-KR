@@ -18,8 +18,8 @@ export function LoginHtml(props: IProps): JSX.Element {
       css={["login"]}
       js={["login"]}
       maxWidth={1200}
-      title="Login | Liftosaur"
-      ogTitle="Login | Liftosaur"
+      title="Login | TigerFit"
+      ogTitle="Login | TigerFit"
       canonical="https://www.liftosaur.com/login"
       description="The app that allows you to build weightlifting programs or pick built-in ones and track your progress"
       ogUrl="https://www.liftosaur.com/login"

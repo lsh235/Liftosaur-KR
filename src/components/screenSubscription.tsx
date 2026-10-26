@@ -33,8 +33,8 @@ import { ObjectUtils_entries, ObjectUtils_keys } from "../utils/object";
 import { lg } from "../utils/posthog";
 import { IconWatch } from "./icons/iconWatch";
 import { IconLink } from "./icons/iconLink";
-import { IconDinoSunglasses } from "./icons/iconDinoSunglasses";
 import { ImagePreloader_uri, ImagePreloader_preload } from "../utils/imagePreloader";
+import { BundledImages_resolve } from "../utils/bundledImages";
 import { ISubscriptionInfoType, SubscriptionInfoImages_allPaths } from "./subscriptionInfoImages";
 import { InternalLink } from "../internalLink";
 import { IIapActiveSubscription } from "../utils/iapAdapter";
@@ -329,10 +329,15 @@ function SubscriptionHero(): JSX.Element {
         source={{ uri: ImagePreloader_uri("/images/subscriptionhero.png") }}
         style={{ width: "80%", aspectRatio: 879 / 516 }}
         resizeMode="contain"
-        accessibilityLabel="Liftosaur 프리미엄 기능"
+        accessibilityLabel="TigerFit 프리미엄 기능"
       />
       <View className="absolute right-4 bottom-0">
-        <IconDinoSunglasses width={102} height={136} />
+        <Image
+          source={BundledImages_resolve("/images/tigerfit-mascot.png")}
+          style={{ width: 102, height: 136 }}
+          resizeMode="contain"
+          accessibilityLabel="TigerFit mascot"
+        />
       </View>
     </View>
   );
@@ -341,7 +346,7 @@ function SubscriptionHero(): JSX.Element {
 function PitchHeader(): JSX.Element {
   return (
     <View className="py-4">
-      <Text className="text-lg font-semibold">Liftosaur 프리미엄으로 운동 루틴을 더 체계적으로 관리하세요.</Text>
+      <Text className="text-lg font-semibold">TigerFit 프리미엄으로 운동 루틴을 더 체계적으로 관리하세요.</Text>
     </View>
   );
 }
@@ -412,7 +417,7 @@ function ClaimFreeAccess(props: { dispatch: IDispatch }): JSX.Element {
     <View className="flex-row items-center px-2">
       <View className="flex-1">
         <Text className="text-xs text-text-secondary">
-          Liftosaur <Text className="font-bold">무료 이용 권한</Text>을 받았습니다!
+          TigerFit <Text className="font-bold">무료 이용 권한</Text>을 받았습니다!
         </Text>
       </View>
       <View>
@@ -529,7 +534,7 @@ function ManagementActions(props: IManagementActionsProps): JSX.Element {
     return (
       <View>
         <Text className="text-xs text-center text-text-secondary">
-          Liftosaur 모바일 앱 또는 {StoreRuntime_storeName()} 계정에서 구독을 관리할 수 있습니다.
+          TigerFit 모바일 앱 또는 {StoreRuntime_storeName()} 계정에서 구독을 관리할 수 있습니다.
         </Text>
       </View>
     );
@@ -707,7 +712,7 @@ function PlanCard(props: IPlanCardProps): JSX.Element {
 
 function webAlert(): void {
   Dialog_alert(
-    "구독은 iOS 또는 Android Liftosaur 앱에서만 할 수 있습니다. Google Play 또는 App Store에서 앱을 설치하고 구독한 다음, 웹에서도 같은 로그인 방식으로 로그인하면 프리미엄 기능을 이용할 수 있습니다."
+    "구독은 iOS 또는 Android TigerFit 앱에서만 할 수 있습니다. Google Play 또는 App Store에서 앱을 설치하고 구독한 다음, 웹에서도 같은 로그인 방식으로 로그인하면 프리미엄 기능을 이용할 수 있습니다."
   );
 }
 

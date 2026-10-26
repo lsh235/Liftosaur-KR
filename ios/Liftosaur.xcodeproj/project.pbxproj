@@ -1240,7 +1240,7 @@
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = LiftosaurWorkoutWidgetExtension/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = LiftosaurWorkoutWidgetExtension;
+				INFOPLIST_KEY_CFBundleDisplayName = TigerFit;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -1289,7 +1289,7 @@
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = LiftosaurWorkoutWidgetExtension/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = LiftosaurWorkoutWidgetExtension;
+				INFOPLIST_KEY_CFBundleDisplayName = TigerFit;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -1336,7 +1336,7 @@
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = LiftosaurWatch/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = LiftosaurWatch;
+				INFOPLIST_KEY_CFBundleDisplayName = TigerFit;
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "App will sync this data with Apple Health.";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.liftosaur.www;
@@ -1389,7 +1389,7 @@
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = LiftosaurWatch/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = LiftosaurWatch;
+				INFOPLIST_KEY_CFBundleDisplayName = TigerFit;
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "App will sync this data with Apple Health.";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.liftosaur.www;

@@ -8,35 +8,20 @@ import { Button } from "./button";
 import { IconArrowRight } from "./icons/iconArrowRight";
 import StorySlider from "./storySlider";
 import { IconKettlebell } from "./icons/iconKettlebell";
-import { Svg, Defs, LinearGradient, Stop, Rect, SvgXml } from "./primitives/svg";
+import { Svg, Defs, LinearGradient, Stop, Rect } from "./primitives/svg";
 import { Tailwind_colors } from "../utils/tailwindConfig";
 import { IconWorkoutProgress } from "./icons/iconWorkoutProgress";
 import { IconEditor } from "./icons/iconEditor";
 import { IconTracker } from "./icons/iconTracker";
-import { ImagePreloader_preload } from "../utils/imagePreloader";
 import { navigateToModal } from "../navigation/navigationService";
-import { BundledImages_resolve, BundledImages_svgXml } from "../utils/bundledImages";
+import { BundledImages_resolve } from "../utils/bundledImages";
 
 interface IProps {
   dispatch: IDispatch;
 }
 
-const onboardingImages = [
-  "/images/dinounit.png",
-  "/images/dinoequipment.png",
-  "/images/dinoplates.png",
-  "/images/dinoprogramselect.png",
-  "/images/dino-scope.png",
-];
-
 export function ScreenFirst(props: IProps): JSX.Element {
   useNavOptions({ navHidden: true });
-
-  useEffect(() => {
-    for (const url of onboardingImages) {
-      ImagePreloader_preload(url);
-    }
-  }, []);
 
   return (
     <View className="flex flex-col flex-1 h-screen bg-background-default">
@@ -180,21 +165,12 @@ function FirstSlide(): JSX.Element {
         원하는 운동 프로그램을 만들고 운동 진행 상황을 기록하세요.
       </Text>
       <View className="flex-1 w-full overflow-hidden">
-        {Platform.OS === "web" ? (
-          <Image
-            source={{ uri: "/images/logo.svg" }}
-            className="w-full h-full"
-            resizeMode="contain"
-            style={{ alignSelf: "flex-end" }}
-          />
-        ) : (
-          <SvgXml
-            xml={BundledImages_svgXml("/images/logo.svg") ?? ""}
-            width="100%"
-            height="100%"
-            preserveAspectRatio="xMidYMax meet"
-          />
-        )}
+        <Image
+          source={BundledImages_resolve("/images/tigerfit-logo.png")}
+          className="w-full h-full"
+          resizeMode="contain"
+          style={{ alignSelf: "flex-end" }}
+        />
       </View>
     </View>
   );
