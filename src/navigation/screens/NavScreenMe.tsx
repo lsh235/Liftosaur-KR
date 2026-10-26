@@ -220,7 +220,6 @@ export function NavScreenMeasurements(): JSX.Element {
     <NavScreenContent>
       <ScreenMeasurementsComponent
         navCommon={navCommon}
-        subscription={state.storage.subscription}
         dispatch={dispatch}
         settings={state.storage.settings}
         stats={state.storage.stats}
@@ -239,7 +238,6 @@ export function NavScreenSleepNutrition(): JSX.Element {
         navCommon={navCommon}
         dispatch={dispatch}
         settings={state.storage.settings}
-        subscription={state.storage.subscription}
         stats={state.storage.stats}
       />
     </NavScreenContent>
@@ -272,7 +270,6 @@ export function NavScreenExerciseStats(): JSX.Element {
         dispatch={dispatch}
         exerciseType={exercise}
         settings={state.storage.settings}
-        subscription={state.storage.subscription}
       />
     </NavScreenContent>
   );

@@ -4,7 +4,13 @@ set -euo pipefail
 PACKAGE="com.liftosaur.www.twa"
 ACTIVITY="$PACKAGE/.MainActivity"
 BASELINE_APK="${BASELINE_APK:-qa-artifacts/Liftosaur-KR-158.0.apk}"
-CANDIDATE_APK="${CANDIDATE_APK:-Liftosaur-KR-159.0.apk}"
+CANDIDATE_VERSION="${CANDIDATE_VERSION:-}"
+if [[ ! "$CANDIDATE_VERSION" =~ ^[0-9]+\.[0-9]+(\.[0-9]+)?([.-][A-Za-z0-9.-]+)?$ ]]; then
+  echo "Invalid CANDIDATE_VERSION: $CANDIDATE_VERSION" >&2
+  exit 2
+fi
+CANDIDATE_LABEL="v${CANDIDATE_VERSION}"
+CANDIDATE_APK="${CANDIDATE_APK:-Liftosaur-KR-${CANDIDATE_VERSION}.apk}"
 OUT="${QA_ARTIFACTS_DIR:-qa-artifacts/native-upgrade}"
 FIXTURES="${FIXTURE_DIR:-qa-artifacts/legacy-fixtures}"
 ANDROID_HOME="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
@@ -140,25 +146,25 @@ sha256sum "$OUT/v158-mmkv-default.bin" > "$OUT/v158-mmkv-sha256.txt"
 # This is an in-place package update. Never uninstall the existing KR app to
 # make a signature mismatch appear to pass; adb install -r must succeed.
 adb install -r "$CANDIDATE_APK"
-adb shell dumpsys package "$PACKAGE" | grep -E 'userId=|codePath=|dataDir=|versionCode=|versionName=' > "$OUT/v159-package.txt"
-capture_start "v159-default"
+adb shell dumpsys package "$PACKAGE" | grep -E 'userId=|codePath=|dataDir=|versionCode=|versionName=' > "$OUT/${CANDIDATE_LABEL}-package.txt"
+capture_start "${CANDIDATE_LABEL}-default"
 python3 scripts/qa/ko-release-ui.py assert-text '한국어 기록 보존 검증 주계정'
-python3 scripts/qa/ko-release-ui.py assert-measurement 68.4kg v159-primary
-python3 scripts/qa/ko-release-ui.py assert-completed-history v159-primary
+python3 scripts/qa/ko-release-ui.py assert-measurement 68.4kg "${CANDIDATE_LABEL}-primary"
+python3 scripts/qa/ko-release-ui.py assert-completed-history "${CANDIDATE_LABEL}-primary"
 python3 scripts/qa/ko-release-ui.py switch-account qa-secondary '한국어 기록 보존 검증 보조계정'
-python3 scripts/qa/ko-release-ui.py assert-measurement 74.2kg v159-secondary
-python3 scripts/qa/ko-release-ui.py assert-completed-history v159-secondary
+python3 scripts/qa/ko-release-ui.py assert-measurement 74.2kg "${CANDIDATE_LABEL}-secondary"
+python3 scripts/qa/ko-release-ui.py assert-completed-history "${CANDIDATE_LABEL}-secondary"
 python3 scripts/qa/ko-release-ui.py switch-account qa-primary '한국어 기록 보존 검증 주계정'
 python3 scripts/qa/ko-release-ui.py open-fixture-workout
-adb shell cat "/data/user/0/$PACKAGE/files/mmkv/mmkv.default" > "$OUT/v159-mmkv-default.bin"
-sha256sum "$OUT/v159-mmkv-default.bin" > "$OUT/v159-mmkv-sha256.txt"
+adb shell cat "/data/user/0/$PACKAGE/files/mmkv/mmkv.default" > "$OUT/${CANDIDATE_LABEL}-mmkv-default.bin"
+sha256sum "$OUT/${CANDIDATE_LABEL}-mmkv-default.bin" > "$OUT/${CANDIDATE_LABEL}-mmkv-sha256.txt"
 
 adb shell settings put system font_scale 1.3
 python3 scripts/qa/ko-release-ui.py assert-workout-screen
-capture_current "v159-workout-font-scale-1_3"
+capture_current "${CANDIDATE_LABEL}-workout-font-scale-1_3"
 adb shell settings put system font_scale 2.0
 python3 scripts/qa/ko-release-ui.py assert-workout-screen
-capture_current "v159-workout-font-scale-2_0"
+capture_current "${CANDIDATE_LABEL}-workout-font-scale-2_0"
 adb shell settings put system font_scale 1.0
 
 size_line="$(adb shell wm size | tr -d '\r' | grep -m 1 'Physical size:')"
@@ -171,22 +177,22 @@ target_width="$(python3 -c 'import sys; print(round(320 * int(sys.argv[1]) / 160
 target_height="$(python3 -c 'import sys; print(round(int(sys.argv[1]) * int(sys.argv[2]) / int(sys.argv[3])))' "$original_height" "$target_width" "$original_width")"
 adb shell wm size "${target_width}x${target_height}"
 python3 scripts/qa/ko-release-ui.py assert-workout-screen
-capture_current "v159-workout-width-320dp-font-scale-1_0"
+capture_current "${CANDIDATE_LABEL}-workout-width-320dp-font-scale-1_0"
 adb shell settings put system font_scale 2.0
 python3 scripts/qa/ko-release-ui.py assert-workout-screen
-capture_current "v159-workout-width-320dp-font-scale-2_0"
+capture_current "${CANDIDATE_LABEL}-workout-width-320dp-font-scale-2_0"
 adb shell wm size reset
 adb shell settings put system font_scale 1.0
 adb shell am force-stop "$PACKAGE"
 
 adb logcat -d > "$OUT/logcat.txt"
-cat > "$OUT/RESULTS.txt" <<'EOF'
+cat > "$OUT/RESULTS.txt" <<EOF
 PASS: generated synthetic two-account legacy fixture was injected before the v158 first launch; its manifest is included with this artifact. This is fixture injection, not UI-created user data.
 PASS: v158.0 process stability, primary/secondary fixture program, measurement, completed set history (2 × 8 × 20 kg), account switching, and opening the seeded in-progress workout were asserted through UI hierarchy.
-PASS: v159.0 installed with adb install -r under the same package; signer SHA-256 matched v158.0; process stability, both account program/measurement markers and completed set history (2 × 8 × 20 kg), account switching, and seeded workout screen were asserted.
+PASS: ${CANDIDATE_VERSION} installed with adb install -r under the same package; signer SHA-256 matched v158.0; process stability, both account program/measurement markers and completed set history (2 × 8 × 20 kg), account switching, and seeded workout screen were asserted.
 PASS: after every font-scale/window-width change, the visible hierarchy must contain the workout-only day-name test ID and the Korean fixture marker together; if Android recreated the screen, the helper re-enters through the workout tab before capture.
-CAPTURED: screenshots and UI hierarchy dumps for v158 baseline, v159 default, and the still-open workout screen at font scale 1.3 and 2.0 at the default width, plus 320dp at font scales 1.0 and 2.0. Captures are diagnostic evidence only; neither a screenshot nor the visible marker establishes readability, operability, or a human usability/accessibility PASS.
-CAPTURED: v158/v159 MMKV default-file snapshots and hashes. Hashes establish artifact identity only; this script does not claim full semantic equality of all records. Primary/secondary weight values are separately asserted through the settings UI.
+CAPTURED: screenshots and UI hierarchy dumps for v158 baseline, ${CANDIDATE_VERSION} default, and the still-open workout screen at font scale 1.3 and 2.0 at the default width, plus 320dp at font scales 1.0 and 2.0. Captures are diagnostic evidence only; neither a screenshot nor the visible marker establishes readability, operability, or a human usability/accessibility PASS.
+CAPTURED: v158/${CANDIDATE_VERSION} MMKV default-file snapshots and hashes. Hashes establish artifact identity only; this script does not claim full semantic equality of all records. Primary/secondary weight values are separately asserted through the settings UI.
 PASS: airplane mode was enabled, Wi-Fi and mobile data were explicitly disabled, and settings/state dumps were captured for fixture migration and post-upgrade UI checks.
 NOT RUN: real user data comparison, export/import restoration, human usability/accessibility review, and physical-device behavior.
 EOF

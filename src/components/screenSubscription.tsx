@@ -10,7 +10,6 @@ import { NavScreenContent } from "../navigation/NavScreenContent";
 import { useNavOptions } from "../navigation/useNavOptions";
 import { IAppleOffer, IGoogleOffer, INavCommon, IOfferData, ISubscriptionLoading } from "../models/state";
 import { IconBarbell } from "./icons/iconBarbell";
-import { IconGraphs } from "./icons/iconGraphs";
 import { Button } from "./button";
 import { LinkButton } from "./linkButton";
 import { IconBell } from "./icons/iconBell";
@@ -75,13 +74,6 @@ function getFeatures(): IFeatureDef[] {
       title: "원판 계산기",
       description: "바벨에 끼울 원판의 종류와 개수를 계산합니다.",
       infoType: "platesCalculator",
-    },
-    {
-      key: "graphs",
-      icon: <IconGraphs />,
-      title: "운동 그래프",
-      description: "시간에 따른 운동 변화를 확인합니다.",
-      infoType: "graphs",
     },
     {
       key: "notifications",

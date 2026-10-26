@@ -19,19 +19,17 @@ import {
 import { Length_is, Length_convertTo, Length_build } from "../models/length";
 import { Stats_name } from "../models/stats";
 import { Weight_is, Weight_convertTo, Weight_build } from "../models/weight";
-import { ILength, IPercentage, ISettings, IStats, IStatsKey, ISubscription, IWeight } from "../types";
+import { ILength, IPercentage, ISettings, IStats, IStatsKey, IWeight } from "../types";
 import { ObjectUtils_keys } from "../utils/object";
 import { MenuItemWrapper } from "./menuItem";
 import { GroupHeader } from "./groupHeader";
 import { MenuItemEditable } from "./menuItemEditable";
 import { GraphStats, getWeightDataForGraph, getLengthDataForGraph, getPercentageDataForGraph } from "./graphStats";
 import { IconTrash } from "./icons/iconTrash";
-import { Locker } from "./locker";
 import { Button } from "./button";
 import { Thunk_pushScreen } from "../ducks/thunks";
 import { updateSettings } from "../models/state";
 import { lb } from "lens-shmens";
-import { Subscriptions_hasSubscription } from "../utils/subscriptions";
 import { ImagePreloader_dynoflex } from "../utils/imagePreloader";
 import { HostConfig_resolveUrl } from "../utils/hostConfig";
 import { BundledImages_svgXml } from "../utils/bundledImages";
@@ -42,7 +40,6 @@ import { DatePicker } from "./datePicker";
 interface IProps {
   stats: IStats;
   settings: ISettings;
-  subscription: ISubscription;
   initialKey?: IStatsKey;
   dispatch: IDispatch;
 }
@@ -158,51 +155,46 @@ export function StatsList(props: IProps): JSX.Element {
           setSelectedKey(value as IStatsKey);
         }}
       />
-      {Subscriptions_hasSubscription(props.subscription) && (
-        <MenuItemEditable
-          name="이동 평균 계산에 사용할 기록 수"
-          type="select"
-          value={movingAverageWindowSize?.toString() ?? ""}
-          values={[
-            ["", "사용 안 함"],
-            ["2", "2"],
-            ["3", "3"],
-            ["4", "4"],
-            ["5", "5"],
-          ]}
-          onChange={(value) => {
-            updateSettings(
-              props.dispatch,
-              lb<ISettings>()
-                .p("graphOptions")
-                .p(selectedKey)
-                .recordModify((opts) => ({
-                  ...opts,
-                  movingAverageWindowSize: value ? parseInt(value, 10) : undefined,
-                })),
-              "Update moving average"
-            );
-          }}
-        />
-      )}
+      <MenuItemEditable
+        name="이동 평균 계산에 사용할 기록 수"
+        type="select"
+        value={movingAverageWindowSize?.toString() ?? ""}
+        values={[
+          ["", "사용 안 함"],
+          ["2", "2"],
+          ["3", "3"],
+          ["4", "4"],
+          ["5", "5"],
+        ]}
+        onChange={(value) => {
+          updateSettings(
+            props.dispatch,
+            lb<ISettings>()
+              .p("graphOptions")
+              .p(selectedKey)
+              .recordModify((opts) => ({
+                ...opts,
+                movingAverageWindowSize: value ? parseInt(value, 10) : undefined,
+              })),
+            "Update moving average"
+          );
+        }}
+      />
       <View className="relative">
         {graphPoints.length > 2 && (
-          <>
-            <GraphStats
-              title={null}
-              isSameXAxis={false}
-              minX={graphPoints[0][0]}
-              maxX={graphPoints[graphPoints.length - 1][0]}
-              units={graphUnit}
-              key={`${selectedKey}_${movingAverageWindowSize}`}
-              settings={props.settings}
-              collection={graphPoints}
-              statsKey={selectedKey}
-              movingAverageWindowSize={movingAverageWindowSize}
-              isInteractive={Subscriptions_hasSubscription(props.subscription)}
-            />
-            <Locker topic="Graphs" dispatch={props.dispatch} blur={8} subscription={props.subscription} />
-          </>
+          <GraphStats
+            title={null}
+            isSameXAxis={false}
+            minX={graphPoints[0][0]}
+            maxX={graphPoints[graphPoints.length - 1][0]}
+            units={graphUnit}
+            key={`${selectedKey}_${movingAverageWindowSize}`}
+            settings={props.settings}
+            collection={graphPoints}
+            statsKey={selectedKey}
+            movingAverageWindowSize={movingAverageWindowSize}
+            isInteractive={true}
+          />
         )}
       </View>
       {values.length === 0 ? (

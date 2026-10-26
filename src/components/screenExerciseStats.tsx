@@ -2,7 +2,7 @@ import { JSX, memo, useCallback, useMemo, useState } from "react";
 import { View, Pressable } from "react-native";
 import { Text } from "./primitives/text";
 import { IDispatch } from "../ducks/types";
-import { IExerciseType, IHistoryRecord, IProgram, ISettings, ISubscription } from "../types";
+import { IExerciseType, IHistoryRecord, IProgram, ISettings } from "../types";
 import { INavCommon, updateSettings } from "../models/state";
 import {
   History_collectMinAndMaxTime,
@@ -29,8 +29,6 @@ import { lb } from "lens-shmens";
 import { ExerciseImage } from "./exerciseImage";
 import { GraphExercise } from "./graphExercise";
 import { Collector } from "../utils/collector";
-import { Locker } from "./locker";
-import { Subscriptions_hasSubscription } from "../utils/subscriptions";
 import { ExerciseDataSettings } from "./exerciseDataSettings";
 import { LinkButton } from "./linkButton";
 import { Thunk_pullScreen } from "../ducks/thunks";
@@ -48,7 +46,6 @@ interface IProps {
   exerciseType: IExerciseType;
   history: IHistoryRecord[];
   dispatch: IDispatch;
-  subscription: ISubscription;
   settings: ISettings;
   navCommon: INavCommon;
   currentProgram?: IProgram;
@@ -153,7 +150,6 @@ export function ScreenExerciseStats(props: IProps): JSX.Element {
   );
   const exerciseKey = useMemo(() => Exercise_toKey(exerciseType), [exerciseType]);
   const fullName = useMemo(() => Exercise_fullName(fullExercise, settings), [fullExercise, settings]);
-  const isInteractive = useMemo(() => Subscriptions_hasSubscription(props.subscription), [props.subscription]);
 
   const maxWeightProp = useMemo(
     () => (maxWeight ? { weight: maxWeight, historyRecord: maxWeightHistoryRecord } : undefined),
@@ -213,7 +209,6 @@ export function ScreenExerciseStats(props: IProps): JSX.Element {
       </View>
       {history.length > 1 && (
         <View data-testid="exercise-stats-graph" testID="exercise-stats-graph" className="relative">
-          <Locker topic="Graphs" dispatch={dispatch} blur={8} subscription={props.subscription} />
           <GraphExercise
             isSameXAxis={false}
             minX={Math.round(minX / 1000)}
@@ -226,7 +221,7 @@ export function ScreenExerciseStats(props: IProps): JSX.Element {
             exercise={exerciseType}
             initialType={settings.graphsSettings.defaultType}
             dispatch={dispatch}
-            isInteractive={isInteractive}
+            isInteractive={true}
           />
         </View>
       )}

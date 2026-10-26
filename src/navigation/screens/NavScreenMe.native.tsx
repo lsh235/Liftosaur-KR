@@ -269,7 +269,6 @@ export function NavScreenMeasurements(): React.JSX.Element {
       <NavScreenContent>
         <ScreenMeasurementsComponent
           navCommon={navCommon}
-          subscription={untrack(state.storage.subscription)}
           dispatch={dispatch}
           settings={untrack(state.storage.settings)}
           stats={untrack(state.storage.stats)}
@@ -291,7 +290,6 @@ export function NavScreenSleepNutrition(): React.JSX.Element {
           navCommon={navCommon}
           dispatch={dispatch}
           settings={untrack(state.storage.settings)}
-          subscription={untrack(state.storage.subscription)}
           stats={untrack(state.storage.stats)}
         />
       </NavScreenContent>
@@ -330,7 +328,6 @@ export function NavScreenExerciseStats(): React.JSX.Element {
           dispatch={dispatch}
           exerciseType={exercise}
           settings={untrack(state.storage.settings)}
-          subscription={untrack(state.storage.subscription)}
         />
       </NavScreenContent>
     </View>

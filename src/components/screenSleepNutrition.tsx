@@ -4,7 +4,7 @@ import { Text } from "./primitives/text";
 import { IDispatch } from "../ducks/types";
 import { EditStats_setHealthStatHidden } from "../models/editStats";
 import { Stats_name } from "../models/stats";
-import { ISettings, IStats, IStatsHealthKey, ISubscription, statsHealthDef } from "../types";
+import { ISettings, IStats, IStatsHealthKey, statsHealthDef } from "../types";
 import { INavCommon } from "../models/state";
 import { useNavOptions } from "../navigation/useNavOptions";
 import { MenuItem } from "./menuItem";
@@ -13,14 +13,11 @@ import { IconUndo } from "./icons/iconUndo";
 import { DateUtils_format } from "../utils/date";
 import { ScrollableTabs } from "./scrollableTabs";
 import { GraphStats, getHealthDataForGraph } from "./graphStats";
-import { Locker } from "./locker";
-import { Subscriptions_hasSubscription } from "../utils/subscriptions";
 
 interface IProps {
   dispatch: IDispatch;
   stats: IStats;
   settings: ISettings;
-  subscription: ISubscription;
   navCommon: INavCommon;
 }
 
@@ -74,7 +71,6 @@ export function ScreenSleepNutrition(props: IProps): JSX.Element {
             statsKey={key}
             stats={props.stats}
             settings={props.settings}
-            subscription={props.subscription}
             dispatch={props.dispatch}
           />
         ),
@@ -87,12 +83,11 @@ interface IHealthMetricListProps {
   statsKey: IStatsHealthKey;
   stats: IStats;
   settings: ISettings;
-  subscription: ISubscription;
   dispatch: IDispatch;
 }
 
 function HealthMetricList(props: IHealthMetricListProps): JSX.Element {
-  const { statsKey, stats, settings, subscription, dispatch } = props;
+  const { statsKey, stats, settings, dispatch } = props;
   const [showHidden, setShowHidden] = useState(false);
   const all = stats.health?.[statsKey] || [];
 
@@ -130,9 +125,8 @@ function HealthMetricList(props: IHealthMetricListProps): JSX.Element {
               settings={settings}
               collection={graphPoints}
               statsKey={statsKey}
-              isInteractive={Subscriptions_hasSubscription(subscription)}
+              isInteractive={true}
             />
-            <Locker topic="Graphs" dispatch={dispatch} blur={8} subscription={subscription} />
           </>
         )}
       </View>
