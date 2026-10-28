@@ -584,6 +584,37 @@ async function getHistory(request: Request, event: any, env: Env): Promise<Respo
   return json(200, { history });
 }
 
+function isPublicExerciseImagePath(path: string): boolean {
+  return /^\/externalimages\/(?:exercises|muscles)\/[A-Za-z0-9_./-]+\.(?:png|jpe?g|webp)$/.test(path) &&
+    !path.split("/").includes("..");
+}
+
+async function staticAssetOrExerciseImage(request: Request, env: Env, url: URL): Promise<Response> {
+  const asset = await env.STATIC_ASSETS.fetch(request);
+  if (
+    asset.status !== 404 ||
+    !isPublicExerciseImagePath(url.pathname) ||
+    (request.method !== "GET" && request.method !== "HEAD")
+  ) {
+    return asset;
+  }
+
+  // The app uses Tigerfit as its API/app origin, while the fork does not host the
+  // upstream exercise-image corpus in dist. Fetch only known image paths from the
+  // fixed public image origin; never forward app cookies or caller-supplied hosts.
+  const imageUrl = new URL(url.pathname, "https://www.liftosaur.com");
+  const upstream = await fetch(new Request(imageUrl, { method: request.method }));
+  if (!upstream.ok) return upstream;
+
+  const headers = new Headers(upstream.headers);
+  headers.set("cache-control", "public, max-age=86400, s-maxage=604800, stale-while-revalidate=86400");
+  return new Response(request.method === "HEAD" ? null : upstream.body, {
+    status: upstream.status,
+    statusText: upstream.statusText,
+    headers,
+  });
+}
+
 async function dispatch(request: Request, env: Env, event: any): Promise<Response | undefined> {
   const url = new URL(request.url);
   const path = url.pathname;
@@ -665,6 +696,9 @@ export default {
       if (request.method !== "GET" && request.method !== "HEAD") event.body = await request.clone().text();
       const result = await dispatch(request, env, event);
       if (result) return result;
+    }
+    if (url.pathname.startsWith("/externalimages/")) {
+      return staticAssetOrExerciseImage(request, env, url);
     }
     return env.STATIC_ASSETS.fetch(request);
   },

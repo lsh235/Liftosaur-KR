@@ -29,6 +29,6 @@
   "assets": {
     "directory": "../../dist",
     "binding": "STATIC_ASSETS",
-    "run_worker_first": ["/api/*", "/mcp", "/oauth/*", "/.well-known/*", "/login", "/logout"]
+    "run_worker_first": ["/api/*", "/mcp", "/oauth/*", "/.well-known/*", "/login", "/logout", "/externalimages/*"]
   }
 }
