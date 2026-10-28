@@ -1,0 +1,210 @@
+{
+  "generated_at": "2026-10-28T00:01:37.097212+00:00",
+  "spec_sources": [
+    "docs/features/import-export.md",
+    "docs/features/workout-history.md"
+  ],
+  "expected_routes": [],
+  "cases": [
+    {
+      "id": "TC-001",
+      "title": "Where to find it",
+      "category": "ui",
+      "test_type": "functional",
+      "priority": "low",
+      "source": "docs/features/import-export.md"
+    },
+    {
+      "id": "TC-002",
+      "title": "Back up all your data",
+      "category": "ui",
+      "test_type": "functional",
+      "priority": "low",
+      "source": "docs/features/import-export.md"
+    },
+    {
+      "id": "TC-003",
+      "title": "Export your history as a spreadsheet",
+      "category": "ui",
+      "test_type": "functional",
+      "priority": "low",
+      "source": "docs/features/import-export.md"
+    },
+    {
+      "id": "TC-004",
+      "title": "Export your programs as text",
+      "category": "ui",
+      "test_type": "functional",
+      "priority": "low",
+      "source": "docs/features/import-export.md"
+    },
+    {
+      "id": "TC-005",
+      "title": "Import history from Hevy",
+      "category": "ui",
+      "test_type": "functional",
+      "priority": "low",
+      "source": "docs/features/import-export.md"
+    },
+    {
+      "id": "TC-006",
+      "title": "Import history from a Liftosaur CSV",
+      "category": "ui",
+      "test_type": "functional",
+      "priority": "low",
+      "source": "docs/features/import-export.md"
+    },
+    {
+      "id": "TC-007",
+      "title": "Check the preview before you import",
+      "category": "ui",
+      "test_type": "functional",
+      "priority": "low",
+      "source": "docs/features/import-export.md"
+    },
+    {
+      "id": "TC-008",
+      "title": "How many workouts will be imported and their date range.",
+      "category": "ui",
+      "test_type": "functional",
+      "priority": "low",
+      "source": "docs/features/import-export.md"
+    },
+    {
+      "id": "TC-009",
+      "title": "Every workout, drawn the way it will look on the Home screen.",
+      "category": "ui",
+      "test_type": "functional",
+      "priority": "low",
+      "source": "docs/features/import-export.md"
+    },
+    {
+      "id": "TC-010",
+      "title": "Which exercises will be created as custom. Tap **Show** to see the names.",
+      "category": "ui",
+      "test_type": "functional",
+      "priority": "low",
+      "source": "docs/features/import-export.md"
+    },
+    {
+      "id": "TC-011",
+      "title": "Rows skipped because they could not be parsed, with the row number and the reason.",
+      "category": "ui",
+      "test_type": "functional",
+      "priority": "low",
+      "source": "docs/features/import-export.md"
+    },
+    {
+      "id": "TC-012",
+      "title": "Values that look suspicious: a weight over 3000 lb, more than 1000 reps, a date before 2000 or more than a day in the future.",
+      "category": "ui",
+      "test_type": "functional",
+      "priority": "low",
+      "source": "docs/features/import-export.md"
+    },
+    {
+      "id": "TC-013",
+      "title": "Workouts that look like duplicates of your existing history. A workout is a duplicate when it starts within one minute of one you already have. Duplicates are skipped by default. Tap **Skipped - Include?** to import them anyway.",
+      "category": "ui",
+      "test_type": "functional",
+      "priority": "low",
+      "source": "docs/features/import-export.md"
+    },
+    {
+      "id": "TC-014",
+      "title": "Undo an import",
+      "category": "ui",
+      "test_type": "functional",
+      "priority": "low",
+      "source": "docs/features/import-export.md"
+    },
+    {
+      "id": "TC-015",
+      "title": "Restore from a JSON backup",
+      "category": "ui",
+      "test_type": "functional",
+      "priority": "low",
+      "source": "docs/features/import-export.md"
+    },
+    {
+      "id": "TC-016",
+      "title": "Import a program from a JSON file",
+      "category": "ui",
+      "test_type": "functional",
+      "priority": "low",
+      "source": "docs/features/import-export.md"
+    },
+    {
+      "id": "TC-017",
+      "title": "Read a finished workout",
+      "category": "ui",
+      "test_type": "functional",
+      "priority": "low",
+      "source": "docs/features/workout-history.md"
+    },
+    {
+      "id": "TC-018",
+      "title": "Move through weeks",
+      "category": "ui",
+      "test_type": "functional",
+      "priority": "low",
+      "source": "docs/features/workout-history.md"
+    },
+    {
+      "id": "TC-019",
+      "title": "See the week's totals",
+      "category": "ui",
+      "test_type": "functional",
+      "priority": "low",
+      "source": "docs/features/workout-history.md"
+    },
+    {
+      "id": "TC-020",
+      "title": "Find a workout in the month calendar",
+      "category": "ui",
+      "test_type": "functional",
+      "priority": "low",
+      "source": "docs/features/workout-history.md"
+    },
+    {
+      "id": "TC-021",
+      "title": "Open and edit a past workout",
+      "category": "ui",
+      "test_type": "functional",
+      "priority": "low",
+      "source": "docs/features/workout-history.md"
+    },
+    {
+      "id": "TC-022",
+      "title": "Change the date or the length",
+      "category": "ui",
+      "test_type": "functional",
+      "priority": "low",
+      "source": "docs/features/workout-history.md"
+    },
+    {
+      "id": "TC-023",
+      "title": "Add a note",
+      "category": "ui",
+      "test_type": "functional",
+      "priority": "low",
+      "source": "docs/features/workout-history.md"
+    },
+    {
+      "id": "TC-024",
+      "title": "Share a workout",
+      "category": "ui",
+      "test_type": "functional",
+      "priority": "low",
+      "source": "docs/features/workout-history.md"
+    },
+    {
+      "id": "TC-025",
+      "title": "Delete a workout",
+      "category": "ui",
+      "test_type": "functional",
+      "priority": "low",
+      "source": "docs/features/workout-history.md"
+    }
+  ]
+}

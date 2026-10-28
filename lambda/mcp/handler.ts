@@ -1,7 +1,7 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import { Endpoint, RouteHandler } from "yatro";
 import { IDI } from "../utils/di";
-import { Utils_getEnv, Utils_isLocal } from "../utils";
+import { McpBaseUrl_get } from "./baseUrl";
 import { UserDao } from "../dao/userDao";
 import { OauthDao } from "../dao/oauthDao";
 import { ApiKeyDao } from "../dao/apiKeyDao";
@@ -20,7 +20,7 @@ import { Subscriptions } from "../utils/subscriptions";
 import { ApiKeyAuth_deviceIdForKey } from "../utils/apiKeyAuth";
 import { EventDao } from "../dao/eventDao";
 
-const SERVER_NAME = "liftosaur-mcp";
+const SERVER_NAME = "tigerfit-mcp";
 const SERVER_VERSION = "1.0.0";
 const PROTOCOL_VERSION = "2025-03-26";
 
@@ -74,11 +74,13 @@ function parseBody(event: APIGatewayProxyEvent): IJsonRpcRequest | undefined {
 
 export const getMcpEndpoint = Endpoint.build("/mcp");
 export const getMcpHandler: RouteHandler<IPayload, APIGatewayProxyResult, typeof getMcpEndpoint> = async () => {
+  const baseUrl = McpBaseUrl_get();
   return {
-    statusCode: 405,
-    body: "",
+    statusCode: 401,
+    body: JSON.stringify({ error: "unauthorized" }),
     headers: {
       "content-type": "application/json",
+      "www-authenticate": `Bearer resource_metadata="${baseUrl}/.well-known/oauth-protected-resource/mcp"`,
       "access-control-allow-origin": "*",
       "access-control-allow-headers": "content-type, authorization, mcp-protocol-version",
       "access-control-allow-methods": "OPTIONS,GET,POST,DELETE",
@@ -181,6 +183,7 @@ async function handleToolCall(
   }
 
   function fireEvent(userId?: string): void {
+    if (!userId) return;
     new EventDao(di).post({
       type: "event",
       userId,
@@ -251,11 +254,7 @@ async function handleToolCall(
   const authHeader = event.headers.Authorization || event.headers.authorization;
   if (!authHeader?.startsWith("Bearer ")) {
     di.log.log(`[MCP] ${toolName} -> 401: no bearer token`);
-    const baseUrl = Utils_isLocal()
-      ? "https://local.liftosaur.com:8080"
-      : Utils_getEnv() === "dev"
-        ? "https://stage.liftosaur.com"
-        : "https://www.liftosaur.com";
+    const baseUrl = McpBaseUrl_get();
     return {
       statusCode: 401,
       body: JSON.stringify({ error: "unauthorized" }),
@@ -280,18 +279,19 @@ async function handleToolCall(
   } else {
     const oauthDao = new OauthDao(di);
     const tokenRecord = await oauthDao.getByToken(accessToken);
-    if (tokenRecord && tokenRecord.expiresAt >= Date.now()) {
+    const resource = `${McpBaseUrl_get()}/mcp`;
+    if (
+      tokenRecord &&
+      tokenRecord.expiresAt >= Date.now() &&
+      (!tokenRecord.resource || tokenRecord.resource === resource)
+    ) {
       userId = tokenRecord.userId;
       deviceId = `mcp_${tokenRecord.clientId.replace(/^lftcl_/, "")}`;
     }
   }
   if (!userId || !deviceId) {
     di.log.log(`[MCP] ${toolName} -> 401: invalid/expired token`);
-    const baseUrl = Utils_isLocal()
-      ? "https://local.liftosaur.com:8080"
-      : Utils_getEnv() === "dev"
-        ? "https://stage.liftosaur.com"
-        : "https://www.liftosaur.com";
+    const baseUrl = McpBaseUrl_get();
     return {
       statusCode: 401,
       body: JSON.stringify({ error: "unauthorized" }),
@@ -311,15 +311,17 @@ async function handleToolCall(
     return textResult(req.id, "User not found", { isError: true });
   }
 
-  const subscriptions = new Subscriptions(di.log, di.secrets);
-  const hasSub = await subscriptions.hasSubscription(di, userId, user.storage.subscription);
-  if (!hasSub) {
-    di.log.log(`[MCP] ${toolName} -> 403: no subscription`);
-    return textResult(
-      req.id,
-      `Active subscription required to use MCP tools (signed in as ${user.email}). If you subscribed on a different Liftosaur account, disconnect Liftosaur in your AI client and reconnect with that account.`,
-      { isError: true }
-    );
+  if (process.env.MCP_ALLOW_SELF_HOSTED !== "true") {
+    const subscriptions = new Subscriptions(di.log, di.secrets);
+    const hasSub = await subscriptions.hasSubscription(di, userId, user.storage.subscription);
+    if (!hasSub) {
+      di.log.log(`[MCP] ${toolName} -> 403: no subscription`);
+      return textResult(
+        req.id,
+        `Active subscription required to use MCP tools (signed in as ${user.email}). If you subscribed on a different Liftosaur account, disconnect Liftosaur in your AI client and reconnect with that account.`,
+        { isError: true }
+      );
+    }
   }
 
   // No try/catch here on purpose: the executor returns tool errors for all anticipated argument

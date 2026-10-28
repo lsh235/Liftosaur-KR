@@ -5,7 +5,7 @@ import { OauthDao } from "../dao/oauthDao";
 import { UserDao } from "../dao/userDao";
 import { LogDao } from "../dao/logDao";
 import { McpClientSlug_connectAction } from "./mcpClientSlug";
-import { Utils_getEnv, Utils_isLocal } from "../utils";
+import { McpBaseUrl_get } from "./baseUrl";
 import * as Cookie from "cookie";
 import JWT from "jsonwebtoken";
 import * as crypto from "crypto";
@@ -30,6 +30,7 @@ interface IConsentToken {
   redirectUri: string;
   codeChallenge: string;
   codeChallengeMethod: string;
+  resource: string;
   state?: string;
 }
 
@@ -66,18 +67,14 @@ function oauthError(status: number, error: string, description: string): APIGate
   return oauthJson(status, { error, error_description: description });
 }
 
-function getBaseUrl(): string {
-  if (Utils_isLocal()) {
-    return "https://local.liftosaur.com:8080";
-  }
-  const env = Utils_getEnv();
-  return env === "dev" ? "https://stage.liftosaur.com" : "https://www.liftosaur.com";
-}
-
 async function getCurrentUserId(event: APIGatewayProxyEvent, di: IDI): Promise<string | undefined> {
   const cookies = Cookie.parse(event.headers.Cookie || event.headers.cookie || "");
   const userDao = new UserDao(di);
   return userDao.getCurrentUserIdFromCookie(cookies);
+}
+
+function mcpResource(): string {
+  return `${McpBaseUrl_get()}/mcp`;
 }
 
 // --- GET /.well-known/oauth-protected-resource ---
@@ -90,9 +87,9 @@ export const getProtectedResourceHandler: RouteHandler<
   APIGatewayProxyResult,
   typeof getProtectedResourceEndpoint
 > = async ({ payload }) => {
-  const baseUrl = getBaseUrl();
+  const baseUrl = McpBaseUrl_get();
   return oauthJson(200, {
-    resource: `${baseUrl}/mcp`,
+    resource: mcpResource(),
     authorization_servers: [baseUrl],
   });
 };
@@ -105,7 +102,7 @@ export const getAuthServerMetadataHandler: RouteHandler<
   APIGatewayProxyResult,
   typeof getAuthServerMetadataEndpoint
 > = async ({ payload }) => {
-  const baseUrl = getBaseUrl();
+  const baseUrl = McpBaseUrl_get();
   return oauthJson(200, {
     issuer: baseUrl,
     authorization_endpoint: `${baseUrl}/oauth/authorize`,
@@ -115,6 +112,7 @@ export const getAuthServerMetadataHandler: RouteHandler<
     grant_types_supported: ["authorization_code", "refresh_token"],
     code_challenge_methods_supported: ["S256"],
     token_endpoint_auth_methods_supported: ["none"],
+    client_id_metadata_document_supported: false,
   });
 };
 
@@ -164,6 +162,7 @@ export const getOauthAuthorizeEndpoint = Endpoint.build("/oauth/authorize", {
   state: "string?",
   code_challenge: "string?",
   code_challenge_method: "string?",
+  resource: "string?",
 });
 export const getOauthAuthorizeHandler: RouteHandler<
   IPayload,
@@ -181,6 +180,10 @@ export const getOauthAuthorizeHandler: RouteHandler<
   if (params.code_challenge_method && params.code_challenge_method !== "S256") {
     return oauthError(400, "invalid_request", "Only S256 code_challenge_method is supported");
   }
+  const resource = params.resource || mcpResource();
+  if (resource !== mcpResource()) {
+    return oauthError(400, "invalid_target", "This authorization server only supports its configured MCP resource");
+  }
 
   const oauthDao = new OauthDao(di);
   const client = await oauthDao.getClient(params.client_id);
@@ -193,8 +196,15 @@ export const getOauthAuthorizeHandler: RouteHandler<
 
   const userId = await getCurrentUserId(event, di);
   if (!userId) {
-    const baseUrl = getBaseUrl();
-    const currentUrl = `${baseUrl}${event.path}?${new URLSearchParams(params as Record<string, string>).toString()}`;
+    const baseUrl = McpBaseUrl_get();
+    const query = new URLSearchParams();
+    for (const [key, value] of Object.entries(event.queryStringParameters || {})) {
+      if (value != null) {
+        query.set(key, value);
+      }
+    }
+    query.set("resource", resource);
+    const currentUrl = `${baseUrl}${event.path}?${query.toString()}`;
     return {
       statusCode: 302,
       body: "",
@@ -212,6 +222,7 @@ export const getOauthAuthorizeHandler: RouteHandler<
     redirectUri: params.redirect_uri,
     codeChallenge: params.code_challenge,
     codeChallengeMethod: params.code_challenge_method || "S256",
+    resource,
     state: params.state,
   };
   const consentToken = JWT.sign(consentPayload, await getConsentSigningKey(di), { expiresIn: "10m" });
@@ -258,6 +269,9 @@ export const postOauthAuthorizeHandler: RouteHandler<
   if (consent.type !== CONSENT_TOKEN_TYPE) {
     return oauthError(400, "invalid_request", "Wrong token type");
   }
+  if (consent.resource !== mcpResource()) {
+    return oauthError(400, "invalid_target", "This authorization server only supports its configured MCP resource");
+  }
 
   // The token is signed, but re-check the live session: it binds the decision to
   // whoever is actually driving this browser, so a stolen/pre-minted token can't
@@ -289,7 +303,8 @@ export const postOauthAuthorizeHandler: RouteHandler<
     consent.userId,
     consent.redirectUri,
     consent.codeChallenge,
-    consent.codeChallengeMethod
+    consent.codeChallengeMethod,
+    consent.resource
   );
   redirectUrl.searchParams.set("code", authCode.code);
 
@@ -351,8 +366,6 @@ async function handleAuthCodeGrant(
     return oauthError(400, "invalid_grant", "Invalid or expired authorization code");
   }
 
-  await oauthDao.deleteAuthCode(code);
-
   if (authCode.expiresAt < Date.now()) {
     return oauthError(400, "invalid_grant", "Authorization code expired");
   }
@@ -365,8 +378,13 @@ async function handleAuthCodeGrant(
   if (!OauthDao.verifyCodeChallenge(code_verifier, authCode.codeChallenge)) {
     return oauthError(400, "invalid_grant", "Invalid code_verifier");
   }
+  const resource = body.resource || authCode.resource || mcpResource();
+  if (resource !== mcpResource() || (authCode.resource && authCode.resource !== resource)) {
+    return oauthError(400, "invalid_target", "The authorization code is not valid for this MCP resource");
+  }
 
-  const token = await oauthDao.createToken(client_id, authCode.userId);
+  await oauthDao.deleteAuthCode(code);
+  const token = await oauthDao.createToken(client_id, authCode.userId, resource);
   const client = await oauthDao.getClient(client_id).catch(() => undefined);
   await new LogDao(di).recordAction(authCode.userId, McpClientSlug_connectAction(client?.clientName));
   return oauthJson(200, {
@@ -394,10 +412,14 @@ async function handleRefreshTokenGrant(
   if (existing.clientId !== client_id) {
     return oauthError(400, "invalid_grant", "client_id mismatch");
   }
+  const resource = body.resource || existing.resource || mcpResource();
+  if (resource !== mcpResource() || (existing.resource && existing.resource !== resource)) {
+    return oauthError(400, "invalid_target", "The refresh token is not valid for this MCP resource");
+  }
 
   await oauthDao.deleteToken(existing.token);
 
-  const newToken = await oauthDao.createToken(client_id, existing.userId);
+  const newToken = await oauthDao.createToken(client_id, existing.userId, resource);
   return oauthJson(200, {
     access_token: newToken.token,
     token_type: "Bearer",

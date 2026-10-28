@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.lambda.json",
+  "compilerOptions": {
+    "target": "ES2022",
+    "noEmit": true
+  },
+  "include": [
+    "./index.ts",
+    "../../lambda/types/nodeFetch.d.ts",
+    "../../src/types/reactNative.d.ts",
+    "../../src/types/window.d.ts",
+    "../../uniwind-types.d.ts"
+  ]
+}

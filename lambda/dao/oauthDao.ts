@@ -32,6 +32,8 @@ export interface IOauthAuthCode {
   redirectUri: string;
   codeChallenge: string;
   codeChallengeMethod: string;
+  /** The MCP resource this authorization code is restricted to. Optional for pre-resource legacy codes. */
+  resource?: string;
   expiresAt: number;
   ttl: number;
 }
@@ -41,6 +43,8 @@ export interface IOauthToken {
   userId: string;
   clientId: string;
   refreshToken: string;
+  /** The MCP resource this access token is valid for. Optional for pre-resource legacy tokens. */
+  resource?: string;
   expiresAt: number;
   ttl: number;
 }
@@ -73,7 +77,8 @@ export class OauthDao {
     userId: string,
     redirectUri: string,
     codeChallenge: string,
-    codeChallengeMethod: string
+    codeChallengeMethod: string,
+    resource: string
   ): Promise<IOauthAuthCode> {
     const env = Utils_getEnv();
     const expiresAt = Date.now() + 10 * 60 * 1000;
@@ -84,6 +89,7 @@ export class OauthDao {
       redirectUri,
       codeChallenge,
       codeChallengeMethod,
+      resource,
       expiresAt,
       ttl: Math.floor(expiresAt / 1000),
     };
@@ -104,7 +110,7 @@ export class OauthDao {
     await this.di.dynamo.remove({ tableName: oauthTableNames[env].authCodes, key: { code } });
   }
 
-  public async createToken(clientId: string, userId: string): Promise<IOauthToken> {
+  public async createToken(clientId: string, userId: string, resource: string): Promise<IOauthToken> {
     const env = Utils_getEnv();
     const expiresAt = Date.now() + 60 * 60 * 1000;
     const oauthToken: IOauthToken = {
@@ -112,6 +118,7 @@ export class OauthDao {
       userId,
       clientId,
       refreshToken: `lftrr_${UidFactory_generateSecureToken(32)}`,
+      resource,
       expiresAt,
       ttl: Math.floor((Date.now() + 90 * 24 * 60 * 60 * 1000) / 1000),
     };

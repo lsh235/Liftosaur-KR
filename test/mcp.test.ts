@@ -17,6 +17,11 @@ import { Storage_getDefault } from "../src/models/storage";
 import { MockFetch } from "./utils/mockFetch";
 import sinon from "sinon";
 import JWT from "jsonwebtoken";
+import * as crypto from "crypto";
+
+const MCP_RESOURCE = "https://www.liftosaur.com/mcp";
+const TEST_CODE_VERIFIER = "test-verifier-0123456789-test-verifier-0123456789";
+const TEST_CODE_CHALLENGE = crypto.createHash("sha256").update(TEST_CODE_VERIFIER).digest("base64url");
 
 function buildMcpEvent(body: unknown, headers?: Record<string, string>): APIGatewayProxyEvent {
   return {
@@ -129,7 +134,7 @@ describe("MCP", () => {
 
   async function createOauthToken(): Promise<string> {
     const oauthDao = new OauthDao(di);
-    const token = await oauthDao.createToken("test-client", userId);
+    const token = await oauthDao.createToken("test-client", userId, MCP_RESOURCE);
     return token.token;
   }
 
@@ -148,7 +153,7 @@ describe("MCP", () => {
       const result = await handler(buildMcpEvent(jsonRpc("initialize")), ctx);
       expect(result.statusCode).to.equal(200);
       const body = parseBody(result);
-      expect(body.result.serverInfo.name).to.equal("liftosaur-mcp");
+      expect(body.result.serverInfo.name).to.equal("tigerfit-mcp");
       expect(body.result.protocolVersion).to.be.a("string");
     });
 
@@ -175,6 +180,15 @@ describe("MCP", () => {
       for (const tool of body.result.tools) {
         expect(tool.outputSchema?.type).to.equal("object");
       }
+    });
+
+    it("advertises DCR and explicitly disables unsupported CIMD", async () => {
+      const result = await handler(buildEvent({ method: "GET", path: "/.well-known/oauth-authorization-server" }), ctx);
+      expect(result.statusCode).to.equal(200);
+      const metadata = parseBody(result);
+      expect(metadata.registration_endpoint).to.equal("https://www.liftosaur.com/oauth/register");
+      expect(metadata.client_id_metadata_document_supported).to.equal(false);
+      expect(metadata.code_challenge_methods_supported).to.deep.equal(["S256"]);
     });
 
     it("returns error for unknown method", async () => {
@@ -204,10 +218,23 @@ describe("MCP", () => {
         response_type: "code",
         client_id: clientId,
         redirect_uri: redirectUri,
-        code_challenge: "abc123challenge",
+        code_challenge: TEST_CODE_CHALLENGE,
         code_challenge_method: "S256",
+        resource: MCP_RESOURCE,
         state: "xyz",
       };
+    }
+
+    function postOauthToken(body: Record<string, string>): Promise<APIGatewayProxyResult> {
+      return handler(
+        buildEvent({
+          method: "POST",
+          path: "/oauth/token",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        }),
+        ctx
+      );
     }
 
     function extractConsentToken(html: string): string {
@@ -262,6 +289,9 @@ describe("MCP", () => {
       );
       expect(result.statusCode).to.equal(302);
       expect(result.headers!.location).to.include("/login?url=");
+      const loginUrl = new URL(result.headers!.location as string, "https://www.liftosaur.com");
+      const resumedAuthorizationUrl = new URL(loginUrl.searchParams.get("url") as string);
+      expect(resumedAuthorizationUrl.searchParams.get("resource")).to.equal(MCP_RESOURCE);
     });
 
     it("GET renders a consent page and does NOT mint a code", async () => {
@@ -273,6 +303,72 @@ describe("MCP", () => {
       // The whole point: a GET must not produce a redirect back to the client with a code.
       expect(result.body).to.not.include("code=");
       expect(result.headers!.location).to.equal(undefined);
+    });
+
+    it("rejects an authorization request for a different resource", async () => {
+      const clientId = await registerClient();
+      const query = { ...authorizeQuery(clientId), resource: "https://other.example/mcp" };
+      const result = await handler(
+        buildEvent({
+          method: "GET",
+          path: "/oauth/authorize",
+          query,
+          headers: { Cookie: sessionCookie(userId) },
+        }),
+        ctx
+      );
+      expect(result.statusCode).to.equal(400);
+      expect(parseBody(result).error).to.equal("invalid_target");
+    });
+
+    it("binds authorization codes and access tokens to the requested MCP resource", async () => {
+      const clientId = await registerClient();
+      const page = await getConsentPage(clientId);
+      const consentToken = extractConsentToken(page.body);
+      const consent = await postConsent(consentToken, "allow");
+      const authorizationCode = new URL(consent.headers!.location as string).searchParams.get("code") as string;
+
+      const tokenResponse = await postOauthToken({
+        grant_type: "authorization_code",
+        client_id: clientId,
+        redirect_uri: "https://client.example/cb",
+        code: authorizationCode,
+        code_verifier: TEST_CODE_VERIFIER,
+        resource: MCP_RESOURCE,
+      });
+      expect(tokenResponse.statusCode).to.equal(200);
+      const token = parseBody(tokenResponse);
+      const storedToken = await new OauthDao(di).getByToken(token.access_token);
+      expect(storedToken?.resource).to.equal(MCP_RESOURCE);
+
+      const refreshed = await postOauthToken({
+        grant_type: "refresh_token",
+        client_id: clientId,
+        refresh_token: token.refresh_token,
+        resource: MCP_RESOURCE,
+      });
+      expect(refreshed.statusCode).to.equal(200);
+      const rotatedToken = await new OauthDao(di).getByToken(parseBody(refreshed).access_token);
+      expect(rotatedToken?.resource).to.equal(MCP_RESOURCE);
+    });
+
+    it("does not consume an authorization code when the token request targets another resource", async () => {
+      const clientId = await registerClient();
+      const page = await getConsentPage(clientId);
+      const consent = await postConsent(extractConsentToken(page.body), "allow");
+      const authorizationCode = new URL(consent.headers!.location as string).searchParams.get("code") as string;
+
+      const tokenResponse = await postOauthToken({
+        grant_type: "authorization_code",
+        client_id: clientId,
+        redirect_uri: "https://client.example/cb",
+        code: authorizationCode,
+        code_verifier: TEST_CODE_VERIFIER,
+        resource: "https://other.example/mcp",
+      });
+      expect(tokenResponse.statusCode).to.equal(400);
+      expect(parseBody(tokenResponse).error).to.equal("invalid_target");
+      expect(await new OauthDao(di).getAuthCode(authorizationCode)).to.exist;
     });
 
     it("GET consent page surfaces the redirect host and an unverified warning", async () => {

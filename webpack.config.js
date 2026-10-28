@@ -31,6 +31,13 @@ const localapi = `https://${localapidomain}.liftosaur.com:${localapiport}/`;
 const local = `https://${localdomain}.liftosaur.com:${localport}/`;
 
 const isDev = process.env.NODE_ENV !== "production";
+const releaseHost = new URL(
+  process.env.LIFTOSAUR_HOST || (process.env.STAGE ? "https://stage.liftosaur.com" : "https://www.liftosaur.com")
+).origin;
+const releaseApiHost = new URL(
+  process.env.LIFTOSAUR_API_HOST ||
+    (process.env.STAGE ? "https://api3-dev.liftosaur.com" : "https://api3.liftosaur.com")
+).origin;
 
 const uniwindRnRewrite = new NormalModuleReplacementPlugin(/^react-native$/, (resource) => {
   const issuer = (resource.contextInfo && resource.contextInfo.issuer) || resource.context || "";
@@ -127,9 +134,7 @@ const watchConfig = {
       __FULL_COMMIT_HASH__: JSON.stringify(fullCommitHash),
       __HOST__: JSON.stringify(
         process.env.NODE_ENV === "production"
-          ? process.env.STAGE
-            ? "https://stage.liftosaur.com"
-            : "https://www.liftosaur.com"
+          ? releaseHost
           : local
       ),
       __ENV__: JSON.stringify(process.env.NODE_ENV === "production" ? "production" : "development"),
@@ -251,17 +256,13 @@ const mainConfig = {
       __FULL_COMMIT_HASH__: JSON.stringify(fullCommitHash),
       __API_HOST__: JSON.stringify(
         process.env.NODE_ENV === "production"
-          ? process.env.STAGE
-            ? "https://api3-dev.liftosaur.com"
-            : "https://api3.liftosaur.com"
+          ? releaseApiHost
           : `https://${localapidomain}.liftosaur.com:${localapiport}`
       ),
       __ENV__: JSON.stringify(process.env.NODE_ENV === "production" ? "production" : "development"),
       __HOST__: JSON.stringify(
         process.env.NODE_ENV === "production"
-          ? process.env.STAGE
-            ? "https://stage.liftosaur.com"
-            : "https://www.liftosaur.com"
+          ? releaseHost
           : `https://${localdomain}.liftosaur.com:${localport}`
       ),
     }),
@@ -273,7 +274,9 @@ const mainConfig = {
           return content
             .toString()
             .replace(/\?version=xxxxxxxx/g, `?version=${commitHash}`)
-            .replace(/\?vendor=xxxxxxxx/g, `?vendor=${commitHash}`);
+            .replace(/\?vendor=xxxxxxxx/g, `?vendor=${commitHash}`)
+            .replaceAll("https://www.liftosaur.com", releaseHost)
+            .replaceAll("https://api3.liftosaur.com", releaseApiHost);
         },
       },
       {

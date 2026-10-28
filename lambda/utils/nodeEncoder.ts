@@ -1,4 +1,4 @@
-import { gunzip, gzip } from "fflate";
+import { gunzipSync, gzip } from "fflate";
 import { UrlUtils_build } from "../../src/utils/url";
 
 export async function NodeEncoder_encodeIntoUrl(str: string, base: string): Promise<URL> {
@@ -35,15 +35,8 @@ export function NodeEncoder_decode(data: string): Promise<string> {
       const base64 = dataUrl.split(",")[1];
       if (base64) {
         const buffer2 = Buffer.from(base64, "base64");
-        gunzip(buffer2 as unknown as Uint8Array, (err, result) => {
-          if (err) {
-            reject(err);
-          } else {
-            const buffer3 = Buffer.from(result);
-            const str = buffer3.toString("utf-8");
-            resolve(str);
-          }
-        });
+        const result = gunzipSync(buffer2);
+        resolve(Buffer.from(result).toString("utf-8"));
       } else {
         reject(new Error("Malformed base64 data"));
       }

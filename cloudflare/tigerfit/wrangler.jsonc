@@ -1,0 +1,34 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "tigerfit-app-mcp",
+  "main": "index.ts",
+  "compatibility_date": "2026-10-27",
+  "compatibility_flags": ["nodejs_compat", "nodejs_compat_populate_process_env"],
+  "account_id": "391bb9d5431e706f5696899aa58d9d87",
+  "alias": { "react-native": "react-native-web" },
+  "workers_dev": true,
+  "routes": [{ "pattern": "tigerfit.aixtech.uk", "custom_domain": true }],
+  "vars": {
+    "HOST": "https://tigerfit.aixtech.uk",
+    "MCP_BASE_URL": "https://tigerfit.aixtech.uk",
+    "SESSION_COOKIE_DOMAIN": "tigerfit.aixtech.uk",
+    "IS_DEV": "false",
+    "IS_LOCAL": "false",
+    "MCP_ALLOW_SELF_HOSTED": "true",
+    "COMMIT_HASH": "cloudflare"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "tigerfit-app",
+      "database_id": "4a81f02f-b8c0-47f0-8cbe-5f0f215bdf5e",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "r2_buckets": [{ "binding": "ASSETS_BUCKET", "bucket_name": "tigerfit-assets" }],
+  "assets": {
+    "directory": "../../dist",
+    "binding": "STATIC_ASSETS",
+    "run_worker_first": ["/api/*", "/mcp", "/oauth/*", "/.well-known/*", "/login", "/logout"]
+  }
+}

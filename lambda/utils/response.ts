@@ -9,6 +9,15 @@ export const allowedHosts = [
   "www.liftosaur.com",
   `localhost:${localport}`,
   "stage.liftosaur.com",
+  ...[process.env.HOST, process.env.API_HOST, process.env.MCP_BASE_URL]
+    .filter((host): host is string => Boolean(host))
+    .flatMap((host) => {
+      try {
+        return [new URL(host).host];
+      } catch {
+        return [];
+      }
+    }),
 ];
 
 export function ResponseUtils_json(
@@ -57,10 +66,14 @@ export function ResponseUtils_getHeaders(event: APIGatewayProxyEvent): Record<st
 export function ResponseUtils_clearSessionCookie(): string {
   return Cookie.serialize("session", "", {
     httpOnly: true,
-    domain: ".liftosaur.com",
+    domain: ResponseUtils_getSessionCookieDomain(),
     path: "/",
     expires: new Date(1970, 0, 1),
   });
+}
+
+export function ResponseUtils_getSessionCookieDomain(): string {
+  return process.env.SESSION_COOKIE_DOMAIN || ".liftosaur.com";
 }
 
 export function ResponseUtils_getHost(event: APIGatewayProxyEvent): string {
@@ -73,6 +86,6 @@ export function ResponseUtils_getReferer(event: APIGatewayProxyEvent): string {
     event.headers.Origin ||
     event.headers.referer ||
     event.headers.Referer ||
-    "https://www.liftosaur.com"
+    process.env.HOST || "https://www.liftosaur.com"
   );
 }

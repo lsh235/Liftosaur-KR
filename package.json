@@ -78,6 +78,8 @@
     "build:rn-bundle": "./scripts/build-rn-bundle.sh",
     "sync:updates-url": "npm run ensure:localdomain && TS_NODE_TRANSPILE_ONLY=1 ts-node scripts/syncUpdatesUrl.ts",
     "cdk-deploy": "npm run build:lambda && rm -rf ./dist-lambda/node_modules && cdk deploy --all",
+    "build:tigerfit:cloudflare": "LIFTOSAUR_HOST=https://tigerfit.aixtech.uk LIFTOSAUR_API_HOST=https://tigerfit.aixtech.uk npm run build:prepare && node scripts/build-tigerfit-mcp-data.js && node scripts/prepare-tigerfit-cloudflare-assets.js",
+    "deploy:tigerfit:cloudflare": "npm run build:tigerfit:cloudflare && npx wrangler d1 migrations apply tigerfit-app --remote --config cloudflare/tigerfit/wrangler.jsonc && npx wrangler deploy --config cloudflare/tigerfit/wrangler.jsonc",
     "test": "mocha -r ts-node/register --timeout 0 test/*.test.ts test/**/*.test.ts",
     "playwright": "playwright test --retries 3",
     "onetest": "TS_NODE_TRANSPILE_ONLY=1 mocha -r ts-node/register --timeout 0",

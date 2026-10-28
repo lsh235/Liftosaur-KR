@@ -6,6 +6,16 @@ let cachedLiftoscriptExamples: string | undefined;
 let cachedProgramDesignGuide: string | undefined;
 let cachedLiftohistoryReference: string | undefined;
 let cachedExercisesList: string[] | undefined;
+let bundledReferenceFiles: Record<string, string> | undefined;
+
+/** Provide reference files from an immutable bundle on platforms without a regular filesystem. */
+export function McpReference_setFiles(files: Record<string, string>): void {
+  bundledReferenceFiles = files;
+  cachedLiftoscriptReference = undefined;
+  cachedLiftoscriptExamples = undefined;
+  cachedProgramDesignGuide = undefined;
+  cachedExercisesList = undefined;
+}
 
 function resolveBaseDir(): string {
   const bundled = path.join(__dirname, "..");
@@ -16,6 +26,13 @@ function resolveBaseDir(): string {
 }
 
 function readFile(relativePath: string): string {
+  if (bundledReferenceFiles) {
+    const content = bundledReferenceFiles[relativePath];
+    if (content == null) {
+      throw new Error(`Missing bundled MCP reference: ${relativePath}`);
+    }
+    return content;
+  }
   return fs.readFileSync(path.join(resolveBaseDir(), relativePath), "utf8");
 }
 
@@ -117,6 +134,17 @@ In target sets, a duration is the rest timer, and \`setTimer|restTimer\` is a ti
 }
 
 export function McpReference_listBuiltinPrograms(): { id: string; name: string }[] {
+  if (bundledReferenceFiles) {
+    return Object.keys(bundledReferenceFiles)
+      .filter((key) => key.startsWith("programs/builtin/") && key.endsWith(".md"))
+      .sort()
+      .map((key) => {
+        const content = bundledReferenceFiles![key];
+        const id = path.basename(key, ".md");
+        const nameMatch = content.match(/^name:\s*(.+)$/m);
+        return { id, name: nameMatch ? nameMatch[1].replace(/^["']|["']$/g, "") : id };
+      });
+  }
   const dir = path.join(resolveBaseDir(), "programs", "builtin");
   const files = fs.readdirSync(dir).filter((f) => f.endsWith(".md"));
   return files.map((f) => {
@@ -128,6 +156,9 @@ export function McpReference_listBuiltinPrograms(): { id: string; name: string }
 }
 
 export function McpReference_getBuiltinProgram(id: string): string | undefined {
+  if (bundledReferenceFiles) {
+    return bundledReferenceFiles[`programs/builtin/${id}.md`];
+  }
   const filePath = path.join(resolveBaseDir(), "programs", "builtin", `${id}.md`);
   try {
     return fs.readFileSync(filePath, "utf8");
