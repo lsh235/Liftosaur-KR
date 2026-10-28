@@ -1,5 +1,10 @@
 import { JSX, useEffect, useState } from "react";
-import { Distribution_isLocalOnly, Distribution_localOnlyMessage } from "../utils/distribution";
+import {
+  Distribution_cloudSyncMessage,
+  Distribution_isLocalOnly,
+  Distribution_localOnlyMessage,
+  Distribution_supportsCloudSync,
+} from "../utils/distribution";
 import { View, Pressable, Platform, AppState } from "react-native";
 import { Text } from "./primitives/text";
 import { IDispatch } from "../ducks/types";
@@ -59,6 +64,7 @@ export function ScreenAccount(props: IProps): JSX.Element {
   const [isOtherAccountsEditMode, setIsOtherAccountsEditMode] = useState<boolean>(false);
 
   const localOnly = Distribution_isLocalOnly();
+  const cloudSyncAvailable = Distribution_supportsCloudSync();
   const currentAccountId = props.userId || props.storage.tempUserId;
   const currentAccount: IAccount = {
     id: currentAccountId,
@@ -139,7 +145,11 @@ export function ScreenAccount(props: IProps): JSX.Element {
   return (
     <View className="px-gutter">
       <GroupHeader name="현재 계정" />
-      {localOnly && <Text className="py-3 text-sm text-text-secondary">{Distribution_localOnlyMessage}</Text>}
+      {localOnly && (
+        <Text className="py-3 text-sm text-text-secondary">
+          {cloudSyncAvailable ? Distribution_cloudSyncMessage : Distribution_localOnlyMessage}
+        </Text>
+      )}
       <MenuItem
         isBorderless={true}
         expandName={true}
@@ -166,8 +176,12 @@ export function ScreenAccount(props: IProps): JSX.Element {
             {currentAccount.name ? (
               <Text className="-mt-1 text-xs text-text-secondary">{`id: ${currentAccount.id}`}</Text>
             ) : null}
-            {localOnly ? (
-              <Text className="text-xs text-text-secondary">이 기기에 저장된 계정 · 클라우드 연결 꺼짐</Text>
+            {localOnly && cloudSyncAvailable ? (
+              <Text className="text-xs text-text-secondary">
+                {props.email ? "TigerFit 계정 연결됨 · Codex MCP 사용 가능" : "기기 저장 · MCP 계정 연결 필요"}
+              </Text>
+            ) : localOnly ? (
+              <Text className="text-xs text-text-secondary">이 기기에 저장된 계정</Text>
             ) : props.email ? (
               props.email === "noemail@example.com" ? null : (
                 <Text className="text-xs text-text-secondary">
@@ -180,7 +194,7 @@ export function ScreenAccount(props: IProps): JSX.Element {
           </View>
         }
       />
-      {!localOnly && (props.email ? (
+      {cloudSyncAvailable && (props.email ? (
         <View className="items-center">
           <Button
             name="account-sign-out"
@@ -191,15 +205,24 @@ export function ScreenAccount(props: IProps): JSX.Element {
           >
             로그아웃
           </Button>
-          <View className="mt-3">
-            <LinkButton
-              name="account-change-password"
-              className="text-sm"
-              onPress={() => navigateToModal("changePasswordModal")}
-            >
-              비밀번호 변경
-            </LinkButton>
-          </View>
+          {!localOnly && (
+            <View className="mt-3">
+              <LinkButton
+                name="account-change-password"
+                className="text-sm"
+                onPress={() => navigateToModal("changePasswordModal")}
+              >
+                비밀번호 변경
+              </LinkButton>
+            </View>
+          )}
+        </View>
+      ) : localOnly ? (
+        <View>
+          <EmailAuthButton onPress={() => navigateToModal("emailAuthModal")} />
+          <Text className="mt-2 text-xs text-center text-text-secondary">
+            MCP에 연결한 것과 같은 이메일과 비밀번호를 사용하세요.
+          </Text>
         </View>
       ) : (
         <View>

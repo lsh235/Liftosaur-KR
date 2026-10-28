@@ -17,6 +17,7 @@ import { SyncAccountGuard_decide } from "../../lambda/utils/syncAccountGuard";
 import { DirtySyncRead_args } from "../../lambda/utils/dirtySyncRead";
 import { StorageDao } from "../../lambda/dao/storageDao";
 import { EventDao } from "../../lambda/dao/eventDao";
+import { HistoryIds_parse } from "../../src/utils/historyIds";
 import * as Cookie from "cookie";
 import JWT from "jsonwebtoken";
 import {
@@ -558,6 +559,31 @@ async function sync2(request: Request, event: any, env: Env): Promise<Response> 
   return json(200, { type: "dirty", storage: fullUser.storage, email: limitedUser.email, user_id: userId });
 }
 
+async function getHistory(request: Request, event: any, env: Env): Promise<Response> {
+  const userId = await userFromCookie(event, env);
+  if (!userId) return json(401, { error: "not_authorized" });
+
+  const url = new URL(request.url);
+  const rawIds = url.searchParams.get("ids");
+  const userDao = new UserDao(buildDi(env));
+  if (rawIds != null) {
+    const ids = HistoryIds_parse(rawIds);
+    if (!ids.success) return json(400, { error: ids.error });
+    const history = await userDao.getHistoryByUserId(userId, { ids: ids.data, consistentRead: true });
+    return json(200, { history });
+  }
+
+  const rawAfter = url.searchParams.get("after");
+  const after = rawAfter == null ? undefined : Number(rawAfter);
+  if (after != null && !Number.isSafeInteger(after)) return json(400, { error: "invalid_after" });
+  const rawLimit = url.searchParams.get("limit");
+  const requestedLimit = rawLimit == null ? 100 : Number(rawLimit);
+  if (!Number.isSafeInteger(requestedLimit) || requestedLimit < 1) return json(400, { error: "invalid_limit" });
+  const limit = Math.min(requestedLimit, 1000);
+  const history = await userDao.getHistoryByUserId(userId, { after, limit });
+  return json(200, { history });
+}
+
 async function dispatch(request: Request, env: Env, event: any): Promise<Response | undefined> {
   const url = new URL(request.url);
   const path = url.pathname;
@@ -588,6 +614,7 @@ async function dispatch(request: Request, env: Env, event: any): Promise<Respons
   if (path === "/api/signup/email" && request.method === "POST") return emailAuth(request, env, true);
   if (path === "/api/signin/email" && request.method === "POST") return emailAuth(request, env, false);
   if (path === "/api/sync2" && request.method === "POST") return sync2(request, event, env);
+  if (path === "/api/history" && request.method === "GET") return getHistory(request, event, env);
   if (path === "/api/v1/programs" && request.method === "GET") return callHandler(getV1ProgramsHandler, event, env);
   if (path === "/api/v1/programs" && request.method === "POST") return callHandler(postV1ProgramHandler, event, env);
   const program = path.match(/^\/api\/v1\/programs\/([^/]+)$/);
@@ -625,7 +652,7 @@ export default {
     if (request.method === "OPTIONS") {
       return new Response(null, { status: 204, headers: {
         "access-control-allow-origin": env.HOST,
-        "access-control-allow-headers": "content-type, authorization, mcp-protocol-version",
+        "access-control-allow-headers": "content-type, authorization, x-client, mcp-protocol-version",
         "access-control-allow-methods": "OPTIONS,GET,POST,PUT,DELETE",
         "access-control-allow-credentials": "true",
       } });

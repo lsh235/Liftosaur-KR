@@ -237,9 +237,9 @@ jobs:
           - 코드/앱 버전: ${GITHUB_SHA} / ${VERSION} (Android versionCode $(sed -nE 's/^[[:space:]]*versionCode[[:space:]]+([0-9]+).*$/\1/p' android/app/build.gradle | head -n 1)).
           - 앱 표시 이름과 브랜딩을 TigerFit으로 변경했습니다.
           - 신체 측정, 운동 기록, 건강 통계 그래프와 이동 평균 설정을 Premium 구독 없이 사용할 수 있습니다. 다른 Premium 혜택은 기존 구독 조건을 유지합니다.
-          - 네이티브 기본 배포를 로컬 기록 중심으로 제한하고, 클라우드 계정·구독 기능을 안내 화면으로 전환했습니다. 원격 운동 이미지는 계속 불러올 수 있습니다.
+          - 네이티브 앱은 로컬 기록을 유지하며 앱 내 결제를 제공하지 않습니다. TigerFit 이메일 계정으로 로그인하고 동의하면 기기의 운동 기록과 프로그램을 계정에 합칩니다.
           - 한국어 운동 기록·가져오기/내보내기 흐름을 개선했습니다. 앱 데이터 자동 이전이나 모든 데이터 복원은 보장하지 않습니다.
-          - 별도 Cloudflare 웹 앱은 [TigerFit 웹 앱](https://tigerfit.aixtech.uk/app/)에서 제공되며, 계정 연동 MCP 서버는 [여기](https://tigerfit.aixtech.uk/mcp)입니다. 이 Android APK의 로컬 기록은 웹 앱/MCP 계정과 자동 동기화되지 않습니다.
+          - [TigerFit 웹 앱](https://tigerfit.aixtech.uk/app/)과 [MCP 서버](https://tigerfit.aixtech.uk/mcp)는 같은 계정을 사용합니다. 앱에서 같은 이메일 계정에 로그인하면 Codex가 운동 기록을 읽고 프로그램을 조정할 수 있으며, 앱이 열려 있을 때 약 30초 안에 변경 사항을 동기화합니다.
 
           이 GitHub 릴리스는 사전 공개(pre-release) 테스트 후보입니다. 운영 담당자와 정식 정책이 아직 정해지지 않아 Google Play 정식 출시는 준비 중입니다.
 

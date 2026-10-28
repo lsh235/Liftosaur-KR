@@ -1,5 +1,10 @@
 import { JSX, memo, useEffect, useRef, useState } from "react";
-import { Distribution_isLocalOnly, Distribution_localOnlyMessage } from "../utils/distribution";
+import {
+  Distribution_cloudSyncMessage,
+  Distribution_isLocalOnly,
+  Distribution_localOnlyMessage,
+  Distribution_supportsCloudSync,
+} from "../utils/distribution";
 import { Dialog_alert } from "../utils/dialog";
 import { View, Pressable, Linking, Platform } from "react-native";
 import { Text } from "./primitives/text";
@@ -97,8 +102,9 @@ function ScreenSettingsInner(props: IProps): JSX.Element {
 
   useNavOptions({ navTitle: "내 정보", navHelpKey: "settings" });
   const localOnly = Distribution_isLocalOnly();
+  const cloudSyncAvailable = Distribution_supportsCloudSync();
   const policyPending = (): void => {
-    Dialog_alert("한국 배포용 운영자 정보와 정식 정책은 준비 중입니다. 현재 후보는 계정·클라우드·결제를 제공하지 않으며, 운동 이미지 조회와 사용자가 여는 외부 링크는 인터넷을 이용할 수 있습니다. 앱 삭제 전 전체 데이터를 파일로 백업해 주세요.");
+    Dialog_alert("한국 배포용 운영자 정보와 정식 정책은 준비 중입니다. TigerFit 계정에 로그인하면 운동 기록과 프로그램이 계정에 동기화됩니다. 앱 내 결제는 제공하지 않습니다. 앱 삭제 전 전체 데이터를 파일로 백업해 주세요.");
   };
 
   return (
@@ -112,11 +118,15 @@ function ScreenSettingsInner(props: IProps): JSX.Element {
         }}
       />
       <GroupHeader name="계정" topPadding={true} />
-      {localOnly && <Text className="py-3 text-sm text-text-secondary">{Distribution_localOnlyMessage}</Text>}
+      {localOnly && (
+        <Text className="py-3 text-sm text-text-secondary">
+          {cloudSyncAvailable ? Distribution_cloudSyncMessage : Distribution_localOnlyMessage}
+        </Text>
+      )}
       <MenuItem
         name="계정"
         value={
-          localOnly ? "기기에 저장" : props.user?.email == null ? (
+          localOnly && !props.user?.email ? "기기에 저장 · MCP 미연결" : props.user?.email == null ? (
             <Text className="text-text-error">로그인되지 않음</Text>
           ) : props.user?.email === "noemail@example.com" ? (
             "로그인됨"

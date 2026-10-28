@@ -4,8 +4,8 @@ import { localdomain, localapidomain, localport, localapiport } from "../src/loc
 
 const HOSTS = {
   prod: {
-    host: "https://www.liftosaur.com",
-    apiHost: "https://api3.liftosaur.com",
+    host: "https://tigerfit.aixtech.uk",
+    apiHost: "https://tigerfit.aixtech.uk",
   },
   dev: {
     host: "https://stage.liftosaur.com",

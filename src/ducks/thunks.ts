@@ -1,4 +1,4 @@
-import { Distribution_isLocalOnly } from "../utils/distribution";
+import { Distribution_isLocalOnly, Distribution_supportsCloudSync } from "../utils/distribution";
 import { IThunk, IDispatch } from "./types";
 import type { NavigationAction } from "@react-navigation/native";
 import { IScreen, IScreenData, IScreenParams } from "../models/screen";
@@ -248,6 +248,23 @@ export function Thunk_emailAuth(
     dispatch(Thunk_postevent(`email-${mode}`));
     const state = getState();
     const userId = state.user?.id || state.storage.tempUserId;
+    const localStorage = state.storage;
+    const hasLocalData =
+      (localStorage.programs?.length ?? 0) > 0 ||
+      (localStorage.history?.length ?? 0) > 0 ||
+      (localStorage.progress?.length ?? 0) > 0 ||
+      Object.values(localStorage.stats ?? {}).some((measurements) => measurements.length > 0);
+    const shouldMergeLocalData =
+      Distribution_isLocalOnly() && Distribution_supportsCloudSync() && !state.user?.id && hasLocalData;
+    if (shouldMergeLocalData) {
+      const shouldContinue = await Dialog_confirm(
+        "로그인하면 이 기기의 프로그램, 운동 기록, 진행 중인 운동과 측정값을 TigerFit 계정의 데이터와 합칩니다. Codex가 기록을 분석하고 프로그램을 조정할 수 있으며, 현재 기기의 원본도 유지됩니다. 계속할까요?"
+      );
+      if (!shouldContinue) {
+        cb({ error: "sync_cancelled" }, state);
+        return;
+      }
+    }
     const result = await load(dispatch, "Logging in", () => {
       return mode === "signup"
         ? env.service.emailSignUp(email, password, userId)
@@ -255,7 +272,17 @@ export function Thunk_emailAuth(
     });
     if (result.type === "success") {
       await load(dispatch, "Signing in", () => handleLogin(dispatch, result.response, env, userId));
-      dispatch(Thunk_sync2());
+      if (shouldMergeLocalData) {
+        const signedInState = getState();
+        const mergedStorage = Storage_mergeStorage(localStorage, signedInState.storage, signedInState.deviceId);
+        mergedStorage.tempUserId = result.response.user_id;
+        mergedStorage.email = result.response.email;
+        mergedStorage.originalId = signedInState.storage.originalId;
+        mergedStorage.subscription = signedInState.storage.subscription;
+        dispatch({ type: "ReplaceState", state: { ...signedInState, storage: mergedStorage } });
+        await env.persistence.flushSave();
+      }
+      dispatch(Thunk_sync2({ force: true }));
       cb({}, getState());
     } else if (result.type === "confirmation_sent") {
       cb({ confirmationSent: true }, getState());
@@ -363,7 +390,7 @@ export function Thunk_verifySubscriptionKey(): IThunk {
 
 export function Thunk_logOut(cb?: () => void): IThunk {
   return async (dispatch, getState, env) => {
-    if (Distribution_isLocalOnly()) {
+    if (Distribution_isLocalOnly() && !getState().user?.id) {
       if (cb) {
         // Drain the debounce before switching accounts, then persist the current snapshot.
         // Unlike the best-effort queue flush, saveFull rejects when a write fails.
@@ -792,7 +819,7 @@ export function Thunk_syncHealthKit(cb?: () => void): IThunk {
 
 export function Thunk_sync2(args?: { force?: boolean; cb?: () => void; log?: boolean }): IThunk {
   return async (dispatch, getState, env) => {
-    if (Distribution_isLocalOnly()) {
+    if (!Distribution_supportsCloudSync() || (Distribution_isLocalOnly() && !getState().user?.id)) {
       args?.cb?.();
       return;
     }

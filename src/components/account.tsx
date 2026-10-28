@@ -27,7 +27,11 @@ import { track } from "../utils/posthog";
 import { Tailwind_semantic } from "../utils/tailwindConfig";
 import { AppleAuth_init, AppleAuth_signIn } from "../utils/appleAuth";
 import { Dialog_alert } from "../utils/dialog";
-import { Distribution_isLocalOnly, Distribution_localOnlyMessage } from "../utils/distribution";
+import {
+  Distribution_isLocalOnly,
+  Distribution_localOnlyMessage,
+  Distribution_supportsCloudSync,
+} from "../utils/distribution";
 
 interface IAccountProps {
   account?: IAccount;
@@ -50,6 +54,9 @@ export function Account(props: IAccountProps): JSX.Element {
         <Text className="text-lg font-bold text-text-primary">기기에 저장하는 운동 기록</Text>
         <Text className="mt-3 text-base text-text-secondary">{Distribution_localOnlyMessage}</Text>
         <Text className="mt-3 text-sm text-text-secondary">기존 기기의 운동 기록은 유지됩니다. 앱 삭제 전 전체 데이터를 파일로 백업해 주세요.</Text>
+        {Distribution_supportsCloudSync() && props.onOpenEmailAuth && (
+          <EmailAuthButton onPress={props.onOpenEmailAuth} />
+        )}
       </View>
     );
   }
@@ -440,6 +447,7 @@ const emailAuthErrorMessages: Record<string, string> = {
   too_many_attempts: "시도 횟수가 너무 많습니다. 15분 뒤에 다시 시도하세요",
   email_send_failed: "확인 이메일을 보내지 못했습니다. 잠시 후 다시 시도하세요",
   network_error: "네트워크 오류입니다. 다시 시도하세요",
+  sync_cancelled: "계정 연결이 취소되었습니다",
 };
 
 interface IEmailAuthFormProps {
@@ -456,6 +464,7 @@ export function EmailAuthForm(props: IEmailAuthFormProps): JSX.Element {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | undefined>(undefined);
   const [info, setInfo] = useState<string | undefined>(undefined);
+  const cloudAccountWithoutPasswordReset = Distribution_isLocalOnly() && Distribution_supportsCloudSync();
   const emailRef = useRef("");
   const passwordRef = useRef("");
 
@@ -613,7 +622,7 @@ export function EmailAuthForm(props: IEmailAuthFormProps): JSX.Element {
             계정 만들기
           </LinkButton>
         )}
-        {mode !== "forgot" && (
+        {mode !== "forgot" && !cloudAccountWithoutPasswordReset && (
           <LinkButton name="email-auth-mode-forgot" className="text-sm" onPress={() => switchMode("forgot")}>
             비밀번호를 잊으셨나요?
           </LinkButton>

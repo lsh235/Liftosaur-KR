@@ -3,7 +3,7 @@ import React, { useMemo, useRef, useState, useEffect } from "react";
 import { ActivityIndicator, AppState, InteractionManager, Linking, NativeModules, Platform, View } from "react-native";
 import { Client as RollbarClient } from "rollbar-react-native";
 import RB from "rollbar";
-import { Distribution_isLocalOnly, LocalStorageRecoveryError } from "./utils/distribution";
+import { Distribution_isLocalOnly, Distribution_supportsCloudSync, LocalStorageRecoveryError } from "./utils/distribution";
 import { Exporter_toFile } from "./utils/exporter";
 import { Text } from "./components/primitives/text";
 import { Button } from "./components/button";
@@ -26,10 +26,10 @@ declare const __PERF__: boolean | undefined;
 // its own dev/api/streaming ports (see scripts/worktree-create.sh).
 // A PERF=1 release build also targets local: its traces post to the devserver's /api/_dev/perf.
 const useLocal = __DEV__ || (typeof __PERF__ !== "undefined" && __PERF__ === true);
-const nativeHost = useLocal ? `https://${localdomain}.liftosaur.com:${localport}` : "https://www.liftosaur.com";
+const nativeHost = useLocal ? `https://${localdomain}.liftosaur.com:${localport}` : "https://tigerfit.aixtech.uk";
 const nativeApiHost = useLocal
   ? `https://${localapidomain}.liftosaur.com:${localapiport}`
-  : "https://api3.liftosaur.com";
+  : "https://tigerfit.aixtech.uk";
 const globalAny = globalThis as unknown as {
   __HOST__: string;
   __API_HOST__: string;
@@ -319,8 +319,9 @@ export function AppRoot(props: { initialState: IState; env: IEnv }): React.JSX.E
 
   useEffect(() => {
     dispatch(Thunk_syncHealthKit());
-    if (Distribution_isLocalOnly()) return;
+    if (!Distribution_supportsCloudSync()) return;
     dispatch(Thunk_sync2({ force: true }));
+    if (Distribution_isLocalOnly()) return;
     dispatch(Thunk_fetchInitial());
     const userId = stateRef.current.user?.id || stateRef.current.storage.tempUserId;
     Subscriptions_cleanupOutdatedAppleReceipts(dispatch, userId, service, stateRef.current.storage.subscription);
@@ -512,6 +513,18 @@ export function AppRoot(props: { initialState: IState; env: IEnv }): React.JSX.E
     });
     return () => sub.remove();
   }, [dispatch, env]);
+
+  useEffect(() => {
+    if (!Distribution_isLocalOnly() || !Distribution_supportsCloudSync() || !state.user?.id) return;
+    // The self-hosted Cloudflare worker does not send native push notifications. Poll while the
+    // account is connected so MCP edits appear without requiring the user to restart the app.
+    const interval = setInterval(() => {
+      if (AppState.currentState === "active") {
+        dispatch(Thunk_sync2({ force: true }));
+      }
+    }, 30_000);
+    return () => clearInterval(interval);
+  }, [dispatch, state.user?.id]);
 
   useEffect(() => {
     const iap = env.iap;
