@@ -8,6 +8,11 @@ import {
   postOauthTokenHandler,
 } from "../../lambda/mcp/oauth";
 import mcpReferenceFiles from "./reference-data.json";
+import {
+  CloudflareAdmin_accountActivity,
+  CloudflareAdmin_overview,
+  CloudflareAdmin_staticAsset,
+} from "./admin";
 import { McpReference_setFiles } from "../../lambda/mcp/reference";
 import { UserDao } from "../../lambda/dao/userDao";
 import { PasswordHash_hash, PasswordHash_verify } from "../../lambda/utils/passwordHash";
@@ -29,6 +34,13 @@ import {
   postV1PlaygroundHandler,
   postV1ProgramStatsHandler,
 } from "../../lambda/api/v1";
+import {
+  postCoachSessionHandler,
+  getCoachSessionPendingHandler,
+  postCoachSessionCommitHandler,
+  postCoachSessionAckHandler,
+  postCoachSessionCloseHandler,
+} from "../../lambda/api/coachSession";
 import type { IDynamoUtil } from "../../lambda/utils/dynamo";
 import type { IDI } from "../../lambda/utils/di";
 
@@ -80,6 +92,8 @@ interface Env {
   MCP_ALLOW_SELF_HOSTED: string;
   COMMIT_HASH: string;
   FROM_EMAIL?: string;
+  CF_ACCESS_TEAM_DOMAIN?: string;
+  CF_ACCESS_AUD?: string;
 }
 
 type Item = Record<string, unknown>;
@@ -98,6 +112,7 @@ const KEY_FIELDS: Record<string, string[]> = {
   lftOauthTokens: ["token"],
   lftEmailAuthTokens: ["token"],
   lftEmailAuthAttempts: ["id"],
+  lftCoachSessions: ["sessionId"],
 };
 
 function stableJson(value: unknown): string {
@@ -210,7 +225,7 @@ function projectItem(item: Item, projection?: string, names?: Record<string, str
   return output;
 }
 
-class D1DynamoUtil implements IDynamoUtil {
+export class D1DynamoUtil implements IDynamoUtil {
   constructor(private readonly db: D1Database) {}
 
   private key(table: string, value: Item): string {
@@ -293,8 +308,13 @@ class D1DynamoUtil implements IDynamoUtil {
   }
 
   async update(args: { tableName: string; key: Item; expression: string; attrs?: Record<string, string>;
-    values?: Record<string, unknown>; returnValues?: "ALL_NEW" | "UPDATED_NEW" }): Promise<Item | undefined> {
-    const current = (await this.get<Item>({ tableName: args.tableName, key: args.key })) ?? { ...args.key };
+    values?: Record<string, unknown>; condition?: { expression: string; attrs?: Record<string, string>; values?: Record<string, unknown> };
+    returnValues?: "ALL_NEW" | "UPDATED_NEW" }): Promise<Item | undefined> {
+    const keyJson = this.key(args.tableName, args.key);
+    const originalRow = await this.db.prepare("SELECT item_json FROM app_items WHERE table_name = ? AND key_json = ?")
+      .bind(normalizeTable(args.tableName), keyJson).first<{ item_json: string }>();
+    const originalJson = originalRow?.item_json;
+    const current = originalJson != null ? reviveItem<Item>(originalJson) : { ...args.key };
     const expr = resolveName(args.expression, args.attrs);
     const setClause = expr.match(/(?:^|\s)SET\s+(.+?)(?=\s+(?:REMOVE|ADD|DELETE)\s+|$)/i)?.[1];
     const removeClause = expr.match(/(?:^|\s)REMOVE\s+(.+?)(?=\s+(?:SET|ADD|DELETE)\s+|$)/i)?.[1];
@@ -311,7 +331,44 @@ class D1DynamoUtil implements IDynamoUtil {
     if (removeClause) {
       for (const field of removeClause.split(",").map((part) => part.trim())) delete current[field];
     }
-    await this.put({ tableName: args.tableName, item: current });
+    if (args.condition) {
+      const predicates: string[] = [];
+      const conditionValues: unknown[] = [];
+      const resolveField = (field: string): string => {
+        const resolved = resolveName(field, args.condition?.attrs);
+        if (!/^[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)*$/.test(resolved)) {
+          throw new Error(`Unsupported D1 conditional field: ${resolved}`);
+        }
+        return `$.${resolved.split(".").join(".")}`;
+      };
+      for (const clause of args.condition.expression.split(/\s+AND\s+/i)) {
+        const absent = clause.match(/^attribute_not_exists\(([^)]+)\)$/i);
+        const comparison = clause.match(/^([#\w.]+)\s*(=|<>|<|>|<=|>=)\s*(:[\w]+)$/);
+        if (absent) {
+          predicates.push(`json_type(item_json, ?) IS NULL`);
+          conditionValues.push(resolveField(absent[1]));
+        } else if (comparison) {
+          const field = resolveField(comparison[1]);
+          const value = args.condition.values?.[comparison[3]];
+          predicates.push(`json_extract(item_json, ?) ${comparison[2]} ?`);
+          conditionValues.push(field, value);
+        } else {
+          throw new Error(`Unsupported D1 condition: ${clause}`);
+        }
+      }
+      const result = await this.db.prepare(`UPDATE app_items SET item_json = ?, updated_at = ? WHERE table_name = ? AND key_json = ? AND item_json = ? AND ${predicates.join(" AND ")}`)
+        .bind(JSON.stringify(current), Date.now(), normalizeTable(args.tableName), keyJson, originalJson ?? "", ...conditionValues)
+        .run() as { meta?: { changes?: number } };
+      if (result.meta?.changes !== 1) {
+        const error = new Error("Conditional check failed");
+        error.name = "ConditionalCheckFailedException";
+        throw error;
+      }
+    } else {
+      // Keep the legacy unconditional update/upsert semantics for existing callers. Coach
+      // session state transitions pass an explicit condition and use the atomic CAS branch above.
+      await this.put({ tableName: args.tableName, item: current });
+    }
     return args.returnValues ? current : undefined;
   }
 
@@ -398,6 +455,13 @@ function buildDi(env: Env): IDI {
   };
   return {
     dynamo: new D1DynamoUtil(env.DB),
+    mcpActivity: {
+      record: async (activity: Parameters<NonNullable<IDI["mcpActivity"]>["record"]>[0]) => {
+        await env.DB.prepare("INSERT INTO mcp_activity (id, user_id, at, tool_name, auth_type, request_json, truncated, redacted_fields) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
+          .bind(activity.id, activity.userId, activity.at, activity.toolName, activity.authType, activity.requestJson, activity.truncated ? 1 : 0, activity.redactedFields)
+          .run();
+      },
+    },
     s3: r2 as IDI["s3"],
     secrets: secrets as IDI["secrets"],
     log,
@@ -618,6 +682,13 @@ async function staticAssetOrExerciseImage(request: Request, env: Env, url: URL):
 async function dispatch(request: Request, env: Env, event: any): Promise<Response | undefined> {
   const url = new URL(request.url);
   const path = url.pathname;
+  if (path === "/api/admin/overview" && request.method === "GET") {
+    return CloudflareAdmin_overview(request, env, buildDi(env));
+  }
+  const adminActivity = path.match(/^\/api\/admin\/accounts\/([^/]+)\/activity$/);
+  if (adminActivity && request.method === "GET") {
+    return CloudflareAdmin_accountActivity(request, env, buildDi(env), decodeURIComponent(adminActivity[1]));
+  }
   if (path === "/mcp") {
     if (request.method === "POST") return callHandler(postMcpHandler, event, env);
     if (request.method === "GET") return callHandler(getMcpHandler, event, env);
@@ -654,6 +725,15 @@ async function dispatch(request: Request, env: Env, event: any): Promise<Respons
   if (program && request.method === "DELETE") return callHandler(deleteV1ProgramHandler, event, env, { id: decodeURIComponent(program[1]) });
   if (path === "/api/v1/playground" && request.method === "POST") return callHandler(postV1PlaygroundHandler, event, env);
   if (path === "/api/v1/program-stats" && request.method === "POST") return callHandler(postV1ProgramStatsHandler, event, env);
+  if (path === "/api/v1/coach/session" && request.method === "POST") return callHandler(postCoachSessionHandler, event, env);
+  const coachSession = path.match(/^\/api\/v1\/coach\/session\/([^/]+)\/(pending|commit|ack|close)$/);
+  if (coachSession) {
+    const params = { id: decodeURIComponent(coachSession[1]) };
+    if (coachSession[2] === "pending" && request.method === "GET") return callHandler(getCoachSessionPendingHandler, event, env, params);
+    if (coachSession[2] === "commit" && request.method === "POST") return callHandler(postCoachSessionCommitHandler, event, env, params);
+    if (coachSession[2] === "ack" && request.method === "POST") return callHandler(postCoachSessionAckHandler, event, env, params);
+    if (coachSession[2] === "close" && request.method === "POST") return callHandler(postCoachSessionCloseHandler, event, env, params);
+  }
   return undefined;
 }
 
@@ -680,6 +760,9 @@ export default {
         SESSION_COOKIE_DOMAIN: env.SESSION_COOKIE_DOMAIN,
       });
     }
+    if (url.pathname === "/admin" || url.pathname === "/admin/" || url.pathname.startsWith("/admin/")) {
+      return CloudflareAdmin_staticAsset(request, env);
+    }
     if (request.method === "OPTIONS") {
       return new Response(null, { status: 204, headers: {
         "access-control-allow-origin": env.HOST,
@@ -701,5 +784,13 @@ export default {
       return staticAssetOrExerciseImage(request, env, url);
     }
     return env.STATIC_ASSETS.fetch(request);
+  },
+  async scheduled(
+    _controller: { scheduledTime: number; cron: string },
+    env: Env,
+    context: { waitUntil(promise: Promise<unknown>): void }
+  ): Promise<void> {
+    const cutoff = Date.now() - 30 * 24 * 60 * 60 * 1000;
+    context.waitUntil(env.DB.prepare("DELETE FROM mcp_activity WHERE at < ?").bind(cutoff).run());
   },
 };

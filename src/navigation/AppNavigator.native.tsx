@@ -54,6 +54,7 @@ import {
   NavScreenSleepNutrition,
   NavScreenExerciseStats,
   NavScreenApiKeys,
+  NavScreenAiCoach,
   NavScreenRecentImports,
   NavScreenImportPreview,
 } from "./screens/NavScreenMe";
@@ -323,6 +324,7 @@ function MeStackScreen(): JSX.Element {
   return (
     <MeStack.Navigator screenOptions={navHeaderScreenOptions} screenLayout={renderScreenWithErrorBoundary}>
       <MeStack.Screen name="settings" component={NavScreenSettings} />
+      <MeStack.Screen name="aiCoach" component={NavScreenAiCoach} />
       <MeStack.Screen name="account" component={NavScreenAccount} />
       <MeStack.Screen name="timers" component={NavScreenTimers} />
       <MeStack.Screen name="plates" component={NavScreenPlates} />

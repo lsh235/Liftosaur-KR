@@ -81,8 +81,13 @@ export async function PushSync_register(di: IDI, userId: string, registration: I
     }
   }
   if (endpointArn == null) {
+    const platformApplicationArn = PushPlatforms_arns[Utils_getEnv()][registration.platform];
+    if (!platformApplicationArn) {
+      di.log.log(`Skipping push registration for ${registration.platform}: no platform application is configured`);
+      return;
+    }
     endpointArn = await di.sns.createPlatformEndpoint({
-      platformApplicationArn: PushPlatforms_arns[Utils_getEnv()][registration.platform],
+      platformApplicationArn,
       token: registration.token,
     });
     await di.sns.setEndpoint({ endpointArn, token: registration.token });

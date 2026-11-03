@@ -292,6 +292,10 @@ export function NavScreenApiKeys(): JSX.Element {
   );
 }
 
+export function NavScreenAiCoach(): JSX.Element {
+  return <View className="flex-1 bg-background-default" />;
+}
+
 export function NavScreenRecentImports(): JSX.Element {
   const { state, dispatch } = useAppState();
   return (

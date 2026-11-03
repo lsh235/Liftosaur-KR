@@ -37,7 +37,9 @@
     "RollbarReactNative": "rollbar-react-native",
     "NitroModules": "react-native-nitro-modules",
     "NitroMmkv": "react-native-mmkv",
-    "NitroIap": "react-native-iap"
+    "NitroIap": "react-native-iap",
+    "QuickCrypto": "react-native-quick-crypto",
+    "react-native-tcp-socket": "react-native-tcp-socket"
   },
 
   "gradleToNpm": {
@@ -336,6 +338,49 @@
       "platforms": ["ios", "android"],
       "pods": ["TikTokOpenSDKCore", "TikTokOpenShareSDK"],
       "gradle": ["com.tiktok.open.sdk:"]
+    },
+    {
+      "id": "cocoa-async-socket",
+      "name": "CocoaAsyncSocket",
+      "url": "https://github.com/robbiehanson/CocoaAsyncSocket",
+      "license": "BSD-3-Clause",
+      "copyright": "Copyright (c) 2017, Deusty, LLC",
+      "note": "Dual licensed; distributed here under the BSD license option.",
+      "platforms": ["ios"],
+      "pods": ["CocoaAsyncSocket"],
+      "gradle": []
+    },
+    {
+      "id": "bouncycastle",
+      "name": "Bouncy Castle Java",
+      "url": "https://github.com/bcgit/bc-java",
+      "license": "MIT",
+      "copyright": "Copyright (c) The Legion of the Bouncy Castle Inc.",
+      "platforms": ["android"],
+      "pods": [],
+      "gradle": ["org.bouncycastle:bcprov-jdk15to18", "org.bouncycastle:bcpkix-jdk15to18"]
+    },
+    {
+      "id": "openssl-quick-crypto",
+      "name": "OpenSSL 3.6.2 (react-native-quick-crypto)",
+      "url": "https://github.com/openssl/openssl",
+      "license": "Apache-2.0",
+      "copyright": "Copyright The OpenSSL Project Authors.",
+      "note": "Bundled in QuickCrypto for iOS and linked from openssl-static on Android.",
+      "platforms": ["ios", "android"],
+      "pods": [],
+      "gradle": ["io.github.ronickg:openssl-static"]
+    },
+    {
+      "id": "libsodium-optional",
+      "name": "libsodium (optional QuickCrypto feature)",
+      "url": "https://github.com/jedisct1/libsodium",
+      "license": "ISC",
+      "copyright": "Copyright (c) 2013-2026 Frank Denis",
+      "note": "QuickCrypto dependency declared by Gradle but disabled by default.",
+      "platforms": ["android"],
+      "pods": [],
+      "gradle": ["io.github.ronickg:sodium"]
     }
   ],
 

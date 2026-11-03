@@ -113,7 +113,7 @@
   </url>
   <url>
     <loc>https://www.liftosaur.com/programs/recommended-routine</loc>
-    <lastmod>2026-07-07T18:18:11-05:00</lastmod>
+    <lastmod>2026-10-13T08:25:35-05:00</lastmod>
   </url>
   <url>
     <loc>https://www.liftosaur.com/programs/pzerofullbody</loc>
@@ -173,19 +173,19 @@
   </url>
   <url>
     <loc>https://www.liftosaur.com/programs/phrakgreyskull</loc>
-    <lastmod>2026-02-22T19:34:23-06:00</lastmod>
+    <lastmod>2026-10-21T22:33:35-05:00</lastmod>
   </url>
   <url>
     <loc>https://www.liftosaur.com/programs/ss1</loc>
-    <lastmod>2026-02-22T19:34:23-06:00</lastmod>
+    <lastmod>2026-10-21T22:33:35-05:00</lastmod>
   </url>
   <url>
     <loc>https://www.liftosaur.com/programs/ss2</loc>
-    <lastmod>2026-02-22T19:34:23-06:00</lastmod>
+    <lastmod>2026-10-21T22:33:35-05:00</lastmod>
   </url>
   <url>
     <loc>https://www.liftosaur.com/programs/ss3</loc>
-    <lastmod>2026-02-22T19:34:23-06:00</lastmod>
+    <lastmod>2026-10-21T22:33:35-05:00</lastmod>
   </url>
   <url>
     <loc>https://www.liftosaur.com/programs/strongcurves</loc>
@@ -233,7 +233,7 @@
   </url>
   <url>
     <loc>https://www.liftosaur.com/programs/cube-method</loc>
-    <lastmod>2026-03-07T01:11:09-06:00</lastmod>
+    <lastmod>2026-10-21T22:33:35-05:00</lastmod>
   </url>
   <url>
     <loc>https://www.liftosaur.com/programs/deep-water</loc>
@@ -245,7 +245,7 @@
   </url>
   <url>
     <loc>https://www.liftosaur.com/programs/doug-hepburn-method</loc>
-    <lastmod>2026-04-05T16:35:11-05:00</lastmod>
+    <lastmod>2026-10-21T22:33:35-05:00</lastmod>
   </url>
   <url>
     <loc>https://www.liftosaur.com/programs/easy-strength</loc>
@@ -297,27 +297,31 @@
   </url>
   <url>
     <loc>https://www.liftosaur.com/programs/sheiko-29-32</loc>
-    <lastmod>2026-03-23T07:50:33-05:00</lastmod>
+    <lastmod>2026-10-21T22:33:35-05:00</lastmod>
   </url>
   <url>
     <loc>https://www.liftosaur.com/programs/shortcut-to-size</loc>
-    <lastmod>2026-03-11T07:47:07-05:00</lastmod>
+    <lastmod>2026-10-21T22:33:35-05:00</lastmod>
   </url>
   <url>
     <loc>https://www.liftosaur.com/programs/smolov-jr</loc>
-    <lastmod>2026-02-28T16:45:06-06:00</lastmod>
+    <lastmod>2026-10-21T22:33:35-05:00</lastmod>
   </url>
   <url>
     <loc>https://www.liftosaur.com/programs/smolov-squat</loc>
     <lastmod>2026-03-01T21:32:35-06:00</lastmod>
   </url>
   <url>
+    <loc>https://www.liftosaur.com/programs/super-squats</loc>
+    <lastmod>2026-10-21T22:33:35-05:00</lastmod>
+  </url>
+  <url>
     <loc>https://www.liftosaur.com/programs/tactical-barbell-mass-protocol</loc>
-    <lastmod>2026-03-01T21:32:35-06:00</lastmod>
+    <lastmod>2026-10-21T22:33:35-05:00</lastmod>
   </url>
   <url>
     <loc>https://www.liftosaur.com/programs/tactical-barbell-operator</loc>
-    <lastmod>2026-03-01T21:32:35-06:00</lastmod>
+    <lastmod>2026-10-21T22:33:35-05:00</lastmod>
   </url>
   <url>
     <loc>https://www.liftosaur.com/programs/tsa-9-week-intermediate</loc>
@@ -329,7 +333,7 @@
   </url>
   <url>
     <loc>https://www.liftosaur.com/programs/westside-for-skinny-bastards</loc>
-    <lastmod>2026-04-12T11:29:32-05:00</lastmod>
+    <lastmod>2026-10-21T22:33:35-05:00</lastmod>
   </url>
   <url>
     <loc>https://www.liftosaur.com/doc/api</loc>
@@ -341,7 +345,7 @@
   </url>
   <url>
     <loc>https://www.liftosaur.com/doc/mcp</loc>
-    <lastmod>2026-08-24</lastmod>
+    <lastmod>2026-10-07</lastmod>
   </url>
   <url>
     <loc>https://www.liftosaur.com/features/account</loc>
@@ -365,7 +369,7 @@
   </url>
   <url>
     <loc>https://www.liftosaur.com/features/chatgpt-claude-and-ai</loc>
-    <lastmod>2026-09-29</lastmod>
+    <lastmod>2026-10-07</lastmod>
   </url>
   <url>
     <loc>https://www.liftosaur.com/features/custom-exercises</loc>
@@ -373,7 +377,7 @@
   </url>
   <url>
     <loc>https://www.liftosaur.com/features/equipment-and-gyms</loc>
-    <lastmod>2026-09-29</lastmod>
+    <lastmod>2026-10-18</lastmod>
   </url>
   <url>
     <loc>https://www.liftosaur.com/features/exercise-library</loc>
@@ -1032,6 +1036,10 @@
     <lastmod>2026-02-27T16:19:26-06:00</lastmod>
   </url>
   <url>
+    <loc>https://www.liftosaur.com/exercises/bodyweight-incline-row</loc>
+    <lastmod>2026-10-03T13:12:11-05:00</lastmod>
+  </url>
+  <url>
     <loc>https://www.liftosaur.com/exercises/bodyweight-inverted-row</loc>
     <lastmod>2026-02-27T16:19:26-06:00</lastmod>
   </url>
@@ -1334,6 +1342,10 @@
   <url>
     <loc>https://www.liftosaur.com/exercises/band-reverse-hyperextension</loc>
     <lastmod>2026-02-27T16:19:26-06:00</lastmod>
+  </url>
+  <url>
+    <loc>https://www.liftosaur.com/exercises/bodyweight-reverse-hyperextension</loc>
+    <lastmod>2026-10-03T13:12:11-05:00</lastmod>
   </url>
   <url>
     <loc>https://www.liftosaur.com/exercises/leverage-machine-reverse-hyperextension</loc>
@@ -1880,6 +1892,10 @@
     <lastmod>2026-07-07T11:41:39-05:00</lastmod>
   </url>
   <url>
+    <loc>https://www.liftosaur.com/exercises/band-nordic-curl</loc>
+    <lastmod>2026-10-03T13:12:11-05:00</lastmod>
+  </url>
+  <url>
     <loc>https://www.liftosaur.com/exercises/bodyweight-nordic-curl</loc>
     <lastmod>2026-07-07T11:41:39-05:00</lastmod>
   </url>
@@ -1922,6 +1938,34 @@
   <url>
     <loc>https://www.liftosaur.com/exercises/dumbbell-renegade-row</loc>
     <lastmod>2026-07-07T18:18:11-05:00</lastmod>
+  </url>
+  <url>
+    <loc>https://www.liftosaur.com/exercises/bodyweight-ring-ab-rollout</loc>
+    <lastmod>2026-10-03T13:12:11-05:00</lastmod>
+  </url>
+  <url>
+    <loc>https://www.liftosaur.com/exercises/bodyweight-kneeling-ring-ab-rollout</loc>
+    <lastmod>2026-10-03T13:12:11-05:00</lastmod>
+  </url>
+  <url>
+    <loc>https://www.liftosaur.com/exercises/bodyweight-archer-pull-up</loc>
+    <lastmod>2026-10-03T13:12:11-05:00</lastmod>
+  </url>
+  <url>
+    <loc>https://www.liftosaur.com/exercises/bodyweight-skin-the-cat</loc>
+    <lastmod>2026-10-03T13:12:11-05:00</lastmod>
+  </url>
+  <url>
+    <loc>https://www.liftosaur.com/exercises/bodyweight-hollow-body-hold</loc>
+    <lastmod>2026-10-03T13:12:11-05:00</lastmod>
+  </url>
+  <url>
+    <loc>https://www.liftosaur.com/exercises/bodyweight-dead-bug</loc>
+    <lastmod>2026-10-03T13:12:11-05:00</lastmod>
+  </url>
+  <url>
+    <loc>https://www.liftosaur.com/exercises/band-shoulder-pass-through</loc>
+    <lastmod>2026-10-03T13:12:11-05:00</lastmod>
   </url>
   <url>
     <loc>https://www.liftosaur.com/one-rep-max-calculator</loc>

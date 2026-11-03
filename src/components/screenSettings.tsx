@@ -5,7 +5,7 @@ import {
   Distribution_localOnlyMessage,
   Distribution_supportsCloudSync,
 } from "../utils/distribution";
-import { Dialog_alert } from "../utils/dialog";
+import { Dialog_alert, Dialog_confirm } from "../utils/dialog";
 import { View, Pressable, Linking, Platform } from "react-native";
 import { Text } from "./primitives/text";
 import { IDispatch } from "../ducks/types";
@@ -69,11 +69,51 @@ function ScreenSettingsInner(props: IProps): JSX.Element {
   usePerfRenderCount("ScreenSettings");
   const [isCopied, setIsCopied] = useState<boolean>(false);
   const selectedAiFeedbackProgramId = useRef<string | undefined>(undefined);
-  const openAiFeedbackExport = useModal("editDetailsModal", (details) => {
+  const exportAiFeedback = (title: string, note: string, waitSeconds?: number): void => {
     props.dispatch(
-      Thunk_exportAiFeedbackMarkdown(details.name, details.description || "", selectedAiFeedbackProgramId.current)
+      Thunk_exportAiFeedbackMarkdown(title, note, selectedAiFeedbackProgramId.current, waitSeconds)
     );
     selectedAiFeedbackProgramId.current = undefined;
+  };
+  const openAiFeedbackWaitDuration = useModal("inputSelectModal", (value) => {
+    if (!value) {
+      selectedAiFeedbackProgramId.current = undefined;
+      return;
+    }
+    const seconds = value === "none" ? undefined : Number(value);
+    const pending = pendingAiFeedbackExport.current;
+    pendingAiFeedbackExport.current = undefined;
+    if (pending) exportAiFeedback(pending.title, pending.note, seconds);
+  });
+  const pendingAiFeedbackExport = useRef<{ title: string; note: string } | undefined>(undefined);
+  const openAiFeedbackExport = useModal("editDetailsModal", (details) => {
+    const note = details.description || "";
+    const title = details.name;
+    if (Platform.OS === "web" || !Distribution_isLocalOnly() || !Distribution_supportsCloudSync()) {
+      exportAiFeedback(title, note);
+      return;
+    }
+    Dialog_confirm(
+      "Codex가 앱의 진행 중인 운동을 조정할 수 있도록 연결 대기 시간을 설정할까요? 앱이 열려 있고 활성 상태일 때 요청을 확인합니다. 변경은 앱에서 검토하고 승인해야 적용됩니다."
+    ).then((connect) => {
+      if (!connect) {
+        exportAiFeedback(title, note);
+        return;
+      }
+      pendingAiFeedbackExport.current = { title, note };
+      openAiFeedbackWaitDuration({
+        name: "ai-feedback-export-wait-duration",
+        hint: "선택한 시간 동안 Codex의 운동 조정 요청을 기다립니다. 앱이 백그라운드에 있으면 실시간 수신은 보장되지 않습니다.",
+        values: [
+          ["none", "연결 없이 내보내기"],
+          ["60", "1분 대기"],
+          ["300", "5분 대기"],
+          ["600", "10분 대기"],
+          ["900", "15분 대기"],
+        ],
+        selectedValue: "300",
+      });
+    });
   });
   const openAiFeedbackProgramSelect = useModal("inputSelectModal", (value) => {
     selectedAiFeedbackProgramId.current = value === "all" ? undefined : value || undefined;
@@ -206,6 +246,14 @@ function ScreenSettingsInner(props: IProps): JSX.Element {
       )}
 
       {!localOnly && <MenuItem name="API 키" shouldShowRightArrow={true} onClick={() => props.dispatch(Thunk_pushScreen("apiKeys"))} />}
+      {(Platform.OS === "ios" || Platform.OS === "android") && cloudSyncAvailable && (
+        <MenuItem
+          name="AI 운동 코치"
+          value="운동 기록으로 프로그램 조정"
+          shouldShowRightArrow={true}
+          onClick={() => props.dispatch(Thunk_pushScreen("aiCoach"))}
+        />
+      )}
 
       <GroupHeader name="신체 정보" topPadding={true} />
       {currentBodyweight && (

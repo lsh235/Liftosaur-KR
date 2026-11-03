@@ -570,3 +570,24 @@ export function AiFeedbackExport_buildMarkdown(
   );
   return lines.join("\n");
 }
+
+export function AiFeedbackExport_appendCoachConnection(
+  markdown: string,
+  connection: { sessionId: string; expiresAt: number }
+): string {
+  const expiresAt = new Date(connection.expiresAt).toISOString();
+  return [
+    markdown.trimEnd(),
+    "",
+    "## Codex 실시간 운동 조정 연결",
+    "",
+    "TigerFit MCP 서버: https://tigerfit.aixtech.uk/mcp",
+    `세션 ID: ${connection.sessionId}`,
+    `세션 만료: ${expiresAt}`,
+    "",
+    "Codex 연결 계정과 앱에 로그인한 TigerFit 계정이 같아야 합니다. 이 세션 ID는 식별자이며 로그인 토큰이나 API 키가 아닙니다.",
+    "앱이 열려 있고 활성 상태일 때만 요청이 확인됩니다. 앱이 백그라운드에 있으면 실시간 수신이 보장되지 않습니다.",
+    "현재 진행 중인 운동을 get_active_workout_session 도구로 확인하고, 피로·난이도 메모와 운동 기록을 고려해 조정이 필요하면 propose_active_workout_adjustment 도구로 제안만 등록하세요.",
+    "완료한 세트는 변경하지 말고, 사용자가 요청한 아직 수행하지 않은 세트만 제안하세요. 앱에서 검토하고 승인하기 전에는 변경이 적용되지 않습니다.",
+  ].join("\n");
+}

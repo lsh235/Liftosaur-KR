@@ -11,6 +11,13 @@ try {
 }
 
 const isStage = !!process.env.STAGE;
+const releaseHost = new URL(
+  process.env.LIFTOSAUR_HOST || (isStage ? "https://stage.liftosaur.com" : "https://www.liftosaur.com")
+).origin;
+const releaseApiHost = new URL(
+  process.env.LIFTOSAUR_API_HOST ||
+    (isStage ? "https://api3-dev.liftosaur.com" : "https://api3.liftosaur.com")
+).origin;
 
 const uniwindRnRewrite = new NormalModuleReplacementPlugin(/^react-native$/, (resource) => {
   const issuer = (resource.contextInfo && resource.contextInfo.issuer) || resource.context || "";
@@ -110,8 +117,8 @@ module.exports = {
       __COMMIT_HASH__: JSON.stringify(commitHash),
       __FULL_COMMIT_HASH__: JSON.stringify(fullCommitHash),
       __ENV__: JSON.stringify("production"),
-      __HOST__: JSON.stringify(isStage ? "https://stage.liftosaur.com" : "https://www.liftosaur.com"),
-      __API_HOST__: JSON.stringify(isStage ? "https://api3-dev.liftosaur.com" : "https://api3.liftosaur.com"),
+      __HOST__: JSON.stringify(releaseHost),
+      __API_HOST__: JSON.stringify(releaseApiHost),
     }),
   ],
   optimization: {

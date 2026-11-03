@@ -17,6 +17,20 @@ export interface IDI {
   cloudwatch: ICloudwatchUtil;
   sns: ISnsUtil;
   fetch: Window["fetch"];
+  // Optional deployment-specific audit sink. Cloudflare enables this for authenticated
+  // MCP tool calls; other deployments do not persist MCP request arguments.
+  mcpActivity?: {
+    record(activity: {
+      id: string;
+      userId: string;
+      at: number;
+      toolName: string;
+      authType: "oauth" | "api_key";
+      requestJson: string;
+      truncated: boolean;
+      redactedFields: number;
+    }): Promise<void>;
+  };
 }
 
 export function buildDi(log: ILogUtil, fetch: Window["fetch"]): IDI {

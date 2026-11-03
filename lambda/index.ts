@@ -54,6 +54,7 @@ import {
   ResponseUtils_getReferer,
   ResponseUtils_getHost,
   ResponseUtils_clearSessionCookie,
+  ResponseUtils_getSessionCookieDomain,
 } from "./utils/response";
 import { ImageCacher_cache } from "./utils/imageCacher";
 import { ConsentMode_fromCountry } from "./utils/consentMode";
@@ -212,6 +213,18 @@ import {
   getV1SettingsEndpoint,
   getV1SettingsHandler,
 } from "./api/v1";
+import {
+  postCoachSessionEndpoint,
+  postCoachSessionHandler,
+  getCoachSessionPendingEndpoint,
+  getCoachSessionPendingHandler,
+  postCoachSessionCommitEndpoint,
+  postCoachSessionCommitHandler,
+  postCoachSessionAckEndpoint,
+  postCoachSessionAckHandler,
+  postCoachSessionCloseEndpoint,
+  postCoachSessionCloseHandler,
+} from "./api/coachSession";
 import {
   getMcpEndpoint,
   getMcpHandler,
@@ -865,7 +878,7 @@ const postDebugSessionHandler: RouteHandler<IPayload, APIGatewayProxyResult, typ
   const session = JWT.sign({ userId: debugId }, await di.secrets.getCookieSecret());
   const setCookie = Cookie.serialize("session", session, {
     httpOnly: true,
-    domain: ".liftosaur.com",
+    domain: ResponseUtils_getSessionCookieDomain(),
     path: "/",
     expires: new Date(new Date().getFullYear() + 10, 0, 1),
   });
@@ -985,7 +998,7 @@ async function signInResponse(
       ...ResponseUtils_getHeaders(event),
       "set-cookie": Cookie.serialize("session", session, {
         httpOnly: true,
-        domain: ".liftosaur.com",
+        domain: ResponseUtils_getSessionCookieDomain(),
         path: "/",
         expires: new Date(new Date().getFullYear() + 10, 0, 1),
       }),
@@ -1041,6 +1054,9 @@ async function createNewUser(
 }
 
 function getWebUrl(event: APIGatewayProxyEvent): string {
+  if (process.env.HOST) {
+    return process.env.HOST;
+  }
   if (Utils_getEnv() === "prod") {
     return "https://www.liftosaur.com";
   }
@@ -1259,7 +1275,7 @@ const emailSignupHandler: RouteHandler<IPayload, APIGatewayProxyResult, typeof e
       try {
         await di.ses.sendEmail({
           destination: email,
-          source: "info@liftosaur.com",
+          source: process.env.FROM_EMAIL || "info@liftosaur.com",
           subject: "Liftosaur - set a password for your account",
           body:
             `You (or someone else) tried to add an email/password login to the Liftosaur account for ${email}.\n\n` +
@@ -1279,7 +1295,7 @@ const emailSignupHandler: RouteHandler<IPayload, APIGatewayProxyResult, typeof e
     const token = await emailAuthTokenDao.create(env, { type: "verify", userId: user.id }, 7 * 24 * 60 * 60);
     await di.ses.sendEmail({
       destination: email,
-      source: "info@liftosaur.com",
+      source: process.env.FROM_EMAIL || "info@liftosaur.com",
       subject: "Liftosaur - verify your email",
       body:
         `Welcome to Liftosaur!\n\n` +
@@ -1393,7 +1409,7 @@ const forgotPasswordHandler: RouteHandler<IPayload, APIGatewayProxyResult, typeo
   try {
     await di.ses.sendEmail({
       destination: email,
-      source: "info@liftosaur.com",
+      source: process.env.FROM_EMAIL || "info@liftosaur.com",
       subject: "Liftosaur - reset your password",
       body:
         `You (or someone else) requested a password reset for the Liftosaur account ${email}.\n\n` +
@@ -4024,6 +4040,11 @@ export const getRawHandler = (diBuilder: () => IDI): IHandler => {
       .put(putV1MeasurementEndpoint, putV1MeasurementHandler)
       .delete(deleteV1MeasurementEndpoint, deleteV1MeasurementHandler)
       .get(getV1WorkoutNextEndpoint, getV1WorkoutNextHandler)
+      .post(postCoachSessionEndpoint, postCoachSessionHandler)
+      .get(getCoachSessionPendingEndpoint, getCoachSessionPendingHandler)
+      .post(postCoachSessionCommitEndpoint, postCoachSessionCommitHandler)
+      .post(postCoachSessionAckEndpoint, postCoachSessionAckHandler)
+      .post(postCoachSessionCloseEndpoint, postCoachSessionCloseHandler)
       .post(postV1WorkoutStartEndpoint, postV1WorkoutStartHandler)
       .get(getV1WorkoutCurrentEndpoint, getV1WorkoutCurrentHandler)
       .delete(deleteV1WorkoutCurrentEndpoint, deleteV1WorkoutCurrentHandler)

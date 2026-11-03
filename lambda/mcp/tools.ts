@@ -287,6 +287,31 @@ const EXERCISE_DATA_FIELD_SCHEMAS: Record<string, IMcpJsonSchema> = {
 };
 
 const mcpToolsWithoutOutputSchema: Omit<IMcpToolDef, "outputSchema">[] = [
+  {
+    name: "get_active_workout_session",
+    description: "Read the active workout for a currently open TigerFit app connection window. Requires the opaque sessionId from the workout export and the same TigerFit account. Returns expectedVersion for conflict checks. This does not change the workout.",
+    annotations: { title: "Read active workout session", readOnlyHint: true, destructiveHint: false, openWorldHint: false },
+    inputSchema: { type: "object", properties: { sessionId: { type: "string", description: "Session ID exported by the app; it is not a credential by itself." } }, required: ["sessionId"] },
+  },
+  {
+    name: "propose_active_workout_adjustment",
+    description: "Queue a proposed change to uncompleted sets in the active workout. Requires the same account and an unexpired app connection session. This only creates a proposal for the app to review; it never edits workout data. Do not change completed or currently selected sets. Use a stable requestId so retries do not duplicate the proposal.",
+    annotations: { title: "Propose workout adjustment", readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+    inputSchema: {
+      type: "object",
+      properties: {
+        sessionId: { type: "string" },
+        requestId: { type: "string", description: "Client-generated idempotency key, reused on retry." },
+        expectedVersion: { type: "string", description: "Version returned by get_active_workout_session." },
+        reason: { type: "string", description: "Short explanation shown to the lifter." },
+        changes: {
+          type: "array", description: "Changes addressed by setId from the active workout. remove=true skips a remaining planned set.",
+          items: { type: "object", properties: { setId: { type: "string" }, reps: { type: "integer" }, weight: { type: "string", description: "Weight such as 20kg or 45lb." }, remove: { type: "boolean" } }, required: ["setId"], additionalProperties: false },
+        },
+      },
+      required: ["sessionId", "requestId", "expectedVersion", "changes"],
+    },
+  },
   // --- History ---
   {
     name: "get_history",
@@ -398,7 +423,7 @@ const mcpToolsWithoutOutputSchema: Omit<IMcpToolDef, "outputSchema">[] = [
   {
     name: "update_program",
     description:
-      "Update an existing program's Liftoscript source code. Use id=\"current\" to update the active program.\n\nIMPORTANT: You MUST call get_liftoscript_reference BEFORE using this tool. Liftoscript is a custom DSL with specific syntax — programs written without reading the reference will have errors. Use run_playground to validate before saving.\n\nWhen redesigning a program's structure (volume, splits, progressions) rather than making a targeted edit, also call get_program_design_guide for volume, intensity, and progression targets.\n\nBefore writing the program, call list_custom_exercises to check for existing custom exercises. Reuse them by name instead of creating duplicates — this preserves workout history.",
+      "Update an existing program's Liftoscript source code. Use id=\"current\" to update the active program. This is the existing account-authorized program-template operation and is not limited by the short-lived live workout connection window. For time-limited adjustments to today's in-progress workout, use get_active_workout_session and propose_active_workout_adjustment instead; that tool queues a proposal for app review and does not directly edit workout data.\n\nIMPORTANT: You MUST call get_liftoscript_reference BEFORE using this tool. Liftoscript is a custom DSL with specific syntax — programs written without reading the reference will have errors. Use run_playground to validate before saving.\n\nWhen redesigning a program's structure (volume, splits, progressions) rather than making a targeted edit, also call get_program_design_guide for volume, intensity, and progression targets.\n\nBefore writing the program, call list_custom_exercises to check for existing custom exercises. Reuse them by name instead of creating duplicates — this preserves workout history.",
     annotations: { title: "Update program", readOnlyHint: false, destructiveHint: false, openWorldHint: false },
     inputSchema: {
       type: "object",

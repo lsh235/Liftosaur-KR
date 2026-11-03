@@ -7,6 +7,7 @@
   "account_id": "391bb9d5431e706f5696899aa58d9d87",
   "alias": { "react-native": "react-native-web" },
   "workers_dev": true,
+  "triggers": { "crons": ["17 * * * *"] },
   "routes": [{ "pattern": "tigerfit.aixtech.uk", "custom_domain": true }],
   "vars": {
     "HOST": "https://tigerfit.aixtech.uk",
@@ -29,6 +30,6 @@
   "assets": {
     "directory": "../../dist",
     "binding": "STATIC_ASSETS",
-    "run_worker_first": ["/api/*", "/mcp", "/oauth/*", "/.well-known/*", "/login", "/logout", "/externalimages/*"]
+    "run_worker_first": ["/api/*", "/mcp", "/oauth/*", "/.well-known/*", "/login", "/logout", "/externalimages/*", "/admin*"]
   }
 }

@@ -81,6 +81,8 @@ import { History_deleteRecords } from "../models/history";
 import { WorkoutOutcome_add, WorkoutOutcome_healthSaves } from "../models/workoutOutcome";
 import { lg } from "../utils/posthog";
 import { Equipment_getCurrentGym, Equipment_getEquipmentIdForExerciseType } from "../models/equipment";
+import { AiWorkoutCoachAdjustment_apply, IWorkoutCoachSetChange } from "../utils/aiWorkoutCoachAdjustment";
+import { WorkoutCoachVersion_get } from "../utils/workoutCoachVersion";
 import { Stats_getCurrentMovingAverageBodyweight } from "../models/stats";
 import { Weight_build, Weight_eq } from "../models/weight";
 import { PerfTracker_recordEvent, PerfTracker_getSessionId } from "../utils/perfTracker";
@@ -363,6 +365,12 @@ export type IApplyProgramChangesToProgress = {
   oldDayKeys?: string[];
 };
 
+export type IApplyWorkoutCoachAdjustment = {
+  type: "ApplyWorkoutCoachAdjustment";
+  expectedVersion: string;
+  changes: IWorkoutCoachSetChange[];
+};
+
 export type IUpdateProgressAction = {
   type: "UpdateProgress";
   lensRecordings: ILensRecordingPayload<IHistoryRecord>[];
@@ -395,7 +403,8 @@ export type IAction =
   | IUpdateStateAction
   | IReplaceStateAction
   | IUpdateSettingsAction
-  | IApplyProgramChangesToProgress;
+  | IApplyProgramChangesToProgress
+  | IApplyWorkoutCoachAdjustment;
 
 function isExternalStorageMerge(action: unknown): boolean {
   return (
@@ -722,7 +731,13 @@ export function buildCardsReducer(
 export type IEffectfulReducer = (state: IState, action: IAction, effects: INativeEffect[]) => IState;
 
 export const reducer: IEffectfulReducer = (state, action, effects): IState => {
-  if (
+  if (action.type === "ApplyWorkoutCoachAdjustment") {
+    const progress = state.storage.progress?.[0];
+    if (!progress || WorkoutCoachVersion_get(progress) !== action.expectedVersion) return state;
+    const result = AiWorkoutCoachAdjustment_apply(progress, action.changes);
+    if ("error" in result) return state;
+    return { ...state, storage: { ...state.storage, progress: [result.progress, ...(state.storage.progress ?? []).slice(1)] } };
+  } else if (
     action.type === "CompleteSetAction" ||
     action.type === "ChangeAMRAPAction" ||
     action.type === "CheckSetTimerAction" ||

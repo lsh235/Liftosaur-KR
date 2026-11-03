@@ -74,6 +74,7 @@ export interface IDynamoUtil {
     expression: string;
     attrs?: Record<string, string>;
     values?: Partial<Record<string, NativeAttributeValue>>;
+    condition?: IDynamoCondition;
     returnValues?: "ALL_NEW" | "UPDATED_NEW";
   }): Promise<Record<string, NativeAttributeValue> | undefined>;
   remove(args: {
@@ -94,6 +95,11 @@ export interface IDynamoUtil {
 
 export class DynamoUtil implements IDynamoUtil {
   private _dynamo?: DynamoDBDocumentClient;
+
+  private tableName(name: string): string {
+    const prefix = process.env.LIFTOSAUR_RESOURCE_PREFIX?.toLowerCase();
+    return prefix ? `${prefix}-${name}` : name;
+  }
 
   constructor(private readonly log: ILogUtil) {}
 
@@ -122,7 +128,7 @@ export class DynamoUtil implements IDynamoUtil {
       const result = await paginatedQuery<T>(async (key) => {
         return this.dynamo.send(
           new QueryCommand({
-            TableName: args.tableName,
+            TableName: this.tableName(args.tableName),
             IndexName: args.indexName,
             ExclusiveStartKey: key,
             ScanIndexForward: args.scanIndexForward,
@@ -167,7 +173,7 @@ export class DynamoUtil implements IDynamoUtil {
       const result = await paginatedQuery<T>(async (key) => {
         return this.dynamo.send(
           new ScanCommand({
-            TableName: args.tableName,
+            TableName: this.tableName(args.tableName),
             ExclusiveStartKey: key,
             FilterExpression: args.filterExpression,
             ExpressionAttributeNames: args.names,
@@ -201,7 +207,7 @@ export class DynamoUtil implements IDynamoUtil {
       for await (const batch of streamingPaginatedQuery<T>(async (key) => {
         return this.dynamo.send(
           new QueryCommand({
-            TableName: args.tableName,
+            TableName: this.tableName(args.tableName),
             IndexName: args.indexName,
             ExclusiveStartKey: key,
             ScanIndexForward: args.scanIndexForward,
@@ -249,7 +255,7 @@ export class DynamoUtil implements IDynamoUtil {
       for await (const batch of streamingPaginatedQuery<T>(async (key) => {
         return this.dynamo.send(
           new ScanCommand({
-            TableName: args.tableName,
+            TableName: this.tableName(args.tableName),
             ExclusiveStartKey: key,
             FilterExpression: args.filterExpression,
             ExpressionAttributeNames: args.names,
@@ -273,7 +279,7 @@ export class DynamoUtil implements IDynamoUtil {
   public async get<T>(args: { tableName: string; key: Record<string, NativeAttributeValue> }): Promise<T | undefined> {
     const startTime = Date.now();
     try {
-      const result = await this.dynamo.send(new GetCommand({ TableName: args.tableName, Key: args.key }));
+      const result = await this.dynamo.send(new GetCommand({ TableName: this.tableName(args.tableName), Key: args.key }));
       this.log.log(`Dynamo get: ${args.tableName} - `, args.key, ` - ${Date.now() - startTime}ms`);
       return result.Item as T | undefined;
     } catch (error) {
@@ -295,7 +301,7 @@ export class DynamoUtil implements IDynamoUtil {
       this.log.log(`Dynamo put: clamped out-of-range numbers in ${args.tableName}: `, clampedPaths);
     }
     try {
-      await this.dynamo.send(new PutCommand({ TableName: args.tableName, Item: item }));
+      await this.dynamo.send(new PutCommand({ TableName: this.tableName(args.tableName), Item: item }));
     } catch (error) {
       const e = error as Error;
       this.log.log(
@@ -339,7 +345,7 @@ export class DynamoUtil implements IDynamoUtil {
 
       await this.dynamo.send(
         new PutCommand({
-          TableName: args.tableName,
+          TableName: this.tableName(args.tableName),
           Item: item,
           ConditionExpression: conditionExpression,
           ExpressionAttributeNames: expressionAttributeNames,
@@ -379,11 +385,12 @@ export class DynamoUtil implements IDynamoUtil {
     expression: string;
     attrs?: Record<string, string>;
     values?: Partial<Record<string, NativeAttributeValue>>;
+    condition?: IDynamoCondition;
     returnValues?: "ALL_NEW" | "UPDATED_NEW";
   }): Promise<Record<string, NativeAttributeValue> | undefined> {
     const startTime = Date.now();
     const clampedPaths: string[] = [];
-    const values = DynamoUtil_sanitizeNumbers(args.values, clampedPaths);
+    const values = DynamoUtil_sanitizeNumbers({ ...args.values, ...args.condition?.values }, clampedPaths);
     if (clampedPaths.length > 0) {
       this.log.log(`Dynamo update: clamped out-of-range numbers in ${args.tableName}: `, clampedPaths);
     }
@@ -391,11 +398,12 @@ export class DynamoUtil implements IDynamoUtil {
     try {
       const res = await this.dynamo.send(
         new UpdateCommand({
-          TableName: args.tableName,
+          TableName: this.tableName(args.tableName),
           Key: args.key,
           UpdateExpression: args.expression,
-          ExpressionAttributeNames: args.attrs,
+          ExpressionAttributeNames: { ...args.attrs, ...args.condition?.attrs },
           ExpressionAttributeValues: values,
+          ConditionExpression: args.condition?.expression,
           ReturnValues: args.returnValues,
         })
       );
@@ -429,7 +437,7 @@ export class DynamoUtil implements IDynamoUtil {
     try {
       await this.dynamo.send(
         new DeleteCommand({
-          TableName: args.tableName,
+          TableName: this.tableName(args.tableName),
           Key: args.key,
           ConditionExpression: args.condition?.expression,
           ExpressionAttributeNames: args.condition?.attrs,

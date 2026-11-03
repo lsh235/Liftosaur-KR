@@ -19,6 +19,7 @@ import { McpToolExecutor_execute } from "./executor";
 import { Subscriptions } from "../utils/subscriptions";
 import { ApiKeyAuth_deviceIdForKey } from "../utils/apiKeyAuth";
 import { EventDao } from "../dao/eventDao";
+import { McpActivity_sanitize } from "../utils/mcpActivity";
 
 const SERVER_NAME = "tigerfit-mcp";
 const SERVER_VERSION = "1.0.0";
@@ -165,7 +166,9 @@ async function handleToolCall(
   const toolName = (req.params?.name as string) || "";
   const args = (req.params?.arguments as Record<string, unknown>) || {};
 
-  di.log.log(`[MCP] tools/call: ${toolName}`, JSON.stringify(args));
+  // MCP arguments and result text can contain health data or credentials. Keep logs to
+  // operation names/status only; the bounded admin audit has its own redaction policy.
+  di.log.log(`[MCP] tools/call: ${toolName}`);
 
   function textResult(
     id: number | string | undefined,
@@ -271,10 +274,12 @@ async function handleToolCall(
   // OAuth client already has one. Sharing a single server node across clients would make two of the
   // user's assistants indistinguishable, and their concurrent edits unorderable.
   let deviceId: string | undefined;
+  let authType: "oauth" | "api_key" | undefined;
   if (accessToken.startsWith("lftsk_")) {
     const apiKeyDao = new ApiKeyDao(di);
     const keyRecord = await apiKeyDao.getByKey(accessToken);
     userId = keyRecord?.userId;
+    if (keyRecord) authType = "api_key";
     deviceId = keyRecord ? ApiKeyAuth_deviceIdForKey(accessToken) : undefined;
   } else {
     const oauthDao = new OauthDao(di);
@@ -286,6 +291,7 @@ async function handleToolCall(
       (!tokenRecord.resource || tokenRecord.resource === resource)
     ) {
       userId = tokenRecord.userId;
+      authType = "oauth";
       deviceId = `mcp_${tokenRecord.clientId.replace(/^lftcl_/, "")}`;
     }
   }
@@ -311,6 +317,29 @@ async function handleToolCall(
     return textResult(req.id, "User not found", { isError: true });
   }
 
+  // The Cloudflare self-hosted deployment stores only a redacted, bounded snapshot of
+  // authenticated caller-supplied arguments. Never persist bearer credentials or tool
+  // responses here. Other deployments have no audit sink and retain their prior behavior.
+  if (di.mcpActivity) {
+    try {
+      const snapshot = McpActivity_sanitize(args);
+      await di.mcpActivity.record({
+        id: `${Date.now()}_${Math.random().toString(36).slice(2, 14)}`,
+        userId,
+        at: Date.now(),
+        toolName,
+        authType: authType ?? "oauth",
+        requestJson: snapshot.requestJson,
+        truncated: snapshot.truncated,
+        redactedFields: snapshot.redactedFields,
+      });
+    } catch {
+      // Audit storage failure must not leak arguments into logs or fail the underlying
+      // MCP request. Report only the generic storage error marker.
+      di.log.log("MCP activity audit write failed");
+    }
+  }
+
   if (process.env.MCP_ALLOW_SELF_HOSTED !== "true") {
     const subscriptions = new Subscriptions(di.log, di.secrets);
     const hasSub = await subscriptions.hasSubscription(di, userId, user.storage.subscription);
@@ -329,7 +358,7 @@ async function handleToolCall(
   // which reports it to Rollbar and responds with a sanitized 500 (no internal exception text leaks).
   const result = await McpToolExecutor_execute(toolName, args, userId, user, deviceId, di);
   if (!result.success) {
-    di.log.log(`[MCP] ${toolName} -> error: ${result.error.message}`);
+    di.log.log(`[MCP] ${toolName} -> error (${result.error.status})`);
     let errorText = result.error.message;
     if (result.error.details && result.error.details.length > 0) {
       const detailLines = result.error.details.map((d) => `Line ${d.line}, col ${d.offset}: ${d.message}`);
@@ -343,7 +372,7 @@ async function handleToolCall(
   }
 
   const text = typeof result.data === "string" ? result.data : JSON.stringify(result.data);
-  di.log.log(`[MCP] ${toolName} -> ok:\n${text}`);
+  di.log.log(`[MCP] ${toolName} -> ok`);
   const structuredContent =
     typeof result.data === "object" && result.data != null && !Array.isArray(result.data) ? result.data : { text };
   return mcpJson(200, jsonRpcResponse(req.id, { content: [{ type: "text", text }], structuredContent }));

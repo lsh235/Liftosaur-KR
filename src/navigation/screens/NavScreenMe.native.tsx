@@ -13,6 +13,7 @@ import { ScreenAppleHealthSettings as ScreenAppleHealthSettingsComponent } from 
 import { ScreenGoogleHealthSettings as ScreenGoogleHealthSettingsComponent } from "../../components/screenGoogleHealthSettings";
 import { ScreenMuscleGroups as ScreenMuscleGroupsComponent } from "../../components/screenMuscleGroups";
 import { ScreenApiKeys as ScreenApiKeysComponent } from "../../components/screenApiKeys";
+import { ScreenAiCoach as ScreenAiCoachComponent } from "../../components/screenAiCoach.native";
 import { ScreenAccount as ScreenAccountComponent } from "../../components/screenAccount";
 import { ScreenMeasurements as ScreenMeasurementsComponent } from "../../components/screenMeasurements";
 import { ScreenSleepNutrition as ScreenSleepNutritionComponent } from "../../components/screenSleepNutrition";
@@ -347,6 +348,25 @@ export function NavScreenApiKeys(): React.JSX.Element {
           dispatch={dispatch}
           service={service}
           subscription={untrack(state.storage.subscription)}
+          userId={state.user?.id}
+        />
+      </NavScreenContent>
+    </View>
+  );
+}
+
+export function NavScreenAiCoach(): React.JSX.Element {
+  const state = useTrackedState();
+  const dispatch = useTrackedDispatch();
+  const { service } = useAppContext();
+  const navCommon = untrack(buildNavCommon(state));
+  return (
+    <View className="flex-1 bg-background-default">
+      <NavScreenContent>
+        <ScreenAiCoachComponent
+          navCommon={navCommon}
+          dispatch={dispatch}
+          service={service}
           userId={state.user?.id}
         />
       </NavScreenContent>

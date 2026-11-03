@@ -1,4 +1,8 @@
 export function Exporter_toFile(filename: string, contents: string): void {
+  void Exporter_toFileAsync(filename, contents);
+}
+
+export async function Exporter_toFileAsync(filename: string, contents: string): Promise<boolean> {
   const blob = new Blob([contents], { type: "text/plain" });
   const objectUrl = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -7,4 +11,6 @@ export function Exporter_toFile(filename: string, contents: string): void {
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
+  URL.revokeObjectURL(objectUrl);
+  return true;
 }

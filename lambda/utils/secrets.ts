@@ -82,7 +82,8 @@ export class SecretsUtil implements ISecretsUtil {
       dev: "arn:aws:secretsmanager:us-west-2:366191129585:secret:lftAppSecretsDev-RVo7cG",
       prod: "arn:aws:secretsmanager:us-west-2:366191129585:secret:lftAppSecrets-cRCeI1",
     };
-    const result = await this.secrets.send(new GetSecretValueCommand({ SecretId: arns[Utils_getEnv()] }));
+    const secretId = process.env.APP_SECRETS_ARN || arns[Utils_getEnv()];
+    const result = await this.secrets.send(new GetSecretValueCommand({ SecretId: secretId }));
     this.log.log("Secret:", key, ` - ${Date.now() - startTime}ms`);
     const json: IAllSecrets = JSON.parse(result.SecretString!);
     return json[key];

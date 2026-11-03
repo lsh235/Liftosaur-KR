@@ -25,6 +25,7 @@ import {
   IHistoryDeltaLocal,
 } from "../utils/historyDelta";
 import { HistoryIds_MAX } from "../utils/historyIds";
+import type { IWorkoutCoachSetChange } from "../utils/aiWorkoutCoachAdjustment";
 
 export type IPostSyncHistory = { mode: "page" } | { mode: "none" } | { mode: "delta"; local: IHistoryDeltaLocal };
 
@@ -66,6 +67,23 @@ export interface IGetStorageResponse {
   is_new_user: boolean;
   key?: string;
   session?: string;
+}
+
+export interface IWorkoutCoachSession {
+  sessionId: string;
+  expiresAt: number;
+  pollIntervalMs: number;
+}
+
+export interface IWorkoutCoachProposal {
+  requestId: string;
+  expectedVersion: string;
+  changes: unknown;
+  reason?: string;
+  createdAt: number;
+  expiresAt: number;
+  committedDeviceId?: string;
+  stale?: boolean;
 }
 
 export type IPostSyncResponse =
@@ -1109,5 +1127,87 @@ export class Service {
       credentials: "include",
     });
     return result.ok;
+  }
+
+  public async createWorkoutCoachSession(ttlSeconds: number, exportId?: string): Promise<IWorkoutCoachSession> {
+    const result = await this.client(`${__API_HOST__}/api/v1/coach/session`, {
+      method: "POST",
+      body: JSON.stringify({ ttlSeconds, ...(exportId ? { exportId } : {}) }),
+      credentials: "include",
+      headers: { "Content-Type": "application/json", ...Service_nativeClientHeaders() },
+    });
+    if (!result.ok) throw new Error(`Codex 연결 세션을 만들지 못했습니다 (${result.status}).`);
+    const json = (await result.json()) as { data?: IWorkoutCoachSession } & Partial<IWorkoutCoachSession>;
+    const session = json.data ?? (json as IWorkoutCoachSession);
+    if (!session.sessionId || !Number.isFinite(session.expiresAt) || !Number.isFinite(session.pollIntervalMs)) {
+      throw new Error("Codex 연결 세션 응답을 확인할 수 없습니다.");
+    }
+    return session;
+  }
+
+  public async getWorkoutCoachProposal(sessionId: string): Promise<IWorkoutCoachProposal | undefined> {
+    const result = await this.client(
+      `${__API_HOST__}/api/v1/coach/session/${encodeURIComponent(sessionId)}/pending`,
+      { credentials: "include", headers: Service_nativeClientHeaders() }
+    );
+    if (result.status === 204) return undefined;
+    if (!result.ok) throw new Error(`Codex 요청을 확인하지 못했습니다 (${result.status}).`);
+    const json = (await result.json()) as { request?: IWorkoutCoachProposal | null };
+    return json.request ?? undefined;
+  }
+
+  public async ackWorkoutCoachProposal(
+    sessionId: string,
+    requestId: string,
+    decision: "applied" | "rejected" | "stale",
+    deviceId: string
+  ): Promise<void> {
+    const result = await this.client(
+      `${__API_HOST__}/api/v1/coach/session/${encodeURIComponent(sessionId)}/ack`,
+      {
+        method: "POST",
+        body: JSON.stringify({ requestId, decision, deviceId, claimId: `${sessionId}:${requestId}:${deviceId}` }),
+        credentials: "include",
+        headers: { "Content-Type": "application/json", ...Service_nativeClientHeaders() },
+      }
+    );
+    if (!result.ok) throw new Error(`Codex 요청 처리를 서버에 알리지 못했습니다 (${result.status}).`);
+  }
+
+  public async commitWorkoutCoachProposal(
+    sessionId: string,
+    requestId: string,
+    expectedVersion: string,
+    deviceId: string
+  ): Promise<{ changes: IWorkoutCoachSetChange[] }> {
+    const result = await this.client(
+      `${__API_HOST__}/api/v1/coach/session/${encodeURIComponent(sessionId)}/commit`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          requestId,
+          expectedVersion,
+          deviceId,
+          claimId: `${sessionId}:${requestId}:${deviceId}`,
+        }),
+        credentials: "include",
+        headers: { "Content-Type": "application/json", ...Service_nativeClientHeaders() },
+      }
+    );
+    if (!result.ok) throw new Error(`Codex 요청이 만료되었거나 운동 기록이 바뀌어 적용할 수 없습니다 (${result.status}).`);
+    const json = (await result.json()) as { changes?: IWorkoutCoachSetChange[]; proposal?: { changes?: IWorkoutCoachSetChange[] } };
+    const changes = json.changes ?? json.proposal?.changes;
+    if (changes == null) throw new Error("승인된 Codex 요청에 적용할 변경 내용이 없습니다.");
+    return { changes };
+  }
+
+  public async closeWorkoutCoachSession(sessionId: string): Promise<void> {
+    const result = await this.client(
+      `${__API_HOST__}/api/v1/coach/session/${encodeURIComponent(sessionId)}/close`,
+      { method: "POST", credentials: "include", headers: Service_nativeClientHeaders() }
+    );
+    if (!result.ok && result.status !== 404 && result.status !== 410) {
+      throw new Error(`Codex 연결을 종료하지 못했습니다 (${result.status}).`);
+    }
   }
 }

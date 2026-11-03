@@ -146,7 +146,7 @@ function readLicenseText(dir: string): string | undefined {
   if (stat.isDirectory()) {
     return undefined;
   }
-  return fs.readFileSync(path.join(dir, match), "utf8").trim();
+  return fs.readFileSync(path.join(dir, match), "utf8").replace(/\r\n?/g, "\n").trim();
 }
 
 function packageDirsFromMap(file: string): string[] {

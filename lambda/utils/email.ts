@@ -1,1 +1,1 @@
-export const noReplyEmail = "no-reply@liftosaur.com";
+export const noReplyEmail = process.env.FROM_EMAIL || "no-reply@liftosaur.com";

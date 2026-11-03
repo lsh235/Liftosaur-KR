@@ -14,25 +14,27 @@ function mimeTypeFromFilename(filename: string): string {
 }
 
 export function Exporter_toFile(filename: string, contents: string): void {
-  exportToFile(filename, contents);
+  void Exporter_toFileAsync(filename, contents);
 }
 
-async function exportToFile(filename: string, contents: string): Promise<void> {
+export async function Exporter_toFileAsync(filename: string, contents: string): Promise<boolean> {
   const tempPath = `${RNFS.CachesDirectoryPath}/${filename}`;
   try {
     await RNFS.writeFile(tempPath, contents, "utf8");
-    await Share.open({
+    const shareResult = await Share.open({
       url: `file://${tempPath}`,
       type: mimeTypeFromFilename(filename),
       filename,
       failOnCancel: false,
     });
+    return shareResult?.success !== false && !shareResult?.dismissedAction;
   } catch (e) {
     const err = e as { message?: string };
     if (err.message && /cancel|cancelled|user did not share/i.test(err.message)) {
-      return;
+      return false;
     }
     Alert.alert("파일을 내보내지 못했습니다", err.message ?? "알 수 없는 오류");
+    return false;
   } finally {
     try {
       if (await RNFS.exists(tempPath)) {

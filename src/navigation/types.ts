@@ -45,6 +45,7 @@ export type IGraphsStackParamList = {
 
 export type IMeStackParamList = {
   settings: undefined;
+  aiCoach: undefined;
   account: undefined;
   timers: undefined;
   plates: undefined;

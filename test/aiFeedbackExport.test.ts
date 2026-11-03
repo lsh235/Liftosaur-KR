@@ -4,7 +4,7 @@ import { Settings_build } from "../src/models/settings";
 import { Exercise_getMetadata } from "../src/models/exercise";
 import { Program_create } from "../src/models/program";
 import { Weight_build } from "../src/models/weight";
-import { AiFeedbackExport_buildMarkdown } from "../src/utils/aiFeedbackExport";
+import { AiFeedbackExport_appendCoachConnection, AiFeedbackExport_buildMarkdown } from "../src/utils/aiFeedbackExport";
 import { ProgramSchedule_build } from "../src/models/programSchedule";
 
 function set(id: string, weight: number, reps: number, label?: string): ISet {
@@ -49,6 +49,24 @@ function record(week: number, timestamp: number, weight: number, day: number = w
 }
 
 describe("AI feedback Markdown export", () => {
+  it("adds a time-limited Codex connection recipe without embedding credentials", () => {
+    const expiresAt = new Date("2026-10-28T12:05:00.000Z").getTime();
+    const markdown = AiFeedbackExport_appendCoachConnection("# 운동 기록\n\n메모", {
+      sessionId: "coach-session-opaque-id",
+      expiresAt,
+    });
+
+    expect(markdown).to.include("TigerFit MCP 서버: https://tigerfit.aixtech.uk/mcp");
+    expect(markdown).to.include("세션 ID: coach-session-opaque-id");
+    expect(markdown).to.include("세션 만료: 2026-10-28T12:05:00.000Z");
+    expect(markdown).to.include("get_active_workout_session");
+    expect(markdown).to.include("propose_active_workout_adjustment");
+    expect(markdown).to.include("앱에서 검토하고 승인하기 전에는 변경이 적용되지 않습니다.");
+    expect(markdown).to.include("이 세션 ID는 식별자이며 로그인 토큰이나 API 키가 아닙니다.");
+    expect(markdown).not.to.match(/(?:Bearer\s+|sk-[A-Za-z0-9]{12,}|api[_ -]?key\s*[:=])/i);
+    expect(markdown).to.match(/메모\n\n## Codex 실시간 운동 조정 연결/);
+  });
+
   it("retains fractional imported targets, adjusted equipment loads and actual weights separately", () => {
     const workout = record(1, new Date("2026-01-05T10:00:00Z").getTime(), 80);
     workout.entries[0].sets = [set("fractional", 20, 12, "STRAIGHT")];

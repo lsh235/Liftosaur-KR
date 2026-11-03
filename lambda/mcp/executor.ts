@@ -1,5 +1,10 @@
 import { ILimitedUserDao } from "../dao/userDao";
 import { IDI } from "../utils/di";
+import { CoachSessionDao } from "../dao/coachSessionDao";
+import { CoachSession_getActive } from "../api/coachSession";
+import { ApiV1_getCurrentWorkout } from "../utils/apiv1Workout";
+import { WorkoutCoach_validateChanges } from "../utils/workoutCoach";
+import { ICoachAdjustment } from "../dao/coachSessionDao";
 import {
   ApiV1_getHistory,
   ApiV1_createHistory,
@@ -181,6 +186,99 @@ export async function McpToolExecutor_execute(
   deviceId: string,
   di: IDI
 ): Promise<IToolResult> {
+  if (toolName === "get_active_workout_session") {
+    const sessionId = args.sessionId;
+    if (typeof sessionId !== "string" || sessionId.length < 16 || sessionId.length > 128) {
+      return err(400, "invalid_input", "A valid sessionId from the app export is required.");
+    }
+    const active = await CoachSession_getActive(sessionId, userId, di);
+    if (!active.success) return err(active.status, active.code, active.message);
+    const current = await ApiV1_getCurrentWorkout(userId, active.user, di);
+    if (!current.success) return { success: false, error: current.error };
+    const pending = active.session.pending;
+    const publicPending = pending ? Object.fromEntries(Object.entries(pending).filter(([key]) => key !== "committedBy")) : undefined;
+    const proposalStatus = pending
+      ? (pending.committedAt == null ? "queued" : "claimed")
+      : active.session.lastAck?.decision ?? "none";
+    return {
+      success: true,
+      data: {
+        sessionId,
+        expiresAt: active.session.expiresAt,
+        expectedVersion: active.version,
+        workout: current.data.workout,
+        adjustmentStatus: {
+          status: proposalStatus,
+          ...(pending ? {
+            requestId: pending.requestId,
+            proposal: publicPending,
+            ...(pending.committedAt == null ? {} : { committedAt: pending.committedAt, committedDeviceId: pending.committedDeviceId }),
+          } : active.session.lastAck ? {
+            requestId: active.session.lastAck.requestId,
+            appDecisionAt: active.session.lastAck.at,
+            appDecision: active.session.lastAck.decision,
+            confirmation: active.session.lastAck.decision === "applied" ? "app_ack_only_server_does_not_verify_device_sync" : "app_ack",
+          } : {}),
+        },
+      },
+    };
+  }
+
+  if (toolName === "propose_active_workout_adjustment") {
+    const sessionId = args.sessionId;
+    const requestId = args.requestId;
+    const expectedVersion = args.expectedVersion;
+    if (typeof sessionId !== "string" || typeof requestId !== "string" || requestId.length < 1 || requestId.length > 100 || typeof expectedVersion !== "string") {
+      return err(400, "invalid_input", "sessionId, requestId and expectedVersion are required.");
+    }
+    const active = await CoachSession_getActive(sessionId, userId, di);
+    if (!active.success) return err(active.status, active.code, active.message);
+    if (active.version !== expectedVersion) return err(409, "workout_conflict", "The active workout changed. Read it again before proposing an adjustment.");
+    const changeSchema = v.object({
+      setId: v.pipe(v.string(), v.minLength(1), v.maxLength(64)),
+      reps: v.optional(v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(500))),
+      weight: v.optional(v.string()),
+      remove: v.optional(v.boolean()),
+    });
+    const parsedChanges = v.safeParse(v.pipe(v.array(changeSchema), v.minLength(1), v.maxLength(80)), args.changes);
+    if (!parsedChanges.success) return err(400, "invalid_input", "Provide 1 to 80 valid set changes.");
+    const validated = WorkoutCoach_validateChanges(active.progress, parsedChanges.output as ICoachAdjustment[]);
+    if (!validated.success) return err(400, "invalid_adjustment", validated.message);
+    const existing = active.session.pending;
+    if (active.session.lastAck?.requestId === requestId) {
+      return err(409, "request_already_acknowledged", `This request was already ${active.session.lastAck.decision}. Create a new requestId for another adjustment.`);
+    }
+    if (existing) {
+      if (existing.requestId === requestId && existing.expectedVersion === expectedVersion && JSON.stringify(existing.changes) === JSON.stringify(validated.changes) && existing.reason === args.reason) {
+        return { success: true, data: { queued: true, proposal: existing, expiresAt: active.session.expiresAt } };
+      }
+      return err(409, "proposal_pending", "There is already an adjustment awaiting the app. Wait for it to be reviewed first.");
+    }
+    const now = Date.now();
+    const proposal = {
+      requestId,
+      expectedVersion,
+      changes: validated.changes,
+      ...(typeof args.reason === "string" && args.reason.length > 0 ? { reason: args.reason.slice(0, 500) } : {}),
+      createdAt: now,
+      expiresAt: active.session.expiresAt,
+    };
+    let queued;
+    try {
+      queued = await new CoachSessionDao(di).queue(sessionId, proposal, now);
+    } catch (error) {
+      if (!(error instanceof Error) || error.name !== "ConditionalCheckFailedException") throw error;
+    }
+    if (!queued) {
+      const latest = await new CoachSessionDao(di).get(sessionId);
+      if (latest?.userId === userId && latest.status === "active" && latest.expiresAt > Date.now() && latest.pending?.requestId === requestId && latest.pending.expectedVersion === expectedVersion && JSON.stringify(latest.pending.changes) === JSON.stringify(validated.changes)) {
+        return { success: true, data: { queued: true, proposal: latest.pending, expiresAt: latest.expiresAt } };
+      }
+      return err(409, "proposal_conflict", "The request could not be queued because the session expired or another adjustment was submitted.");
+    }
+    return { success: true, data: { queued: true, proposal: queued.pending, expiresAt: queued.expiresAt } };
+  }
+
   switch (toolName) {
     case "get_history":
       return ApiV1_getHistory(

@@ -23,6 +23,8 @@ import { aws_sns_subscriptions as sns_subscriptions } from "aws-cdk-lib";
 import { Construct } from "constructs";
 import { LftS3Buckets } from "../lambda/dao/buckets";
 import childProcess from "child_process";
+import * as fs from "fs";
+import * as path from "path";
 import localdomain from "../localdomain";
 
 const PROD_WAF_WEB_ACL_ARN =
@@ -58,7 +60,63 @@ export class LiftosaurCdkStack extends cdk.Stack {
     super(scope, id, props);
 
     const suffix = isDev ? "Dev" : "";
-    const env = isDev ? "dev" : "prod";
+    const customDeployment = Boolean(process.env.LIFTOSAUR_HOST);
+    const publicHost = new URL(
+      process.env.LIFTOSAUR_HOST || (isDev ? "https://stage.liftosaur.com" : "https://www.liftosaur.com")
+    ).origin;
+    const apiHost = new URL(
+      process.env.LIFTOSAUR_API_HOST ||
+        (isDev ? "https://api3-dev.liftosaur.com" : "https://api3.liftosaur.com")
+    ).origin;
+    const publicDomain = new URL(publicHost).hostname;
+    const apiDomain = new URL(apiHost).hostname;
+    const allowedAppOrigins = customDeployment
+      ? [publicHost, apiHost]
+      : [
+          "http://localhost:3000",
+          "https://www.liftosaur.com",
+          "https://stage.liftosaur.com",
+          `https://${localdomain.main}.liftosaur.com:8080`,
+          `https://${localdomain.api}.liftosaur.com:8080`,
+          "liftosaur://www.liftosaur.com",
+          "liftosaur://stage.liftosaur.com",
+          `liftosaur://${localdomain.main}.liftosaur.com:8080`,
+        ];
+    const resourcePrefix = process.env.LIFTOSAUR_RESOURCE_PREFIX?.toLowerCase();
+    const tableName = (name: string): string => (resourcePrefix ? `${resourcePrefix}-${name}` : name);
+    const secretsArn =
+      process.env.LIFTOSAUR_SECRETS_ARN ||
+      (isDev
+        ? "arn:aws:secretsmanager:us-west-2:366191129585:secret:lftAppSecretsDev-RVo7cG"
+        : "arn:aws:secretsmanager:us-west-2:366191129585:secret:lftAppSecrets-cRCeI1");
+    const apiCertificateArn =
+      process.env.LIFTOSAUR_API_CERT_ARN ||
+      (customDeployment
+        ? undefined
+        : "arn:aws:acm:us-west-2:366191129585:certificate/2e317b03-2624-4b47-a116-2cc66107d65b");
+    const cloudfrontCertificateArn =
+      process.env.LIFTOSAUR_CLOUDFRONT_CERT_ARN ||
+      (customDeployment
+        ? undefined
+        : "arn:aws:acm:us-east-1:366191129585:certificate/8f13a85c-6103-4863-8867-46825961b377");
+
+    if (customDeployment) {
+      const missing = [
+        !apiCertificateArn && "LIFTOSAUR_API_CERT_ARN",
+        !cloudfrontCertificateArn && "LIFTOSAUR_CLOUDFRONT_CERT_ARN",
+        !process.env.LIFTOSAUR_SECRETS_ARN && "LIFTOSAUR_SECRETS_ARN",
+        !process.env.LIFTOSAUR_RESOURCE_PREFIX && "LIFTOSAUR_RESOURCE_PREFIX",
+        !process.env.LIFTOSAUR_SESSION_COOKIE_DOMAIN && "LIFTOSAUR_SESSION_COOKIE_DOMAIN",
+        !process.env.LIFTOSAUR_FROM_EMAIL && "LIFTOSAUR_FROM_EMAIL",
+      ].filter(Boolean);
+      if (missing.length > 0) {
+        throw new Error(`Custom Tigerfit deployment requires: ${missing.join(", ")}`);
+      }
+    }
+
+    const runtimeResourceEnv: Record<string, string> = resourcePrefix
+      ? { LIFTOSAUR_RESOURCE_PREFIX: resourcePrefix }
+      : {};
 
     const depsLayer = new lambda.LayerVersion(this, `LftNodeDependencies${suffix}`, {
       code: lambda.Code.fromAsset("dist-lambda", {
@@ -70,12 +128,40 @@ export class LiftosaurCdkStack extends cdk.Stack {
             "mkdir -p /asset-output/nodejs && cd /asset-output/nodejs && cp /asset-input/{package.json,package-lock.json} . && npm ci && npm install --os=linux --cpu=x64 sharp",
           ],
           environment: { HOME: "/tmp/home" },
+          local: {
+            tryBundle(outputDir: string): boolean {
+              // The deployment host used by the Tigerfit workflow is Linux x64. Build
+              // the same nodejs layer locally there so deploying the fork does not
+              // require a Docker daemon; retain Docker bundling for other hosts.
+              if (process.platform !== "linux" || process.arch !== "x64") {
+                return false;
+              }
+
+              const nodejsDir = path.join(outputDir, "nodejs");
+              const lambdaPackageDir = path.resolve("dist-lambda");
+              fs.mkdirSync(nodejsDir, { recursive: true });
+              fs.copyFileSync(path.join(lambdaPackageDir, "package.json"), path.join(nodejsDir, "package.json"));
+              fs.copyFileSync(path.join(lambdaPackageDir, "package-lock.json"), path.join(nodejsDir, "package-lock.json"));
+
+              const commands = [
+                ["ci"],
+                ["install", "--os=linux", "--cpu=x64", "sharp"],
+              ];
+              for (const args of commands) {
+                const result = childProcess.spawnSync("npm", args, { cwd: nodejsDir, stdio: "inherit" });
+                if (result.error || result.status !== 0) {
+                  throw result.error || new Error(`npm ${args.join(" ")} failed while building the Lambda layer`);
+                }
+              }
+              return true;
+            },
+          },
         },
       }),
     });
 
     const usersTable = new dynamodb.Table(this, `LftUsers${suffix}`, {
-      tableName: `lftUsers${suffix}`,
+      tableName: tableName(`lftUsers${suffix}`),
       partitionKey: { name: "id", type: dynamodb.AttributeType.STRING },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
       pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true },
@@ -97,7 +183,7 @@ export class LiftosaurCdkStack extends cdk.Stack {
     });
 
     const affiliatesTable = new dynamodb.Table(this, `LftAffiliates${suffix}`, {
-      tableName: `lftAffiliates${suffix}`,
+      tableName: tableName(`lftAffiliates${suffix}`),
       partitionKey: { name: "affiliateId", type: dynamodb.AttributeType.STRING },
       sortKey: { name: "userId", type: dynamodb.AttributeType.STRING },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
@@ -110,7 +196,7 @@ export class LiftosaurCdkStack extends cdk.Stack {
     });
 
     const subscriptionDetailsTable = new dynamodb.Table(this, `LftSubscriptionDetails${suffix}`, {
-      tableName: `lftSubscriptionDetails${suffix}`,
+      tableName: tableName(`lftSubscriptionDetails${suffix}`),
       partitionKey: { name: "userId", type: dynamodb.AttributeType.STRING },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
       pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true },
@@ -122,7 +208,7 @@ export class LiftosaurCdkStack extends cdk.Stack {
     });
 
     const paymentsTable = new dynamodb.Table(this, `LftPayments${suffix}`, {
-      tableName: `lftPayments${suffix}`,
+      tableName: tableName(`lftPayments${suffix}`),
       partitionKey: { name: "userId", type: dynamodb.AttributeType.STRING },
       sortKey: { name: "timestamp", type: dynamodb.AttributeType.NUMBER },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
@@ -135,21 +221,21 @@ export class LiftosaurCdkStack extends cdk.Stack {
     });
 
     const googleAuthKeysTable = new dynamodb.Table(this, `LftGoogleAuthKeys${suffix}`, {
-      tableName: `lftGoogleAuthKeys${suffix}`,
+      tableName: tableName(`lftGoogleAuthKeys${suffix}`),
       partitionKey: { name: "token", type: dynamodb.AttributeType.STRING },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
       pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true },
     });
 
     const appleAuthKeysTable = new dynamodb.Table(this, `LftAppleAuthKeys${suffix}`, {
-      tableName: `lftAppleAuthKeys${suffix}`,
+      tableName: tableName(`lftAppleAuthKeys${suffix}`),
       partitionKey: { name: "token", type: dynamodb.AttributeType.STRING },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
       pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true },
     });
 
     const historyRecordsTable = new dynamodb.Table(this, `LftHistoryRecords${suffix}`, {
-      tableName: `lftHistoryRecords${suffix}`,
+      tableName: tableName(`lftHistoryRecords${suffix}`),
       partitionKey: { name: "userId", type: dynamodb.AttributeType.STRING },
       sortKey: { name: "id", type: dynamodb.AttributeType.NUMBER },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
@@ -163,7 +249,7 @@ export class LiftosaurCdkStack extends cdk.Stack {
     });
 
     const statsTable = new dynamodb.Table(this, `LftStats${suffix}`, {
-      tableName: `lftStats${suffix}`,
+      tableName: tableName(`lftStats${suffix}`),
       partitionKey: { name: "userId", type: dynamodb.AttributeType.STRING },
       sortKey: { name: "name", type: dynamodb.AttributeType.STRING },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
@@ -177,7 +263,7 @@ export class LiftosaurCdkStack extends cdk.Stack {
     });
 
     const logsTable = new dynamodb.Table(this, `LftLogs${suffix}`, {
-      tableName: `lftLogs${suffix}`,
+      tableName: tableName(`lftLogs${suffix}`),
       partitionKey: { name: "userId", type: dynamodb.AttributeType.STRING },
       sortKey: { name: "action", type: dynamodb.AttributeType.STRING },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
@@ -191,7 +277,7 @@ export class LiftosaurCdkStack extends cdk.Stack {
     });
 
     const userProgramsTable = new dynamodb.Table(this, `LftUserPrograms${suffix}`, {
-      tableName: `lftUserPrograms${suffix}`,
+      tableName: tableName(`lftUserPrograms${suffix}`),
       partitionKey: { name: "userId", type: dynamodb.AttributeType.STRING },
       sortKey: { name: "id", type: dynamodb.AttributeType.STRING },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
@@ -199,14 +285,14 @@ export class LiftosaurCdkStack extends cdk.Stack {
     });
 
     const programsTable = new dynamodb.Table(this, `LftPrograms${suffix}`, {
-      tableName: `lftPrograms${suffix}`,
+      tableName: tableName(`lftPrograms${suffix}`),
       partitionKey: { name: "id", type: dynamodb.AttributeType.STRING },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
       pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true },
     });
 
     const urlsTable = new dynamodb.Table(this, `LftUrls${suffix}`, {
-      tableName: `lftUrls${suffix}`,
+      tableName: tableName(`lftUrls${suffix}`),
       partitionKey: { name: "id", type: dynamodb.AttributeType.STRING },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
       pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true },
@@ -218,21 +304,21 @@ export class LiftosaurCdkStack extends cdk.Stack {
     });
 
     const freeUsersTable = new dynamodb.Table(this, `LftFreeUsers${suffix}`, {
-      tableName: `lftFreeUsers${suffix}`,
+      tableName: tableName(`lftFreeUsers${suffix}`),
       partitionKey: { name: "id", type: dynamodb.AttributeType.STRING },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
       pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true },
     });
 
     const couponsTable = new dynamodb.Table(this, `LftCoupons${suffix}`, {
-      tableName: `lftCoupons${suffix}`,
+      tableName: tableName(`lftCoupons${suffix}`),
       partitionKey: { name: "code", type: dynamodb.AttributeType.STRING },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
       pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true },
     });
 
     const apiKeysTable = new dynamodb.Table(this, `LftApiKeys${suffix}`, {
-      tableName: `lftApiKeys${suffix}`,
+      tableName: tableName(`lftApiKeys${suffix}`),
       partitionKey: { name: "key", type: dynamodb.AttributeType.STRING },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
       pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true },
@@ -244,7 +330,7 @@ export class LiftosaurCdkStack extends cdk.Stack {
     });
 
     const pushEndpointsTable = new dynamodb.Table(this, `LftPushEndpoints${suffix}`, {
-      tableName: `lftPushEndpoints${suffix}`,
+      tableName: tableName(`lftPushEndpoints${suffix}`),
       partitionKey: { name: "userId", type: dynamodb.AttributeType.STRING },
       sortKey: { name: "deviceId", type: dynamodb.AttributeType.STRING },
       timeToLiveAttribute: "ttl",
@@ -258,14 +344,14 @@ export class LiftosaurCdkStack extends cdk.Stack {
     });
 
     const oauthClientsTable = new dynamodb.Table(this, `LftOauthClients${suffix}`, {
-      tableName: `lftOauthClients${suffix}`,
+      tableName: tableName(`lftOauthClients${suffix}`),
       partitionKey: { name: "clientId", type: dynamodb.AttributeType.STRING },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
       pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true },
     });
 
     const oauthAuthCodesTable = new dynamodb.Table(this, `LftOauthAuthCodes${suffix}`, {
-      tableName: `lftOauthAuthCodes${suffix}`,
+      tableName: tableName(`lftOauthAuthCodes${suffix}`),
       partitionKey: { name: "code", type: dynamodb.AttributeType.STRING },
       timeToLiveAttribute: "ttl",
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
@@ -273,7 +359,7 @@ export class LiftosaurCdkStack extends cdk.Stack {
     });
 
     const oauthTokensTable = new dynamodb.Table(this, `LftOauthTokens${suffix}`, {
-      tableName: `lftOauthTokens${suffix}`,
+      tableName: tableName(`lftOauthTokens${suffix}`),
       partitionKey: { name: "token", type: dynamodb.AttributeType.STRING },
       timeToLiveAttribute: "ttl",
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
@@ -286,7 +372,7 @@ export class LiftosaurCdkStack extends cdk.Stack {
     });
 
     const emailAuthTokensTable = new dynamodb.Table(this, `LftEmailAuthTokens${suffix}`, {
-      tableName: `lftEmailAuthTokens${suffix}`,
+      tableName: tableName(`lftEmailAuthTokens${suffix}`),
       partitionKey: { name: "token", type: dynamodb.AttributeType.STRING },
       timeToLiveAttribute: "ttl",
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
@@ -294,14 +380,14 @@ export class LiftosaurCdkStack extends cdk.Stack {
     });
 
     const debugTable = new dynamodb.Table(this, `LftDebug${suffix}`, {
-      tableName: `lftDebug${suffix}`,
+      tableName: tableName(`lftDebug${suffix}`),
       partitionKey: { name: "id", type: dynamodb.AttributeType.STRING },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
       pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true },
     });
 
     const eventsTable = new dynamodb.Table(this, `LftEvents${suffix}`, {
-      tableName: `lftEvents${suffix}`,
+      tableName: tableName(`lftEvents${suffix}`),
       partitionKey: { name: "userId", type: dynamodb.AttributeType.STRING },
       sortKey: { name: "timestamp", type: dynamodb.AttributeType.NUMBER },
       timeToLiveAttribute: "ttl",
@@ -316,23 +402,22 @@ export class LiftosaurCdkStack extends cdk.Stack {
     });
 
     const aiMuscleCaches = new dynamodb.Table(this, `LftAiMuscleCaches${suffix}`, {
-      tableName: `lftAiMuscleCaches${suffix}`,
+      tableName: tableName(`lftAiMuscleCaches${suffix}`),
       partitionKey: { name: "key", type: dynamodb.AttributeType.STRING },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
       pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true },
     });
 
-    const secretArns = {
-      dev: {
-        all: "arn:aws:secretsmanager:us-west-2:366191129585:secret:lftAppSecretsDev-RVo7cG",
-      },
-      prod: {
-        all: "arn:aws:secretsmanager:us-west-2:366191129585:secret:lftAppSecrets-cRCeI1",
-      },
-    };
+    const coachSessionsTable = new dynamodb.Table(this, `LftCoachSessions${suffix}`, {
+      tableName: tableName(`lftCoachSessions${suffix}`),
+      partitionKey: { name: "sessionId", type: dynamodb.AttributeType.STRING },
+      timeToLiveAttribute: "ttl",
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true },
+    });
 
     const allSecrets = sm.Secret.fromSecretAttributes(this, `LftAllSecrets${suffix}`, {
-      secretCompleteArn: secretArns[env].all,
+      secretCompleteArn: secretsArn,
     });
 
     const bucket = new s3.Bucket(this, `LftS3Caches${suffix}`, {
@@ -352,15 +437,7 @@ export class LiftosaurCdkStack extends cdk.Stack {
         {
           allowedHeaders: ["*"],
           allowedMethods: [s3.HttpMethods.GET],
-          allowedOrigins: [
-            "http://localhost:3000",
-            "https://www.liftosaur.com",
-            "https://stage.liftosaur.com",
-            `https://${localdomain.main}.liftosaur.com:8080`,
-            "liftosaur://www.liftosaur.com",
-            "liftosaur://stage.liftosaur.com",
-            `liftosaur://${localdomain.main}.liftosaur.com:8080`,
-          ],
+          allowedOrigins: allowedAppOrigins,
           maxAge: 3000,
         },
       ],
@@ -396,18 +473,7 @@ export class LiftosaurCdkStack extends cdk.Stack {
         {
           allowedHeaders: ["*"],
           allowedMethods: [s3.HttpMethods.GET, s3.HttpMethods.PUT, s3.HttpMethods.POST, s3.HttpMethods.HEAD],
-          allowedOrigins: [
-            "http://localhost:3000",
-            "https://www.liftosaur.com",
-            "https://stage.liftosaur.com",
-            "https://api3.liftosaur.com",
-            "https://api3-dev.liftosaur.com",
-            `https://${localdomain.main}.liftosaur.com:8080`,
-            `https://${localdomain.api}.liftosaur.com:8080`,
-            "liftosaur://www.liftosaur.com",
-            "liftosaur://stage.liftosaur.com",
-            `liftosaur://${localdomain.main}.liftosaur.com:8080`,
-          ],
+          allowedOrigins: allowedAppOrigins,
           exposedHeaders: ["ETag"],
           maxAge: 3000,
         },
@@ -431,6 +497,7 @@ export class LiftosaurCdkStack extends cdk.Stack {
       logRetention: logs.RetentionDays.ONE_MONTH,
       environment: {
         IS_DEV: `${isDev}`,
+        ...runtimeResourceEnv,
       },
     });
 
@@ -442,6 +509,8 @@ export class LiftosaurCdkStack extends cdk.Stack {
     );
 
     const { commitHash, fullCommitHash } = getCommitHashes();
+    const mcpBaseUrl = process.env.LIFTOSAUR_MCP_BASE_URL || publicHost;
+    const sessionCookieDomain = process.env.LIFTOSAUR_SESSION_COOKIE_DOMAIN || ".liftosaur.com";
     const lambdaFunction = new lambda.Function(this, `LftLambda${suffix}`, {
       runtime: lambda.Runtime.NODEJS_24_X,
       code: lambda.Code.fromAsset("dist-lambda"),
@@ -456,7 +525,18 @@ export class LiftosaurCdkStack extends cdk.Stack {
         IS_DEV: `${isDev}`,
         COMMIT_HASH: commitHash,
         FULL_COMMIT_HASH: fullCommitHash,
-        HOST: isDev ? "https://stage.liftosaur.com" : "https://www.liftosaur.com",
+        HOST: publicHost,
+        API_HOST: apiHost,
+        MCP_BASE_URL: mcpBaseUrl,
+        MCP_ALLOW_SELF_HOSTED: customDeployment ? "true" : "false",
+        SESSION_COOKIE_DOMAIN: sessionCookieDomain,
+        FROM_EMAIL: process.env.LIFTOSAUR_FROM_EMAIL || "info@liftosaur.com",
+        APP_SECRETS_ARN: secretsArn,
+        LIFTOSAUR_IOS_SNS_PLATFORM_ARN: process.env.LIFTOSAUR_IOS_SNS_PLATFORM_ARN || "",
+        LIFTOSAUR_IOS_DEV_SNS_PLATFORM_ARN: process.env.LIFTOSAUR_IOS_DEV_SNS_PLATFORM_ARN || "",
+        LIFTOSAUR_ANDROID_SNS_PLATFORM_ARN: process.env.LIFTOSAUR_ANDROID_SNS_PLATFORM_ARN || "",
+        LIFTOSAUR_ANDROID_DEV_SNS_PLATFORM_ARN: process.env.LIFTOSAUR_ANDROID_DEV_SNS_PLATFORM_ARN || "",
+        ...runtimeResourceEnv,
       },
     });
 
@@ -471,6 +551,8 @@ export class LiftosaurCdkStack extends cdk.Stack {
       logRetention: logs.RetentionDays.ONE_MONTH,
       environment: {
         IS_DEV: `${isDev}`,
+        APP_SECRETS_ARN: secretsArn,
+        ...runtimeResourceEnv,
       },
     });
     const rule = new aws_events.Rule(this, `LftStatsLambdaRule${suffix}`, {
@@ -496,6 +578,8 @@ export class LiftosaurCdkStack extends cdk.Stack {
       logRetention: logs.RetentionDays.ONE_MONTH,
       environment: {
         IS_DEV: `${isDev}`,
+        APP_SECRETS_ARN: secretsArn,
+        ...runtimeResourceEnv,
       },
     });
     const reconcileRule = new aws_events.Rule(this, `LftReconcilePaymentsLambdaRule${suffix}`, {
@@ -509,23 +593,22 @@ export class LiftosaurCdkStack extends cdk.Stack {
     });
     reconcileRule.addTarget(new aws_events_targets.LambdaFunction(reconcileLambdaFunction));
 
-    const cert = acm.Certificate.fromCertificateArn(
-      this,
-      `LftEndpointCert${suffix}`,
-      "arn:aws:acm:us-west-2:366191129585:certificate/2e317b03-2624-4b47-a116-2cc66107d65b"
-    );
+    if (!apiCertificateArn || !cloudfrontCertificateArn) {
+      throw new Error("API Gateway and CloudFront ACM certificate ARNs are required");
+    }
+    const cert = acm.Certificate.fromCertificateArn(this, `LftEndpointCert${suffix}`, apiCertificateArn);
 
     const streamingCert = acm.Certificate.fromCertificateArn(
       this,
       `LftEndpointStreamingCert${suffix}`,
-      "arn:aws:acm:us-east-1:366191129585:certificate/8f13a85c-6103-4863-8867-46825961b377"
+      cloudfrontCertificateArn
     );
 
     const restApi = new apigw.RestApi(this, `LftEndpoint${suffix}`, {
       defaultIntegration: new apigw.LambdaIntegration(lambdaFunction),
       binaryMediaTypes: ["*/*"],
       domainName: {
-        domainName: `api3${isDev ? "-dev" : ""}.liftosaur.com`,
+        domainName: apiDomain,
         certificate: cert,
       },
     });
@@ -574,10 +657,13 @@ export class LiftosaurCdkStack extends cdk.Stack {
     }
 
     const alarmTopic = new sns.Topic(this, `LftAlarmTopic${suffix}`, {
-      topicName: `LiftosaurAlarms${suffix}`,
-      displayName: "Liftosaur alarms",
+      topicName: `${customDeployment ? "Tigerfit" : "Liftosaur"}Alarms${suffix}`,
+      displayName: `${customDeployment ? "Tigerfit" : "Liftosaur"} alarms`,
     });
-    alarmTopic.addSubscription(new sns_subscriptions.EmailSubscription(ALARM_EMAIL));
+    const alarmEmail = customDeployment ? process.env.LIFTOSAUR_ALARM_EMAIL : ALARM_EMAIL;
+    if (alarmEmail) {
+      alarmTopic.addSubscription(new sns_subscriptions.EmailSubscription(alarmEmail));
+    }
 
     const addAlarm = (
       alarmId: string,
@@ -659,6 +745,7 @@ export class LiftosaurCdkStack extends cdk.Stack {
     );
 
     aiMuscleCaches.grantReadWriteData(lambdaFunction);
+    coachSessionsTable.grantReadWriteData(lambdaFunction);
     bucket.grantReadWrite(lambdaFunction);
     debugbucket.grantReadWrite(lambdaFunction);
     exceptionsbucket.grantReadWrite(lambdaFunction);
@@ -804,8 +891,7 @@ export class LiftosaurCdkStack extends cdk.Stack {
       ],
     };
 
-    const mainDomain = isDev ? "stage.liftosaur.com" : "www.liftosaur.com";
-    const apiDomain = isDev ? "api3-dev.liftosaur.com" : "api3.liftosaur.com";
+    const mainDomain = publicDomain;
 
     const rewriteUrls = new cloudfront.Function(this, `LftRewriteUrls${suffix}`, {
       functionName: `LftRewriteUrls${suffix}`,
@@ -850,8 +936,10 @@ export class LiftosaurCdkStack extends cdk.Stack {
       `),
     });
 
-    const externalImagesOrigin = new origins.HttpOrigin("liftosaurimages2.s3-us-west-2.amazonaws.com");
-    const userImagesBucket = isDev ? "liftosauruserimagesdev" : "liftosauruserimages";
+    const externalImagesOrigin = customDeployment
+      ? new origins.HttpOrigin(`${assetsBucket.bucketName}.s3-${this.region}.amazonaws.com`)
+      : new origins.HttpOrigin("liftosaurimages2.s3-us-west-2.amazonaws.com");
+    const userImagesBucket = `${LftS3Buckets.userimages}${suffix.toLowerCase()}`;
     const userImagesOrigin = new origins.HttpOrigin(`${userImagesBucket}.s3-us-west-2.amazonaws.com`);
 
     const stripPathPrefix = new cloudfront.Function(this, `LftStripPathPrefix${suffix}`, {
@@ -990,7 +1078,11 @@ export class LiftosaurCdkStack extends cdk.Stack {
     const mainDistribution = new cloudfront.Distribution(this, `LftMainDistribution${suffix}`, {
       certificate: streamingCert,
       domainNames: [mainDomain, apiDomain],
-      webAclId: isDev ? undefined : PROD_WAF_WEB_ACL_ARN || undefined,
+      webAclId: isDev
+        ? undefined
+        : customDeployment
+          ? process.env.LIFTOSAUR_WAF_WEB_ACL_ARN || undefined
+          : PROD_WAF_WEB_ACL_ARN || undefined,
       defaultBehavior: {
         origin: apiOrigin,
         cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
@@ -1258,7 +1350,7 @@ export class LiftosaurCdkStack extends cdk.Stack {
 
     deployStatic.node.addDependency(deployChunks);
 
-    if (!isDev) {
+    if (!isDev && !customDeployment) {
       const apexCert = acm.Certificate.fromCertificateArn(
         this,
         "LftApexCert",
@@ -1442,7 +1534,7 @@ class LiftosaurPipelineStack extends cdk.Stack {
 }
 
 class LiftosaurWafStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+  constructor(scope: Construct, id: string, props?: cdk.StackProps, enableAlarms = true) {
     super(scope, id, props);
 
     const webAcl = new wafv2.CfnWebACL(this, "LftWebAcl", {
@@ -1508,8 +1600,12 @@ class LiftosaurWafStack extends cdk.Stack {
 
     new cdk.CfnOutput(this, "WafWebAclArn", {
       value: webAcl.attrArn,
-      description: "CloudFront WebACL ARN - set PROD_WAF_WEB_ACL_ARN to this, then redeploy LiftosaurStack",
+      description: "CloudFront WebACL ARN for the matching application stack",
     });
+
+    if (!enableAlarms) {
+      return;
+    }
 
     const wafAlarmTopic = new sns.Topic(this, "LftWafAlarmTopic", {
       topicName: "LiftosaurWafAlarms",
@@ -1555,8 +1651,17 @@ class LiftosaurWafStack extends cdk.Stack {
 }
 
 const app = new cdk.App();
-new LiftosaurCdkStack(app, "LiftosaurStackDev", true);
-new LiftosaurCdkStack(app, "LiftosaurStack", false);
-new LiftosaurPipelineStack(app, "LiftosaurPipelineDev", true);
-new LiftosaurPipelineStack(app, "LiftosaurPipeline", false);
-new LiftosaurWafStack(app, "LiftosaurWaf", { env: { account: "366191129585", region: "us-east-1" } });
+if (process.env.LIFTOSAUR_HOST) {
+  const account = process.env.CDK_DEFAULT_ACCOUNT;
+  if (!account) {
+    throw new Error("CDK_DEFAULT_ACCOUNT must be set for an isolated Tigerfit deployment");
+  }
+  new LiftosaurCdkStack(app, "TigerfitStack", false, { env: { account, region: "us-west-2" } });
+  new LiftosaurWafStack(app, "TigerfitWaf", { env: { account, region: "us-east-1" } }, false);
+} else {
+  new LiftosaurCdkStack(app, "LiftosaurStackDev", true);
+  new LiftosaurCdkStack(app, "LiftosaurStack", false);
+  new LiftosaurPipelineStack(app, "LiftosaurPipelineDev", true);
+  new LiftosaurPipelineStack(app, "LiftosaurPipeline", false);
+  new LiftosaurWafStack(app, "LiftosaurWaf", { env: { account: "366191129585", region: "us-east-1" } });
+}

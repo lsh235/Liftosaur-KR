@@ -11,6 +11,7 @@ export type IScreenData =
   | { name: "first"; params?: Record<string, never> }
   | { name: "main"; params?: { historyRecordId?: number } }
   | { name: "settings"; params?: Record<string, never> }
+  | { name: "aiCoach"; params?: Record<string, never> }
   | { name: "account"; params?: Record<string, never> }
   | { name: "timers"; params?: Record<string, never> }
   | { name: "plates"; params?: Record<string, never> }
@@ -84,6 +85,9 @@ export function Screen_tab(screen: IScreen): ITab {
       return "home";
     }
     case "settings": {
+      return "me";
+    }
+    case "aiCoach": {
       return "me";
     }
     case "account": {

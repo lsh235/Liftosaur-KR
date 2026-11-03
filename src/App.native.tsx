@@ -220,9 +220,11 @@ import { useOnloadModals } from "./navigation/useOnloadModals";
 import { SystemBars } from "react-native-edge-to-edge";
 import { activateKeepAwake, deactivateKeepAwake } from "@sayem314/react-native-keep-awake";
 import { ImportExporter_handleUniversalLink } from "./lib/importexporter";
+import { AiWorkoutCoachSession_get, AiWorkoutCoachSession_subscribe } from "./utils/aiWorkoutCoachSession";
 import {
   Thunk_fetchInitial,
   Thunk_sync2,
+  Thunk_pollWorkoutCoachSession,
   Thunk_syncHealthKit,
   Thunk_iapFetchProducts,
   Thunk_iapRestoreOnStartup,
@@ -295,8 +297,37 @@ export function AppRoot(props: { initialState: IState; env: IEnv }): React.JSX.E
   );
   const onActions = useMemo(() => defaultOnActions(env), [env]);
   const [state, dispatch] = useThunkReducer<IState, IAction, IEnv>(reducer, props.initialState, env, onActions);
+  const [coachSession, setCoachSession] = useState<Awaited<ReturnType<typeof AiWorkoutCoachSession_get>>>();
   const stateRef = useRef(state);
   stateRef.current = state;
+  useEffect(() => {
+    let active = true;
+    const unsubscribe = AiWorkoutCoachSession_subscribe(setCoachSession);
+    AiWorkoutCoachSession_get()
+      .then((session) => {
+        if (active) setCoachSession(session);
+      })
+      .catch(() => undefined);
+    return () => {
+      active = false;
+      unsubscribe();
+    };
+  }, [state.user?.id]);
+  useEffect(() => {
+    if (!coachSession) return;
+    const poll = (): void => {
+      if (AppState.currentState === "active") dispatch(Thunk_pollWorkoutCoachSession());
+    };
+    poll();
+    const interval = setInterval(poll, Math.max(1500, coachSession.pollIntervalMs || 2000));
+    const appStateSubscription = AppState.addEventListener("change", (next) => {
+      if (next === "active") poll();
+    });
+    return () => {
+      clearInterval(interval);
+      appStateSubscription.remove();
+    };
+  }, [coachSession, dispatch]);
   const scheduledProgram = Program_getProgram(state, state.storage.currentProgramId);
   useEffect(() => {
     const scheduleWorkoutReminders = (): void => {

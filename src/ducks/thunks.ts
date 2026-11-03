@@ -31,7 +31,7 @@ import {
 } from "../models/programSchedule";
 import { getGoogleAccessToken } from "../utils/googleAccessToken";
 import { SignIn_google, SignIn_apple, SignOut_google } from "../utils/signIn";
-import { Platform } from "react-native";
+import { AppState, Platform } from "react-native";
 import { Dialog_confirm, Dialog_alert } from "../utils/dialog";
 import { InAppReview_request } from "../utils/inAppReview";
 import {
@@ -74,10 +74,14 @@ import { History_exportAsCSV, History_pauseWorkoutState } from "../models/histor
 import type { IHealthWorkoutPayload } from "../utils/healthAdapter";
 import { ImportSession_apply, ImportSession_findEditedRecordIds, ImportSession_undo } from "../models/importSession";
 import { ImportFileError } from "../utils/importTypes";
-import { AiFeedbackExport_buildMarkdown } from "../utils/aiFeedbackExport";
+import { AiFeedbackExport_appendCoachConnection, AiFeedbackExport_buildMarkdown } from "../utils/aiFeedbackExport";
+import { AiWorkoutCoachSession_set } from "../utils/aiWorkoutCoachSession";
+import { AiWorkoutCoachSession_clear, AiWorkoutCoachSession_get } from "../utils/aiWorkoutCoachSession";
+import { AiWorkoutCoachAdjustment_apply, AiWorkoutCoachAdjustment_isApplied, IWorkoutCoachSetChange } from "../utils/aiWorkoutCoachAdjustment";
+import { WorkoutCoachVersion_get } from "../utils/workoutCoachVersion";
 import { StringUtils_pluralize } from "../utils/string";
 import { CSV_toString } from "../utils/csv";
-import { Exporter_toFile } from "../utils/exporter";
+import { Exporter_toFile, Exporter_toFileAsync } from "../utils/exporter";
 import { DateUtils_formatYYYYMMDD, DateUtils_format } from "../utils/date";
 import { getInitialState } from "./reducer";
 import { IndexedDBUtils_set } from "../utils/indexeddb";
@@ -150,6 +154,7 @@ import {
   ObjectUtils_values,
   ObjectUtils_filter,
   ObjectUtils_clone,
+  ObjectUtils_isEqual,
   ObjectUtils_omit,
   ObjectUtils_keys,
 } from "../utils/object";
@@ -449,10 +454,10 @@ async function _sync2(
   env: IEnv,
   args?: { force: boolean },
   signal?: AbortSignal
-): Promise<void> {
+): Promise<boolean> {
   const state = getState();
   type IRequestContext = { kind: "fetch" } | { kind: "upload"; sent: ISyncBaselineSource };
-  function handleResponse(result: IPostSyncResponse, context: IRequestContext): "baseline-fetched" | "done" {
+  function handleResponse(result: IPostSyncResponse, context: IRequestContext): "baseline-fetched" | "success" | "unauthorized" {
     if (result.type === "clean") {
       dispatch(Thunk_postevent("handle-response-clean"));
       const baseline = getState().lastSynced;
@@ -470,7 +475,7 @@ async function _sync2(
       if (getState().storage.email !== result.email || getState().user?.id !== result.user_id) {
         dispatch({ type: "Login", email: result.email, userId: result.user_id });
       }
-      return "done";
+      return "success";
     } else if (result.type === "dirty") {
       result.storage.tempUserId = result.user_id;
       if (context.kind === "fetch") {
@@ -536,7 +541,7 @@ async function _sync2(
           dispatch({ type: "Login", email: result.email, userId: result.user_id });
         }
       }
-      return "done";
+      return "success";
     } else if (result.type === "error" && result.error === "not_authorized") {
       updateState(
         dispatch,
@@ -546,7 +551,7 @@ async function _sync2(
         ],
         "Update subscription no storage"
       );
-      return "done";
+      return "unauthorized";
     } else if (result.type === "error") {
       if (result.error === "outdated_client_storage") {
         Dialog_alert(
@@ -556,7 +561,7 @@ async function _sync2(
       }
       throw new NoRetryError(result.error);
     }
-    return "done";
+    return "success";
   }
   async function switchedAccount(result: IPostSyncResponse): Promise<boolean> {
     const mismatch = SyncAccountMismatch_fromResponse(result);
@@ -585,11 +590,11 @@ async function _sync2(
       history: { mode: "none" },
     });
     if (signal?.aborted || (await switchedAccount(result))) {
-      return;
+      return false;
     }
-    if (handleResponse(result, { kind: "fetch" }) === "baseline-fetched") {
-      await _sync2(dispatch, getState, env, args, signal);
-    }
+    const response = handleResponse(result, { kind: "fetch" });
+    if (response === "baseline-fetched") return _sync2(dispatch, getState, env, args, signal);
+    return response === "success";
   } else {
     dispatch(Thunk_postevent("sync-storage-update", { force: args?.force ? "true" : "false" }));
     const probeSyncTarget = PerfProbe_isTarget();
@@ -611,10 +616,11 @@ async function _sync2(
         history: { mode: "delta", local: { history: state.storage.history, versions: state.storage._versions } },
       });
       if (signal?.aborted || (await switchedAccount(result))) {
-        return;
+        return false;
       }
-      handleResponse(result, { kind: "upload", sent: sentStorage });
+      return handleResponse(result, { kind: "upload", sent: sentStorage }) === "success";
     }
+    return true;
   }
 }
 
@@ -817,9 +823,10 @@ export function Thunk_syncHealthKit(cb?: () => void): IThunk {
   };
 }
 
-export function Thunk_sync2(args?: { force?: boolean; cb?: () => void; log?: boolean }): IThunk {
+export function Thunk_sync2(args?: { force?: boolean; cb?: () => void; onComplete?: (synced: boolean) => void; log?: boolean }): IThunk {
   return async (dispatch, getState, env) => {
     if (!Distribution_supportsCloudSync() || (Distribution_isLocalOnly() && !getState().user?.id)) {
+      args?.onComplete?.(false);
       args?.cb?.();
       return;
     }
@@ -831,22 +838,26 @@ export function Thunk_sync2(args?: { force?: boolean; cb?: () => void; log?: boo
         })
       );
     }
+    let synced = false;
     try {
       const state = getState();
       if (state.errors.corruptedstorage == null && !state.nosync && (state.user != null || args?.force)) {
+        let syncResult = false;
         await env.queue.enqueue(
           async (args2, signal) => {
-            await load(dispatch, "Sync", async () => {
+            syncResult = await load(dispatch, "Sync", async () => {
               if (args2?.log) {
                 dispatch(Thunk_postevent("sync2-start"));
               }
-              await _sync2(dispatch, getState, env, args2, signal);
+              return _sync2(dispatch, getState, env, args2, signal);
             });
           },
           { force: !!args?.force, log: !!args?.log }
         );
+        synced = syncResult;
       }
     } finally {
+      args?.onComplete?.(synced);
       if (args?.cb) {
         args.cb();
       }
@@ -1876,11 +1887,207 @@ export function Thunk_exportHistoryToCSV(): IThunk {
   };
 }
 
-export function Thunk_exportAiFeedbackMarkdown(title: string, userNote: string, selectedProgramId?: string): IThunk {
-  return async (dispatch, getState) => {
+let workoutCoachPollInFlight = false;
+
+function workoutCoachProgressSame(a: IHistoryRecord | undefined, b: IHistoryRecord | undefined): boolean {
+  return !!a && !!b && a.id === b.id && a.startTime === b.startTime && a.programId === b.programId &&
+    ObjectUtils_isEqual(a.entries, b.entries);
+}
+
+async function persistWorkoutCoachProgress(env: IEnv, state: IState): Promise<void> {
+  const accountId = state.user?.id || state.storage.tempUserId;
+  const key = `liftosaur_${accountId}`;
+  env.persistence.cancelSave();
+  await env.persistence.save(key, { storage: state.storage, lastSynced: state.lastSynced });
+  const saved = await env.persistence.load(key);
+  const savedProgress = saved?.storage?.progress?.[0];
+  const expectedProgress = state.storage.progress?.[0];
+  if (!savedProgress || !expectedProgress || !ObjectUtils_isEqual(savedProgress, expectedProgress)) {
+    throw new Error("운동 변경을 기기에 저장했는지 확인할 수 없습니다.");
+  }
+}
+
+export function Thunk_pollWorkoutCoachSession(): IThunk {
+  return async (dispatch, getState, env) => {
+    if (workoutCoachPollInFlight || AppState.currentState !== "active") return;
+    workoutCoachPollInFlight = true;
+    try {
+      const session = await AiWorkoutCoachSession_get();
+      if (!session) return;
+      const initialState = getState();
+      if (initialState.user?.id !== session.userId) {
+        await env.service.closeWorkoutCoachSession(session.sessionId).catch(() => undefined);
+        await AiWorkoutCoachSession_clear();
+        return;
+      }
+      if (session.expiresAt <= Date.now()) {
+        await env.service.closeWorkoutCoachSession(session.sessionId).catch(() => undefined);
+        await AiWorkoutCoachSession_clear();
+        Dialog_alert("Codex 운동 조정 대기 시간이 끝났습니다.");
+        return;
+      }
+      const proposal = await env.service.getWorkoutCoachProposal(session.sessionId);
+      if (!proposal) return;
+      const acknowledge = (decision: "applied" | "rejected" | "stale"): Promise<void> =>
+        env.service.ackWorkoutCoachProposal(session.sessionId, proposal.requestId, decision, getState().deviceId);
+      if (proposal.committedDeviceId && proposal.committedDeviceId !== getState().deviceId) {
+        await env.service.closeWorkoutCoachSession(session.sessionId).catch(() => undefined);
+        await AiWorkoutCoachSession_clear();
+        Dialog_alert("이 조정 요청은 다른 기기에서 승인 처리되었습니다. 현재 기기의 운동 기록을 동기화해 주세요.");
+        return;
+      }
+      const currentProgress = Progress_getCurrentProgress(getState());
+      if (!currentProgress || currentProgress.vtype !== "progress") {
+        await acknowledge("stale");
+        return;
+      }
+      if (proposal.expiresAt <= Date.now()) {
+        await acknowledge("stale");
+        return;
+      }
+      if (proposal.stale) {
+        await acknowledge("stale");
+        Dialog_alert("운동 상태가 변경되어 Codex 제안을 적용하지 않았습니다. 최신 기록으로 다시 요청해 주세요.");
+        return;
+      }
+
+      if (
+        proposal.committedDeviceId === getState().deviceId &&
+        AiWorkoutCoachAdjustment_isApplied(currentProgress, proposal.changes)
+      ) {
+        await persistWorkoutCoachProgress(env, getState());
+        await acknowledge("applied");
+        return;
+      }
+      if (WorkoutCoachVersion_get(currentProgress) !== proposal.expectedVersion) {
+        await acknowledge("stale");
+        Dialog_alert("운동 기록이 변경되어 Codex 제안을 적용하지 않았습니다. 최신 운동 상태로 다시 요청해 주세요.");
+        return;
+      }
+      const preview = AiWorkoutCoachAdjustment_apply(currentProgress, proposal.changes);
+      if ("error" in preview) {
+        await acknowledge("stale");
+        Dialog_alert(`Codex 요청을 적용하지 않았습니다. ${preview.error}`);
+        return;
+      }
+      const summary = preview.summary.slice(0, 8).map((line) => `• ${line}`).join("\n");
+      const reason = proposal.reason ? `\n\n이유: ${proposal.reason}` : "";
+      const expiryNotice = `\n\n연결 만료: ${new Date(Math.min(session.expiresAt, proposal.expiresAt)).toLocaleTimeString()}`;
+      const approved = await Dialog_confirm(
+        `Codex 운동 조정 제안입니다.${reason}\n\n${summary}${preview.summary.length > 8 ? `\n외 ${preview.summary.length - 8}개 변경` : ""}${expiryNotice}\n\n완료한 세트는 유지됩니다. 이 변경을 진행 중인 운동에 적용할까요?`
+      );
+      if (!approved) {
+        await acknowledge("rejected");
+        return;
+      }
+      if (AppState.currentState !== "active" || Date.now() >= proposal.expiresAt) return;
+
+      const beforeCommit = getState();
+      const beforeProgress = Progress_getCurrentProgress(beforeCommit);
+      if (!workoutCoachProgressSame(currentProgress, beforeProgress) || beforeCommit.user?.id !== session.userId) {
+        await acknowledge("stale");
+        Dialog_alert("운동 기록이 바뀌어 Codex 제안을 적용하지 않았습니다. 최신 운동 상태로 다시 요청해 주세요.");
+        return;
+      }
+      if (WorkoutCoachVersion_get(beforeProgress!) !== proposal.expectedVersion) {
+        await acknowledge("stale");
+        Dialog_alert("운동 목표가 바뀌어 Codex 제안을 적용하지 않았습니다. 최신 운동 상태로 다시 요청해 주세요.");
+        return;
+      }
+
+      let committed: { changes: IWorkoutCoachSetChange[] };
+      try {
+        committed = await env.service.commitWorkoutCoachProposal(
+          session.sessionId,
+          proposal.requestId,
+          proposal.expectedVersion,
+          beforeCommit.deviceId
+        );
+      } catch (error) {
+        if (error instanceof Error && /\(409\)/.test(error.message)) {
+          await acknowledge("stale").catch(() => undefined);
+          Dialog_alert("운동 상태가 바뀌었거나 다른 기기에서 이 요청을 처리했습니다. 요청을 적용하지 않았습니다.");
+          return;
+        }
+        throw error;
+      }
+      const applyState = getState();
+      const applyProgress = Progress_getCurrentProgress(applyState);
+      if (
+        AppState.currentState !== "active" ||
+        Date.now() >= Math.min(session.expiresAt, proposal.expiresAt) ||
+        applyState.user?.id !== session.userId ||
+        !workoutCoachProgressSame(beforeProgress, applyProgress) ||
+        !applyProgress ||
+        WorkoutCoachVersion_get(applyProgress) !== proposal.expectedVersion
+      ) {
+        await acknowledge("stale").catch(() => undefined);
+        Dialog_alert("승인 중 운동 상태가 바뀌거나 연결 시간이 끝나 제안을 적용하지 않았습니다.");
+        return;
+      }
+      dispatch({ type: "ApplyWorkoutCoachAdjustment", expectedVersion: proposal.expectedVersion, changes: committed.changes });
+      const updatedProgress = Progress_getCurrentProgress(getState());
+      if (!updatedProgress || !AiWorkoutCoachAdjustment_isApplied(updatedProgress, committed.changes)) {
+        await acknowledge("stale").catch(() => undefined);
+        Dialog_alert("운동 상태가 바뀌어 안전하게 적용하지 못했습니다. 요청은 반영되지 않았습니다.");
+        return;
+      }
+      await persistWorkoutCoachProgress(env, getState());
+      await acknowledge("applied");
+      Dialog_alert("Codex가 제안한 운동 조정을 앱에 적용했습니다.");
+    } catch (error) {
+      const session = await AiWorkoutCoachSession_get();
+      if (session && session.expiresAt <= Date.now()) {
+        await env.service.closeWorkoutCoachSession(session.sessionId).catch(() => undefined);
+        await AiWorkoutCoachSession_clear();
+      }
+      console.warn("Codex workout adjustment request failed", error);
+      if (error instanceof Error && /401|403|404|410/.test(error.message)) {
+        await AiWorkoutCoachSession_clear();
+        Dialog_alert("Codex 연결이 끝났거나 TigerFit 로그인 상태를 확인할 수 없습니다. 운동 기록 내보내기에서 새 연결을 시작해 주세요.");
+      } else if (error instanceof Error && /만료|바뀌어|운동 기록/.test(error.message)) {
+        Dialog_alert(error.message);
+      }
+    } finally {
+      workoutCoachPollInFlight = false;
+    }
+  };
+}
+
+export function Thunk_exportAiFeedbackMarkdown(
+  title: string,
+  userNote: string,
+  selectedProgramId?: string,
+  coachWaitSeconds?: number
+): IThunk {
+  return async (dispatch, getState, env) => {
     dispatch(Thunk_postevent("export-ai-feedback-markdown"));
-    const state = getState();
-    const markdown = AiFeedbackExport_buildMarkdown(
+    let state = getState();
+    if (coachWaitSeconds != null && state.user?.id) {
+      try {
+        let syncSucceeded = false;
+        const syncTask = new Promise<void>((resolve, reject) => {
+          Thunk_sync2({ force: true, onComplete: (synced) => { syncSucceeded = synced; resolve(); } })(dispatch, getState, env).catch(reject);
+        });
+        let timeoutId: ReturnType<typeof setTimeout> | undefined;
+        const syncTimeout = new Promise<void>((_, reject) => {
+          timeoutId = setTimeout(() => reject(new Error("최신 운동 기록 동기화가 45초 안에 끝나지 않았습니다.")), 45000);
+        });
+        try {
+          await Promise.race([syncTask, syncTimeout]);
+        } finally {
+          if (timeoutId != null) clearTimeout(timeoutId);
+        }
+        if (!syncSucceeded) throw new Error("TigerFit 서버가 운동 기록 동기화를 승인하지 않았습니다.");
+        state = getState();
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "최신 운동 기록 동기화에 실패했습니다.";
+        if (!(await Dialog_confirm(`${message}\n\n최신 기록이 서버에 반영되지 않을 수 있습니다. 실시간 조정 연결 없이 기록만 내보낼까요?`))) return;
+        coachWaitSeconds = undefined;
+      }
+    }
+    let createdSessionId: string | undefined;
+    let markdown = AiFeedbackExport_buildMarkdown(
       state.storage.history,
       state.storage.settings,
       userNote,
@@ -1889,7 +2096,34 @@ export function Thunk_exportAiFeedbackMarkdown(title: string, userNote: string, 
       state.storage.programs,
       selectedProgramId
     );
-    Exporter_toFile(`liftosaur_ai_feedback_${DateUtils_formatYYYYMMDD(Date.now())}.md`, markdown);
+    if (coachWaitSeconds != null) {
+      if (!state.user?.id) {
+        Dialog_alert("Codex 연결 대기를 시작하려면 TigerFit 계정에 로그인해야 합니다. 운동 기록만 내보냅니다.");
+      } else {
+        try {
+          const previousSession = await AiWorkoutCoachSession_get();
+          if (previousSession?.userId === state.user.id) {
+            await env.service.closeWorkoutCoachSession(previousSession.sessionId).catch(() => undefined);
+            await AiWorkoutCoachSession_clear();
+          }
+          const session = await env.service.createWorkoutCoachSession(coachWaitSeconds);
+          createdSessionId = session.sessionId;
+          await AiWorkoutCoachSession_set({ ...session, userId: state.user.id });
+          markdown = AiFeedbackExport_appendCoachConnection(markdown, session);
+        } catch (error) {
+          const message = error instanceof Error ? error.message : "연결 세션을 만들지 못했습니다.";
+          if (!(await Dialog_confirm(`${message}\n\n연결 없이 운동 기록만 내보낼까요?`))) return;
+        }
+      }
+    }
+    const exported = await Exporter_toFileAsync(
+      `liftosaur_ai_feedback_${DateUtils_formatYYYYMMDD(Date.now())}.md`,
+      markdown
+    );
+    if (!exported && createdSessionId) {
+      await env.service.closeWorkoutCoachSession(createdSessionId).catch(() => undefined);
+      await AiWorkoutCoachSession_clear();
+    }
   };
 }
 

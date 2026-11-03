@@ -2,7 +2,7 @@ export const Distribution_localOnlyMessage =
   "이 앱은 기기에 운동 기록을 저장하며 앱 내 결제는 제공하지 않습니다. TigerFit 계정에 로그인하면 기록과 프로그램을 계정에 동기화할 수 있습니다.";
 
 export const Distribution_cloudSyncMessage =
-  "MCP에 연결한 것과 같은 TigerFit 계정으로 로그인하세요. 동기화하면 Codex가 운동 기록을 읽고 프로그램을 조정합니다. 앱을 열어 두면 약 30초 안에 변경 사항이 반영됩니다.";
+  "MCP에 연결한 것과 같은 TigerFit 계정으로 로그인하세요. 운동 기록을 내보낼 때 Codex 연결 대기를 설정하면 진행 중 운동 조정 요청을 받을 수 있습니다. 앱이 백그라운드에 있으면 실시간 수신을 보장할 수 없습니다.";
 
 export class DistributionLocalOnlyError extends Error {
   public readonly code = "local_only_distribution";
@@ -45,6 +45,53 @@ function isCloudSyncRequest(input: RequestInfo | URL, init?: RequestInit): boole
   );
 }
 
+function isAiCoachApiKeyRequest(input: RequestInfo | URL, init?: RequestInit): boolean {
+  let requestUrl: string;
+  let method = init?.method?.toUpperCase() ?? "GET";
+  if (typeof input === "string") {
+    requestUrl = input;
+  } else if (input instanceof URL) {
+    requestUrl = input.toString();
+  } else {
+    requestUrl = input.url;
+    method = init?.method?.toUpperCase() ?? input.method.toUpperCase();
+  }
+  let path: string;
+  try {
+    path = new URL(requestUrl, "https://tigerfit.aixtech.uk").pathname;
+  } catch {
+    return false;
+  }
+  return (
+    (path === "/api/apikeys" && (method === "GET" || method === "POST")) ||
+    (method === "DELETE" && /^\/api\/apikeys\/[^/]+$/.test(path))
+  );
+}
+
+function isWorkoutCoachSessionRequest(input: RequestInfo | URL, init?: RequestInit): boolean {
+  let requestUrl: string;
+  let method = init?.method?.toUpperCase() ?? "GET";
+  if (typeof input === "string") {
+    requestUrl = input;
+  } else if (input instanceof URL) {
+    requestUrl = input.toString();
+  } else {
+    requestUrl = input.url;
+    method = init?.method?.toUpperCase() ?? input.method.toUpperCase();
+  }
+  let path: string;
+  try {
+    path = new URL(requestUrl, "https://tigerfit.aixtech.uk").pathname;
+  } catch {
+    return false;
+  }
+  return (
+    (path === "/api/v1/coach/session" && method === "POST") ||
+    (/^\/api\/v1\/coach\/session\/[^/]+\/pending$/.test(path) && method === "GET") ||
+    (/^\/api\/v1\/coach\/session\/[^/]+\/(ack|commit|close)$/.test(path) && method === "POST")
+  );
+}
+
 export function Distribution_createPolicy(localOnly: boolean, cloudSync = false): {
   Distribution_isLocalOnly(): boolean;
   Distribution_supportsCloudSync(): boolean;
@@ -60,7 +107,13 @@ export function Distribution_createPolicy(localOnly: boolean, cloudSync = false)
     Distribution_supportsCloudSync: () => supportsCloudSync,
     Distribution_requireRemoteServices: requireRemote,
     Distribution_guardClient: (client) => async (input, init) => {
-      if (localOnly && !(supportsCloudSync && isCloudSyncRequest(input, init))) requireRemote();
+      if (
+        localOnly &&
+        !(supportsCloudSync &&
+          (isCloudSyncRequest(input, init) || isAiCoachApiKeyRequest(input, init) || isWorkoutCoachSessionRequest(input, init)))
+      ) {
+        requireRemote();
+      }
       return client(input, init);
     },
   };

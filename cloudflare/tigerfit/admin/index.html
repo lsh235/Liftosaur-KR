@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <title>TigerFit MCP 관리자</title>
+    <link rel="stylesheet" href="/admin/admin.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <a class="brand" href="/admin/" aria-label="TigerFit 관리자 홈">
+          <span class="brand-mark" aria-hidden="true">T</span>
+          <span><strong>TigerFit</strong><small>MCP 관리</small></span>
+        </a>
+        <div class="topbar-actions">
+          <span class="admin-label">관리자 전용</span>
+          <button class="button button-quiet" id="refresh-button" type="button">새로고침</button>
+          <button class="button button-quiet" id="logout-button" type="button">로그아웃</button>
+        </div>
+      </header>
+
+      <section class="intro">
+        <div>
+          <p class="eyebrow">운영 현황</p>
+          <h1>MCP 계정과 활동</h1>
+          <p class="intro-copy">연결된 계정 수와 계정별 최근 MCP 활동을 확인합니다.</p>
+        </div>
+        <p class="updated" id="updated-at" aria-live="polite">정보를 불러오는 중…</p>
+      </section>
+
+      <section class="metrics" aria-label="MCP 요약">
+        <article class="metric-card">
+          <span class="metric-label">현재 연결된 계정</span>
+          <strong class="metric-value" id="active-count">—</strong>
+          <span class="metric-note">최근 15분 내 인증된 MCP 도구 요청</span>
+        </article>
+        <article class="metric-card">
+          <span class="metric-label">등록된 계정</span>
+          <strong class="metric-value" id="total-count">—</strong>
+          <span class="metric-note">기록이 있는 계정</span>
+        </article>
+        <article class="metric-card metric-card-wide">
+          <span class="metric-label">개인정보 안내</span>
+          <strong class="privacy-title">마스킹된 MCP 요청 인수에 운동 내용이 포함될 수 있습니다.</strong>
+          <span class="metric-note">인증 비밀값은 최선의 노력으로 마스킹하며, 응답 본문은 저장하지 않습니다.</span>
+        </article>
+      </section>
+
+      <div class="notice" id="notice" role="status" hidden></div>
+      <div class="privacy-banner"><strong>요청 데이터 안내</strong><span>MCP 도구 인수에는 운동 기록과 건강 정보가 포함될 수 있으며 지정된 관리자에게 최대 30일간 표시됩니다. 서버는 민감한 키와 흔한 토큰 패턴을 최선의 노력으로 마스킹하고 요청을 최대 8KB로 제한합니다. 마스킹이 모든 비밀값을 찾아내지는 못할 수 있습니다. 응답 본문은 저장하지 않습니다. 배포 후 수집된 요청만 표시됩니다.</span></div>
+      <section class="content-grid" aria-label="계정별 MCP 활동">
+        <section class="panel account-panel">
+          <div class="panel-heading">
+            <div><p class="eyebrow">계정 목록</p><h2>연결 계정</h2></div>
+            <span class="count-pill" id="account-list-count">0</span>
+          </div>
+          <div class="account-list" id="account-list" aria-live="polite">
+            <div class="loading-state"><span class="spinner" aria-hidden="true"></span>계정을 불러오는 중입니다.</div>
+          </div>
+        </section>
+
+        <section class="panel detail-panel" id="detail-panel" aria-live="polite">
+          <div class="empty-detail">
+            <span class="empty-icon" aria-hidden="true">↗</span>
+            <h2>계정을 선택하세요</h2>
+            <p>계정별 연결 상태와 최근 MCP 활동이 여기에 표시됩니다.</p>
+          </div>
+        </section>
+      </section>
+      <footer class="footer">TigerFit 관리자 · 모든 시간은 한국 표준시(KST)로 표시합니다.</footer>
+    </main>
+    <script src="/admin/admin.js" defer></script>
+  </body>
+</html>
